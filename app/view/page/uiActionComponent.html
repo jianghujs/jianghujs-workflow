@@ -1,0 +1,327 @@
+{% extends 'template/jhTemplate.html'%}
+
+{% block vue_template %}
+
+<jh-layout>
+
+  <!-- 页面主要内容 -->
+  <v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
+    <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
+
+      <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
+        <v-btn color="success" small dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')">新增</v-btn>
+        <span class="body-2">共{{ tableData.length }}条记录</span>
+      </v-col>
+
+      <v-spacer></v-spacer>
+
+
+
+      <v-col cols="12" xs="8" sm="3" md="2" xl="2" class="pa-xs-0 pa-xs-2 col-sm-8-flex pl-0">
+        <classSelectDialog />
+      </v-col>
+
+      <v-col cols="12" xs="8" sm="3" md="2" xl="2" class="pa-xs-0 pa-xs-2 col-sm-8-flex pl-0">
+        <v-select class="cus-v-input mr-2" v-model="currentTableGenderType" :items="[{value: 'all', text: '全部'}, ...constantCollection.gender]"
+                  prefix="性别：" dense item-text="text" item-value="value" dense outlined></v-select>
+      </v-col>
+
+      <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
+        <v-text-field v-model="searchInput" label="表格过滤" class="cus-v-input" dense outlined></v-text-field>
+      </v-col>
+
+    </v-row>
+    <v-data-table
+      fixed-header
+      :headers="headers"
+      :items="tableData"
+      :search="searchInput"
+      :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
+      :items-per-page="20"
+      mobile-breakpoint="0"
+      :loading="isTableLoading"
+      checkbox-color="success"
+      class="elevation-0 mt-0 mb-xs-4 flex-fill d-flex flex-column">
+
+      <template v-slot:item.gender="{ item }">
+        {{ getConstantCollectionItemText('gender', item.gender) }}
+      </template>
+      <template v-slot:item.level="{ item }">
+        {{ getConstantCollectionItemText('level', item.level) }}
+      </template>
+      <template v-slot:item.action="{ item }">
+        <v-btn small class="mr-2 success" @click="doUiAction('startUpdateItem', {item})">
+          修改
+        </v-btn>
+        <v-btn small class="mr-2 error" @click="doUiAction('deleteItem', {item})">
+          删除
+        </v-btn>
+      </template>
+    </v-data-table>
+  </v-container>
+
+  <!-- 编辑抽屉 -->
+  <v-navigation-drawer v-model="isEditDrawerShow" absolute temporary right width="80%" hide-overlay
+    v-click-outside="{ closeConditional: () => !dialogIsOpen(), }"
+    class="elevation-24">
+    <v-form v-model="isFormValid" v-if="isEditDrawerShow" ref="form" lazy-validation>
+      <v-row>
+        <span class="title pa-6">{{ editItem.id ? "修改" : "新增" }}信息</span>
+        <v-spacer></v-spacer>
+        <v-btn class="mt-7 mr-8 elevation-0" fab x-small @click="isEditDrawerShow = false">
+          <v-icon dark>mdi-close</v-icon>
+        </v-btn>
+      </v-row>
+      <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="学生ID" v-model="editItem.studentId" :rules="requireRules"></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-select class="cus-v-input mr-2" dense outlined clearable label="班级ID" v-model="editItem.classId" :items="constantCollection.classId"></v-select>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="学生名字" v-model="editItem.name"></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-select class="cus-v-input mr-2" dense outlined clearable label="年级" v-model="editItem.level" :items="constantCollection.level"></v-select>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-select class="cus-v-input mr-2" dense outlined clearable label="性别" v-model="editItem.gender" :items="constantCollection.gender"></v-select>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-menu class="cus-v-input mr-2" offset-y max-width="290">
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field class="cus-v-input mr-2" dense outlined v-on="on" label="出生日期" v-model="editItem.dateOfBirth"></v-text-field>
+            </template>
+            <v-date-picker color="success" elevation="20" v-model="editItem.dateOfBirth"></v-date-picker>
+          </v-menu>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="身高" v-model="editItem.bodyHeight"></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-select class="cus-v-input mr-2" dense outlined clearable label="学生状态" v-model="editItem.studentStatus" :items="constantCollection.studentStatus"></v-select>
+        </v-col>
+        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="editItem.remarks"></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row class="justify-end pr-6">
+        <v-btn v-if="editItem.id" color="success" small @click="doUiAction('updateItem')" :style="{width: isMobile ? 'calc(100% - 45px)' : '200px'}" :class="{'mb-2': isMobile, 'mr-4': isMobile}">修改</v-btn>
+        <v-btn v-if="!editItem.id" small @click="doUiAction('insertItem')" :style="{width: isMobile ? 'calc(100% - 45px)' : '200px'}" :class="{'mb-2': isMobile, 'mr-4': isMobile}">创建</v-btn>
+        <v-btn class="ml-2" small @click="isEditDrawerShow = false" :style="{width: isMobile ? 'calc(100% - 45px)' : '200px'}" :class="{'mr-4': isMobile}">取消</v-btn>
+      </v-row>
+    </v-form>
+  </v-navigation-drawer>
+
+</jh-layout>
+
+{% endblock %}
+
+{% block vue_body %}
+
+<script>
+  window.registerData({
+    // 组件的 数据
+    classSelectDialog_shown: false,
+    classSelectDialog_title: "班级",
+    classSelectDialog_selected: null,
+    classSelectDialog_filterText: null,
+    classSelectDialog_dataList: [
+        { value: "2021-01级-01班", text: "2021-01级-01班" },
+        { value: "2021-01级-02班", text: "2021-01级-02班" },
+        { value: "2021-02级-01班", text: "2021-02级-01班" },
+        { value: "2021-02级-02班", text: "2021-02级-02班" },
+        { value: "2021-03级-01班", text: "2021-03级-01班" },
+        { value: "2021-03级-02班", text: "2021-03级-02班" },
+    ],
+
+    // page的 数据
+    isFormValid: true,
+    requireRules: [
+      v => !!v || 'This is required',
+    ],
+    constantCollection: {
+      gender: [{"value": "male", "text": "男"}, {"value": "female", "text": "女"}],
+      classId: [
+        {"value": "2021-01级-01班", "text": "2021-01级-01班"}, {"value": "2021-01级-02班", "text": "2021-01级-02班"},
+        {"value": "2021-02级-01班", "text": "2021-02级-01班"}, {"value": "2021-02级-02班", "text": "2021-02级-02班"},
+        {"value": "2021-03级-01班", "text": "2021-03级-01班"}, {"value": "2021-03级-02班", "text": "2021-03级-02班"}
+      ],
+      level: [{"value": "01", "text": "一年级"}, {"value": "02", "text": "二年级"}, {"value": "03", "text": "三年级"}],
+      icType: [{"value": "身份证", "text": "身份证"}, {"value": "护照", "text": "护照"}],
+      enrollmentType: [{"value": "正常升学", "text": "正常升学"}, {"value": "借读", "text": "借读"}],
+      studentStatus: [{"value": "正常", "text": "正常"}, {"value": "退学", "text": "退学"}]
+    },
+    currentTableGenderType: 'all',
+    isEditDrawerShow: false,
+    searchInput: null,
+    isTableLoading: true,
+    tableDataFromBackend: [],
+    headers: [
+      {text: "学生ID", value: "studentId", width: 120, class: 'fixed', cellClass: 'fixed'},
+      {text: "班级ID", value: "classId", width: 140},
+      {text: "学生名字", value: "name", width: 120},
+      {text: "年级", value: "level", width: 120},
+      {text: "性别", value: "gender", width: 120},
+      {text: "出生日期", value: "dateOfBirth", width: 120},
+      {text: "身高", value: "bodyHeight", width: 120},
+      {text: "学生状态", value: "studentStatus", width: 120},
+      {text: "备注", value: "remarks", width: 120},
+      {text: "操作者", value: "operationByUser", width: 120},
+      {text: "操作时间", value: "operationAt", width: 250},
+      {text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed'},
+    ],
+
+    editItem: {},
+  })
+</script>
+{% include 'layout/jhLayout.html' %}
+{% include 'common/resetTableMaxHeight.html' %}
+{% include 'component/classSelectDialog.html' %}
+
+<script type="module">
+new Vue({
+  el: '#app',
+  template: '#app-template',
+  vueComponent: 'page',
+  vuetify: new Vuetify(),
+  mixins: [window.jianghuUiActionMixins],
+  data: window.vueData,
+  computed: {
+    isMobile() {
+      return window.innerWidth < 600;
+    },
+    tableData() {
+      let dataList = this.tableDataFromBackend;
+      if (this.currentTableGenderType && this.currentTableGenderType !== 'all') {
+        dataList = dataList.filter(({gender}) => gender === this.currentTableGenderType);
+      }
+      if (this.classSelectDialog_selected) {
+        dataList = dataList.filter(({classId}) => classId === this.classSelectDialog_selected);
+      }
+      return dataList;
+    },
+  },
+  watch: {},
+  mounted() {
+    this.doUiAction('refreshTableData');
+  },
+  methods: {
+
+    async refreshTableData() {
+      this.isTableLoading = true;
+      const result = await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'uiActionComponent',
+            actionId: 'selectItemList',
+            actionData: {},
+            where: {},
+            orderBy: [{column: 'operationAt', order: 'desc'}]
+          }
+        }
+      });
+
+      this.tableDataFromBackend = result.data.appData.rows;
+      this.isTableLoading = false;
+    },
+
+    async clearItemData() {
+      this.editItem = {};
+    },
+
+    // validate
+    prepareValidate() {
+      return this.$refs.form.validate();
+    },
+
+    async openCreateDialog() {
+      this.isEditDrawerShow = true;
+    },
+
+    async prepareCreateItem() {
+      delete this.editItem.id;
+    },
+
+    async doCreateItem() {
+      await window.vtoast.loading("新增学生");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'uiActionComponent',
+            actionId: 'insertItem',
+            actionData: this.editItem
+          }
+        }
+      })
+      await window.vtoast.success("新增学生成功");
+    },
+
+    async closeDrawerShow() {
+      this.isEditDrawerShow = false;
+    },
+
+    async prepareItemData({item}) {
+      this.editItem = { ...item };
+    },
+
+    async openUpdateDialog() {
+      this.isEditDrawerShow = true;
+    },
+
+    async doUpdateItem() {
+      const {id, ...actionData} = this.editItem;
+      await window.vtoast.loading("修改学生");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'uiActionComponent',
+            actionId: 'updateItem',
+            actionData: actionData,
+            where: {id}
+          }
+        }
+      })
+      await window.vtoast.success("修改学生成功");
+    },
+
+    async confirmDeleteItemDialog() {
+      return await window.confirmDialog({ title: "删除", content: "确定删除吗？" });
+    },
+
+    async doDeleteItem() {
+      const {id} = this.editItem;
+      await window.vtoast.loading("删除学生");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'uiActionComponent',
+            actionId: 'deleteItem',
+            actionData: {},
+            where: {id: id}
+          }
+        }
+      });
+      await window.vtoast.success("删除学生成功");
+    },
+
+    getConstantCollectionItemText(key, _value) {
+      const constantCollectionItemFind = this.constantCollection[key].find(
+        ({ value }) => value === _value
+      );
+      if (constantCollectionItemFind) {
+        return constantCollectionItemFind.text;
+      }
+      return _value;
+    },
+    dialogIsOpen() {
+      return window.dialogIsOpen;
+    },
+  }
+})
+</script>
+
+<style scoped>
+</style>
+{% endblock %}
