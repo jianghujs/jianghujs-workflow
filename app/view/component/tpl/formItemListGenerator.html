@@ -1,0 +1,335 @@
+<template id="form-item-list-generator">
+  <div class="d-flex form-item-list-generator-content">
+    <div class="componentList">
+      <div class="left-component-item-title">
+        <v-icon>mdi-puzzle-outline</v-icon>
+        组件
+      </div>
+      <draggable
+        :group="{ name: 'componentGroup', pull: 'clone', put: false }"
+        :list="componentList"
+        draggable=".left-component-item"
+        :clone="cloneComponent"
+        @end="leftComponentDraggableOnEnd">
+          <div class="left-component-item"
+              v-for="(component, index) in componentList" :key="index"
+              @click="addFormItem(component)">
+              <div class="left-component-item-body">
+                <v-icon small class="mr-1">{{ component.icon }}</v-icon>
+                {{ component.title }}
+              </div>
+          </div>
+      </draggable>
+    </div>
+
+      <v-card class="formItemList">
+        <v-toolbar dense flat>
+            <v-btn icon @click.stop="emptyCanva">
+              <v-icon color="grey lighten-1" dark>mdi-delete-empty</v-icon>
+            </v-btn>
+        </v-toolbar>
+        <draggable
+          v-if="formItemList.length > 0"
+          :list="formItemList"
+          :animation="300"
+          group="componentGroup">
+          <v-hover v-for="(formItem, index) in formItemList" :key="index" v-slot:default="{ hover }">
+            <v-card
+                @click.native="formItemSelect(formItem.id)"
+                :elevation="hover ? 12 : 2"
+                :class="['ma-2', selectedFormItemId === formItem.id && !hover ? 'formItem-selected' : 'formItem-body']"
+                style="cursor: move"
+                dense>
+                <v-list-item>
+
+                    <v-list-item-content v-if="formItem.component.type === 'singleSelect'">
+                      <v-radio-group :disabled="true" :label="(index+1) + formItem.component.outline">
+                        <v-radio hide-details v-for="(option, optionIndex) in formItem.component.property.selectOptionList"
+                          :key="optionIndex" :label="option.value" :value="option.value"></v-radio>
+                      </v-radio-group>
+                    </v-list-item-content>
+
+                    <v-list-item-content v-if="formItem.component.type === 'multipleSelect'">
+                      <v-list-item-title class="formItem-title">{{ index+1 }}. {{ formItem.component.outline }}</v-list-item-title>
+                      <div v-for="(option, optionIndex) in formItem.component.property.selectOptionList" :key="optionIndex">
+                        <v-checkbox hide-details style="margin-top: 0px;" :disabled="true"  :label="option.value" hide-details color="red"></v-checkbox>
+                      </div>
+                    </v-list-item-content>
+
+                    <v-list-item-content v-if="formItem.component.type === 'textarea'">
+                      <v-textarea dense outlined placeholder="请输入答案" hide-details :disabled="true" :rows="4" :label="(index+1) + '. ' + formItem.component.outline"/>
+                    </v-list-item-content>
+
+                    <v-list-item-content v-if="formItem.component.type === 'input'">
+                      <v-text-field class="cus-v-input" dense outlined :label="(index+1) + '. ' + formItem.component.outline" :disabled="true">
+                    </v-list-item-content>
+
+                    <v-list-item-action v-if="selectedFormItemId === formItem.id" class="justify-start">
+                        <v-btn x-small icon @click.stop="formItemCopy(index, formItem)">
+                            <v-icon color="primary">mdi-content-duplicate</v-icon>
+                        </v-btn>
+                        <v-btn x-small icon @click.stop="formItemDelete(formItem.id)">
+                            <v-icon color="error">mdi-close-box</v-icon>
+                        </v-btn>
+                    </v-list-item-action>
+                </v-list-item>
+            </v-card>
+          </v-hover>
+        </draggable>
+        <v-row v-else align="center" justify="center" style="width: 100%;">
+          <v-card height="100" class="ma-12" width="100%">
+            <draggable :list="[]" :animation="300" group="componentGroup">
+                <v-card-text class="text-center title">
+                    从左侧拖入或点选组件进行表单设计
+                </v-card-text>
+            </draggable>
+        </v-card>
+        </v-row>
+        </v-row>
+      </v-card>
+
+    <div class="property">
+      <div class="property-title">
+        <v-icon>mdi-application-edit-outline</v-icon>组件属性
+      </div>
+      <div v-if="selectCanvaIndex >= 0 && formItemList[selectCanvaIndex]">
+        <v-card flat v-if="formItemList[selectCanvaIndex].component.type === 'singleSelect' || formItemList[selectCanvaIndex].component.type === 'multipleSelect'">
+          <v-row no-gutters>
+            <v-col cols="12">
+              <v-text-field class="cus-v-input mr-2" dense outlined label="标题" v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
+              <div style="display: flex; flex-direction: row;justify-content: space-between; align-items: center;">
+                <v-subheader>选项列表</v-subheader>
+                <v-btn icon @click.stop="propertyAddOption(formItemList[selectCanvaIndex].component.property.selectOptionList.length)">
+                  <v-icon dark color="grey lighten-1">mdi-plus-box</v-icon>
+                </v-btn>
+              </div>
+              <v-list dense>
+                <v-list-item v-for="(option, index) in formItemList[selectCanvaIndex].component.property.selectOptionList" :key="index">
+                  <v-list-item-content>
+                    <v-text-field
+                      v-model="option.value"
+                      label="选项"
+                      outlined
+                      dense
+                      hide-details
+                      clearable
+                      placeholder="请输入选项"/>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn icon @click.stop="propertyDeleteOption(index)">
+                      <v-icon color="grey lighten-1" dark>mdi-delete</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+        </v-card>
+        <v-card flat v-if="formItemList[selectCanvaIndex].component.type === 'textarea'">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="多行文本" v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
+        </v-card>
+        <v-card flat v-if="formItemList[selectCanvaIndex].component.type === 'input'">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="单行文本" v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
+        </v-card>
+      </div>
+    </div>
+
+  </div>
+
+</template>
+
+<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+
+<script>
+// 1. v-main 滚动条
+// 2. v-navigation-drawer 小屏幕 不要关闭
+  Vue.component("form-item-list-generator", {
+    template: '#form-item-list-generator',
+    vuetify: new Vuetify(),
+    name: 'form-item-list-generator',
+    props: {
+        formItemList: {
+          type: Array,
+          default: [],
+          required: true,
+        },
+    },
+    data: () => ({
+      componentList: [
+        { title: '单行文本', type: 'input', outline: '单行文本', property: {}, icon: 'mdi-form-textarea' },
+        { title: '多行文本', type: 'textarea', outline: '多行文本', property: {}, icon: 'mdi-form-textarea' },
+        { title: '单选', type: 'singleSelect', outline: '单选', property: { selectOptionList: [] }, icon: 'mdi-checkbox-marked-circle' },
+        { title: '多选', type: 'multipleSelect', outline: '多选', property: { selectOptionList: [] }, icon: 'mdi-checkbox-marked' },
+      ],
+      tempComponent: null,
+
+
+      // 当 needle 是空字符串时，我们应当返回什么值呢？这是一个在面试中很好的问题。
+
+      // 对于本题而言，当 needle 是空字符串时我们应当返回 0 。这与 C 语言的 strstr() 以及 Java 的 indexOf() 定义相符。
+      // 著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+      // `,
+      //             property: {}, icon: 'mdi-checkbox-marked-circle'
+      //           },
+      //           formItemData: {}
+      //         }
+      //       ],
+      selectedFormItemId: null,
+      rightPanels: [0,1,2,3,4],
+    }),
+    computed: {
+      selectCanvaIndex () {
+        const index = this.formItemList.findIndex(item => item.id === this.selectedFormItemId);
+        return index;
+      },
+    },
+    mounted() {
+    },
+    destroyed() {},
+    watch: {
+    },
+    async created() {},
+    methods: {
+      cloneComponent (component) {
+        this.tempComponent = component;
+      },
+      leftComponentDraggableOnEnd (event) {
+        if (event.from !== event.to) {
+          const newIndex = event.newIndex;
+          this.addFormItem(this.tempComponent, newIndex);
+        }
+        this.tempComponent = null;
+      },
+      addFormItem(component, targetIndex) {
+        const { type } = component;
+        const formItem = {
+          id: `${type}_${this.uuid(8)}`,
+          component: _.cloneDeep(component)
+        };
+        if (!this.formItemList) {
+          this.formItemList = [];
+        }
+        if (targetIndex > -1) {
+          this.formItemList.splice(targetIndex, 0, formItem);
+        } else {
+          this.formItemList.push(formItem);
+        }
+      },
+      formItemSelect (id) {
+        this.selectedFormItemId = id;
+      },
+      formItemCopy (index, formItem) {
+        const newFormItem = _.cloneDeep(formItem);
+        newFormItem.id = `${newFormItem.component.type}_${this.uuid(8)}`,
+        this.formItemList.splice(index+1, 0, newFormItem);
+      },
+      emptyCanva () {
+        this.formItemList.splice(0, this.formItemList.length);
+      },
+      formItemDelete (id) {
+        const index = this.formItemList.findIndex((item) => item.id === id);
+        if (index > -1) {
+          this.formItemList.splice(index, 1);
+        }
+      },
+      propertyAddOption (index) {
+        this.formItemList[this.selectCanvaIndex].component.property.selectOptionList.splice(index, 0, { value: "" });
+      },
+      propertyDeleteOption (index) {
+        this.formItemList[this.selectCanvaIndex].component.property.selectOptionList.splice(index, 1);
+      },
+      uuid (t=21) {
+        let e="",r=crypto.getRandomValues(new Uint8Array(t));
+        for(;t--;){let n=63&r[t];e+=n<36?n.toString(36):n<62?(n-26).toString(36).toUpperCase():n<63?"_":"-"};
+        return e
+      },
+      getFormItemList () {
+        return this.formItemList;
+      },
+    },
+  })
+</script>
+
+<style scoped>
+.form-item-list-generator-content {
+  align-items: stretch;
+  height: 100%;
+}
+
+.componentList {
+  padding: 8px;
+  box-sizing: border-box;
+  width: 256px;
+  overflow-y: auto;
+  height: 100%;
+  max-height: 100%;
+}
+.left-component-item {
+  width: 100%;
+  margin: 1%;
+  transition: transform 0ms !important;
+}
+.left-component-item-title {
+    font-size: 14px;
+    color: #222;
+    margin: 6px 2px;
+}
+.left-component-item-body {
+    padding: 8px 10px;
+    background: #e0e0e0;
+    font-size: 12px;
+    cursor: move;
+    border: 1px dashed #e0e0e0;
+    border-radius: 3px;
+}
+.left-component-item-body:hover {
+  border: 1px dashed #1565c0;
+  background: #e3f2fd;
+  color: #1565c0;
+}
+.left-component-item-body:hover .v-icon {
+  color: #1565c0;
+}
+
+.formItemList {
+  flex: 1;
+  overflow-y: auto;
+  height: 100%;
+  max-height: 100%;
+  background-color: #e0e0e0 !important;
+  border-radius: 0 !important;
+  border: 1px dashed #999 !important;
+}
+.formItemList .formItem-selected {
+    border: 1px dashed #1565c0 !important;
+    background: #e3f2fd;
+}
+.formItem-title {
+  white-space: normal;
+}
+
+.property {
+  width: 360px;
+  overflow-y: auto;
+  max-height: calc(100vh - 105px);
+  padding: 10px;
+}
+.property .property-title {
+  margin-bottom: 10px;
+}
+
+.property .v-expansion-panel .v-expansion-panel-header {
+  min-height: auto;
+}
+
+.property .v-expansion-panel-content__wrap {
+  padding: 0px;
+}
+
+.property .v-expansion-panel .v-list-item__action, .v-list-item__avatar, .v-list-item__icon {
+  display: inline-block;
+  min-width: 24px;
+}
+
+</style>

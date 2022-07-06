@@ -1,0 +1,419 @@
+{% extends 'template/jhTemplate.html'%}
+
+{% block vue_template %}
+
+
+<jh-layout>
+
+
+<!-- 页面主要内容 -->
+<v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
+  <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
+
+    <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
+      <v-btn color="success" small dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')">新增</v-btn>
+      <span class="body-2">共{{ tableData.length }}条记录</span>
+    </v-col>
+
+    <v-spacer></v-spacer>
+
+    <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
+      <v-text-field v-model="serverSearchInput.classId" label="班级ID" class="cus-v-input" :class="{'mr-2': !isMobile}" dense outlined></v-text-field>
+    </v-col>
+
+    <v-btn
+      class="elevation-0"
+      color="success"
+      dark
+      @click="doUiAction('refreshTableData')"
+    >
+      查询
+    </v-btn>
+  </v-row>
+  <v-data-table fixed-header
+                :headers="headers"
+                :items="tableData"
+                :search="searchInput"
+                :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
+                :items-per-page="20"
+                mobile-breakpoint="0"
+                :loading="isTableLoading"
+                checkbox-color="success"
+                class="elevation-0 mt-0 mb-xs-4 flex-fill d-flex flex-column">
+<!--    <template v-slot:item.level="{ item }">-->
+<!--      {{ getConstantCollectionItemText('level', item.level) }}-->
+<!--    </template>-->
+    <template v-slot:item.action="{ item }">
+      <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList" @click="doUiAction(tableButton.action, {item})">
+        {{ tableButton.text }}
+      </v-btn>
+    </template>
+  </v-data-table>
+</v-container>
+
+<v-dialog v-model="dialog" fullscreen hide-overlay persistent transition="dialog-bottom-transition">
+  <v-card>
+    <v-toolbar dark color="primary">
+      <v-btn icon dark @click="dialog = false">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+      <v-toolbar-title>流程编辑</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn dark text @click="doUiAction(dialogSaveInfoAction)">
+          保存
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-list three-line subheader>
+      <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+
+        <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="流程名" v-model="editItem['workflowName']">
+          </v-text-field>
+        </v-col>
+
+        <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="分类" v-model="editItem['workflowCategory']">
+          </v-text-field>
+        </v-col>
+
+        <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+          <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="editItem['workflowRemark']">
+          </v-text-field>
+        </v-col>
+      </v-row>
+    </v-list>
+    <v-divider></v-divider>
+    <v-list three-line subheader>
+      <v-subheader>模板设置</v-subheader>
+      <v-list-item>
+        <tpl-form-design v-if="dialog" :form="editItem.workflowForm">
+        </tpl-form-design>
+      </v-list-item>
+    </v-list>
+    <v-list three-line subheader>
+      <v-subheader>流程设置</v-subheader>
+      <v-list-item>
+        <process-flow v-if="dialog" :data="editItem.workflowConfig" :user="constantCollection.userList" :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
+        </process-flow>
+      </v-list-item>
+    </v-list>
+  </v-card>
+</v-dialog>
+
+</jh-layout>
+
+{% endblock %}
+
+{% block vue_body %}
+
+{% include 'layout/jhLayout.html' %}
+{% include 'common/resetTableMaxHeight.html' %}
+{% include 'component/flow/processFlow.html' %}
+{% include 'component/flow/editFlow.html' %}
+{% include 'component/flow/editLine.html' %}
+{% include 'component/flow/editNode.html' %}
+{% include 'component/flow/flowNode.html' %}
+{% include 'component/tpl/tplFormDesign.html' %}
+{% include 'component/tpl/formItemListGenerator.html' %}
+{% include 'component/tpl/formItemListRender.html' %}
+
+<script type="module">
+new Vue({
+  el: '#app',
+  template: '#app-template',
+  vuetify: new Vuetify(),
+  mixins: [window.jianghuUiActionMixins],
+  data: () => ({
+    // 表格相关数据
+    isFormValid: true,
+    requireRules: [
+      v => !!v || 'This is required',
+    ],
+    constantCollection: {
+      userList: [],
+      groupList: [],
+      workflowFormList: []
+    },
+
+    serverSearchInput: {
+      studentId: null,
+      classId: null
+    },
+    currentTableGenderType: 'all',
+    isEditDrawerShow: false,
+    searchInput: null,
+    isTableLoading: true,
+    tableDataFromBackend: [],
+    headers: [
+      {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
+       
+      {text: "流程ID", value: "workflowId", width: 120}, 
+      {text: "流程名", value: "workflowName", width: 120}, 
+      {text: "分类ID", value: "workflowCategory", width: 120}, 
+      {text: "备注", value: "workFlowRemark", width: 120}, 
+      {text: "操作者", value: "operationByUser", width: 120},
+      {text: "操作时间", value: "operationAt", width: 250},
+      {text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed'},
+    ],
+
+    currentClickButton: {title: '新增', action: 'add'},
+    editItem: {},
+    tableButtonList: [
+      {text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem'},
+      {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
+    ],
+    dialogSaveInfoAction: '',
+    dialog: false,
+  }),
+  computed: {
+    isMobile() {
+      return window.innerWidth < 600;
+    },
+    tableData() {
+      if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
+        return this.tableDataFromBackend;
+      }
+      return this.tableDataFromBackend.filter(({gender}) => gender === this.currentTableGenderType);
+    },
+    computedEditItem() {
+      return this.editItem;
+    },
+  },
+  watch: {
+    'editItem.workflowForm': {
+      handler(val) {
+        if (!val) return
+
+        this.constantCollection.workflowFormList = [];
+        for(const item of val) {
+          this.constantCollection.workflowFormList.push({
+            text: item.component.outline,
+            value: item.id
+          })
+        }
+        if (!this.editItem.workflowConfig) return;
+        for (const config of this.editItem.workflowConfig.nodeList) {
+          if (!config.formId) return;
+          const formId = []
+          for(const item of config.formId) {
+            if (!this.constantCollection.workflowFormList.find(e => e.value === item)) {
+              formId.push(item)
+            }
+          }
+          config.formId = formId
+          console.log(config.outline, config.formId)
+        }
+        
+      },
+      deep: true,
+      immediate: true
+    }
+  },
+  async created() {
+    await this.doUiAction('refreshTableData');
+    this.getUserList();
+    this.getGroupList();
+  },
+  mounted() {},
+  methods: {
+    buildEditItem() {
+      const item = {
+        workflowId: this.editItem.workflowId || null,
+        workflowName: this.editItem.workflowName,
+        workflowRemark: this.editItem.workflowRemark,
+        workflowCategory: this.editItem.workflowCategory,
+        workflowConfig: this.editItem.workflowConfig ? JSON.stringify(this.editItem.workflowConfig) : null,
+        workflowForm: this.editItem.workflowForm ? JSON.stringify(this.editItem.workflowForm) : null,
+      }
+      if (this.editItem.id) {
+        item.id = this.editItem.id;
+      }
+      return item;
+    },
+    /**
+     * 获取表格数据
+     */
+    async refreshTableData() {
+      this.isTableLoading = true;
+      const serverSearchInput = _.pickBy(this.serverSearchInput, value=> !!value);
+      const { data: { appData: { rows } } } = await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'selectItemList',
+            actionData: {},
+            where: {},
+            whereLike: serverSearchInput,
+            orderBy: [{column: 'operationAt', order: 'desc'}]
+          }
+        }
+      });
+      for(const item of rows) {
+        item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
+        item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
+      }
+      this.tableDataFromBackend = rows;
+      this.isTableLoading = false;
+    },
+
+    
+      /**
+       * 获取表格数据
+       */
+       async getUserList() {
+        const { data: { appData: { rows } } } = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectUserList',
+              actionData: {},
+              where: {},
+            }
+          }
+        });
+        this.constantCollection.userList = rows.map(e => {
+          return {text: e.username, value: e.userId}
+        })
+      },
+      /**
+       * 获取表格数据
+       */
+      async getGroupList() {
+        const { data: { appData: { rows } } } = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectGroupList',
+              actionData: {},
+              where: {},
+            }
+          }
+        });
+        this.constantCollection.groupList = rows.map(e => {
+          return {text: e.groupName, value: e.groupId}
+        });
+      },
+
+
+    // startCreateItem
+    async clearItemData() {
+      this.editItem = { workflowForm: [], workflowConfig: {lineList: [], nodeList:[]} };
+    },
+
+    async openCreateItemDialog() {
+      this.currentClickButton = {action: 'add', title: '新增'};
+      // this.isEditDrawerShow = true;
+      this.dialog = true;
+      this.dialogSaveInfoAction = 'createItem';
+    },
+
+    // createItem
+    async confirmCreateItemDialog() {
+      return window.confirmDialog({title: '新增', content: '确定新增吗？'})
+    },
+
+    /**
+     * 新增数据
+     */
+    async doCreateItem() {
+      delete this.computedEditItem.id;
+      const item = this.buildEditItem();
+      await window.vtoast.loading("新增数据");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'insertItem',
+            actionData: item
+          }
+        }
+      })
+      await window.vtoast.success("新增数据成功");
+    },
+
+    async closeDrawerShow() {
+      // this.isEditDrawerShow = false;
+      this.dialog = false;
+    },
+
+    // startUpdateItem
+    async prepareItemData({item}) {
+      this.editItem = item;
+    },
+
+    async openUpdateDialog() {
+      this.currentClickButton = {action: 'edit', title: '修改'};
+      // this.isEditDrawerShow = true;
+      this.dialog = true;
+      this.dialogSaveInfoAction = 'updateItem';
+    },
+
+    // updateItem
+    async confirmUpdateItemDialog() {
+      return window.confirmDialog({title: '修改', content: '确定修改吗？'});
+    },
+
+    /**
+     * 保存数据
+     */
+    async doUpdateItem() {
+      const {id, ...item} = this.buildEditItem();
+      await window.vtoast.loading("修改数据");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'updateItem',
+            actionData: item,
+            where: {id: id}
+          }
+        }
+      })
+      await window.vtoast.success("修改数据成功");
+    },
+
+    // updateItem
+    async confirmDeleteItemDialog() {
+      return window.confirmDialog({title: '删除', content: '确定删除吗？'});
+    },
+
+    /**
+     * 删除数据
+     */
+    async doDeleteItem({item}) {
+      const { id } = item;
+      await window.vtoast.loading("删除数据");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'deleteItem',
+            actionData: {},
+            where: { id: id }
+          }
+        }
+      });
+      await window.vtoast.success("删除数据成功");
+    },
+    getConstantCollectionItemText(key, _value) {
+      const constantCollectionItemFind = this.constantCollection[key].find(({value}) => value === _value);
+      if(constantCollectionItemFind) {
+        return constantCollectionItemFind.text;
+      }
+      return value;
+    }
+  }
+})
+</script>
+
+<style scoped>
+  .v-dialog--fullscreen .v-sheet {
+    height: unset;
+    top: unset;
+    position: unset;
+    background: white;
+  }
+</style>
+{% endblock %}

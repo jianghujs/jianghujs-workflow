@@ -1,0 +1,365 @@
+{% extends 'template/jhTemplate.html'%}
+
+{% block vue_template %}
+
+<jh-layout>
+
+
+  <!-- 页面主要内容 -->
+  <v-container class="fullScreen d-flex flex-column pa-xs-0 pa-4" style="background-color: rgb(236, 236, 236);">
+    <v-stepper v-model="step" class="mb-4">
+      <v-stepper-header>
+        <template v-for="(item, index) in taskStepperList">
+          <v-divider v-if="index > 0"></v-divider>
+          <v-stepper-step :complete="step > item.value" :step="item.value">
+            {{item.text}}
+          </v-stepper-step>
+        </template>
+      </v-stepper-header>
+    </v-stepper>
+    <v-card class="mb-4"> 
+      <v-subheader>表单信息</v-subheader>
+      <v-divider></v-divider>
+        <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+          <v-col :cols="taskTpl.prev ? 6 : 12" v-for="(key, i) in ['prev', 'input']" :key="i"
+          v-if="isAccess && taskTpl[key]">
+            <v-row>
+              <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3" v-for="(formItem, index) in taskTpl.formList" :key="index"
+                v-if="taskTpl[key] && !(currentNode.formIdHidden || []).includes(formItem.id)">
+                <!-- <v-subheader inset > {{ key === 'prev' ? '历史表单' : '当前' }} </v-subheader> -->
+                <template v-if="formItem.component.type === 'singleSelect'">
+                  <v-list-item-title class="formItem-title">{{formTitlePrefix(formItem.component.outline, key)}}
+                  </v-list-item-title>
+                  <v-radio-group v-model="taskTpl[key][formItem.id]">
+                    <v-radio hide-details v-for="(option, optionIndex) in formItem.component.property.selectOptionList"
+                      :disabled="key === 'prev' || !(currentNode.formId || []).includes(formItem.id)" :key="optionIndex"
+                      :label="option.value" v-model="taskTpl[key][formItem.id]"></v-radio>
+                  </v-radio-group>
+                </template>
+
+                <template v-if="formItem.component.type === 'multipleSelect'">
+                  <v-list-item-title class="formItem-title">{{formTitlePrefix(formItem.component.outline, key)}}
+                  </v-list-item-title>
+                  <div v-for="(option, optionIndex) in formItem.component.property.selectOptionList" :key="optionIndex">
+                    <v-checkbox style="margin-top: 0px;"
+                      :disabled="key === 'prev' || !(currentNode.formId || []).includes(formItem.id)"
+                      :label="option.value" v-model="taskTpl[key][formItem.id]" hide-details color="red"></v-checkbox>
+                  </div>
+                </template>
+
+                <template v-if="formItem.component.type === 'textarea'">
+                  <v-textarea hide-details dense outlined placeholder="请输入"
+                    :label="formTitlePrefix(formItem.component.outline, key)"
+                    :disabled="key === 'prev' || !(currentNode.formId || []).includes(formItem.id)"
+                    v-model="taskTpl[key][formItem.id]" :rows="4" />
+                </template>
+
+                <template v-if="formItem.component.type === 'input'">
+                  <v-text-field class="cus-v-input" placeholder="请输入" dense outlined
+                    :label="formTitlePrefix(formItem.component.outline, key)"
+                    :disabled="key === 'prev' || !(currentNode.formId || []).includes(formItem.id)"
+                    v-model="taskTpl[key][formItem.id]"></v-text-field>
+                </template>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+        <v-divider></v-divider>
+        <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none" v-if="isAccess">
+          <v-col cols="12">
+            <v-textarea dense outlined placeholder="请输入备注信息" hide-details v-model="editItem.taskComment" :disabled="currentNode && currentNode.id && currentNode.id.includes('end-')" :rows="4" />
+          </v-col>
+          <v-col cols="12" style="text-align: center;" class="mb-3">
+            <v-btn color="primary" v-for="item in nextLineList" @click="submitNode(item.type)">
+              {{item.type}}-{{item.label}}</v-btn>
+          </v-col>
+        </v-row>
+    </v-card>
+    <v-card>
+      <v-list three-line subheader>
+        <v-subheader>任务流转历史</v-subheader>
+        <v-divider></v-divider>
+        <div class="pa-2">
+        <v-simple-table dense>
+          <template v-slot:default>
+            <thead>
+              <tr>
+                <th class="text-left">
+                  节点
+                </th>
+                <th class="text-left">
+                  流转
+                </th>
+                <th class="text-left">
+                  处理人
+                </th>
+                <th class="text-left">
+                  时长
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in taskHistoryList" :key="item.name">
+                <td>{{ item.taskExplain }}</td>
+                <td>{{ item.taskHandleDesc }}</td>
+                <td>{{ item.operationByUser}}</td>
+                <td>{{ item.taskCostDuration }}秒</td>
+              </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+        </div>
+      </v-list>
+    </v-card>
+  </v-container>
+</jh-layout>
+
+{% endblock %}
+
+{% block vue_body %}
+
+{% include 'layout/jhLayout.html' %}
+{% include 'common/resetTableMaxHeight.html' %}
+
+<script type="module">
+  new Vue({
+    el: '#app',
+    template: '#app-template',
+    vuetify: new Vuetify(),
+    mixins: [window.jianghuUiActionMixins],
+    data: () => ({
+      step: 1,
+      // 表格相关数据
+      isFormValid: true,
+      requireRules: [
+        v => !!v || 'This is required',
+      ],
+      constantCollection: {
+        categoryList: [],
+
+      },
+
+      serverSearchInput: {
+        processName: null
+      },
+      currentTableGenderType: 'all',
+      isEditDrawerShow: false,
+      searchInput: null,
+      isTableLoading: true,
+      tableDataFromBackend: [],
+      headers: [
+        { text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed' },
+
+        { text: "任务ID", value: "taskId", width: 120 },
+        { text: "流程节点版本ID", value: "processVersionId", width: 120 },
+        { text: "任务名称", value: "taskTitle", width: 120 },
+        { text: "任务状态：running 执行中；deny 拒绝；end 结束", value: "taskStatus", width: 120 },
+        { text: "当前执行中节点", value: "taskCurrentNode", width: 120 },
+        { text: "申请人", value: "taskApplier", width: 120 },
+        { text: "当前执行的处理人员，用逗号分隔", value: "taskProcessorList", width: 120 },
+        { text: "所有相关人员，用逗号分隔", value: "taskRelatedPersonList", width: 120 },
+        { text: "催单次数", value: "taskUrgeCount", width: 120 },
+        { text: "最后催单时间", value: "taskUrgeLastTime", width: 120 },
+        { text: "操作者", value: "operationByUser", width: 120 },
+        { text: "操作时间", value: "operationAt", width: 250 },
+        { text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed' },
+      ],
+
+      currentClickButton: { title: '新增', action: 'add' },
+      editItem: {},
+      tableButtonList: [
+        { text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem' },
+        { text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem' },
+      ],
+      dialogSaveInfoAction: '',
+      taskId: '',
+      isAccess: [],
+      nextLineList: [],
+      taskHistoryList: [],
+      taskTpl: [],
+      taskStepperList: [],
+      currentNode: {}
+    }),
+    computed: {
+      isMobile() {
+        return window.innerWidth < 600;
+      },
+      tableData() {
+        if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
+          return this.tableDataFromBackend;
+        }
+        return this.tableDataFromBackend.filter(({ gender }) => gender === this.currentTableGenderType);
+      },
+      computedEditItem() {
+        return this.editItem;
+      },
+    },
+    watch: {},
+    async created() {
+      const searchParams = new URLSearchParams(location.search.substring(1));
+      this.taskId = searchParams.get('taskId');
+      await this.getTaskHistoryList()
+    },
+    mounted() { },
+    methods: {
+      /**
+       * 获取表格数据
+       */
+      async refreshTableData() {
+        this.isTableLoading = true;
+        const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
+        const { data: { appData: { rows } } } = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'taskCreateManagement',
+              actionId: 'selectProcessList',
+              actionData: {},
+              where: {},
+              whereLike: serverSearchInput,
+              orderBy: [{ column: 'operationAt', order: 'desc' }]
+            }
+          }
+        });
+        this.tableDataFromBackend = _.groupBy(rows, 'categoryId');
+        this.isTableLoading = false;
+      },
+
+      /**
+       * 获取表格数据
+       */
+      async getTaskHistoryList() {
+        const { data: { appData: { taskHistoryList, taskStepperList, taskTpl, isAccess, nextLineList, step, currentNode } } } = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'taskHistoryManagement',
+              actionId: 'getTaskHistoryInfo',
+              actionData: { taskId: this.taskId },
+            }
+          }
+        });
+        this.taskHistoryList = taskHistoryList;
+        this.taskTpl = taskTpl;
+        this.taskStepperList = taskStepperList;
+        this.currentNode = currentNode;
+        this.isAccess = isAccess;
+        this.nextLineList = nextLineList;
+        this.step = step;
+      },
+
+      // startCreateItem
+      async clearItemData({ processVersionId }) {
+        this.editItem = { processVersionId };
+      },
+
+      async openCreateItemDialog() {
+        this.currentClickButton = { action: 'add', title: '新增' };
+        this.isEditDrawerShow = true;
+        this.dialogSaveInfoAction = 'createItem';
+      },
+
+      // createItem
+      async confirmCreateItemDialog() {
+        return window.confirmDialog({ title: '新增', content: '确定新增吗？' })
+      },
+
+      /**
+       * 新增数据
+       */
+      async submitNode(type) {
+        await window.vtoast.loading("提交数据");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'taskHistoryManagement',
+              actionId: 'submitNode',
+              actionData: { type, taskId: this.taskId, taskComment: this.editItem.taskComment, taskTpl: this.taskTpl }
+            }
+          }
+        })
+        await window.vtoast.success("提交数据成功");
+        this.getTaskHistoryList();
+      },
+
+      async closeDrawerShow() {
+        this.isEditDrawerShow = false;
+      },
+
+      // startUpdateItem
+      async prepareItemData({ item }) {
+        this.editItem = { ...item };
+      },
+
+      async openUpdateDialog() {
+        this.currentClickButton = { action: 'edit', title: '修改' };
+        this.isEditDrawerShow = true;
+        this.dialogSaveInfoAction = 'updateItem';
+      },
+
+      // updateItem
+      async confirmUpdateItemDialog() {
+        return window.confirmDialog({ title: '修改', content: '确定修改吗？' });
+      },
+
+      /**
+       * 保存数据
+       */
+      async doUpdateItem() {
+        const id = this.computedEditItem.id;
+        delete this.computedEditItem.id;
+        await window.vtoast.loading("修改数据");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'taskManagement',
+              actionId: 'updateItem',
+              actionData: this.computedEditItem,
+              where: { id: id }
+            }
+          }
+        })
+        await window.vtoast.success("修改数据成功");
+      },
+
+      // updateItem
+      async confirmDeleteItemDialog() {
+        return window.confirmDialog({ title: '删除', content: '确定删除吗？' });
+      },
+
+      /**
+       * 删除数据
+       */
+      async doDeleteItem({ item }) {
+        const { id } = item;
+        await window.vtoast.loading("删除数据");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'taskManagement',
+              actionId: 'deleteItem',
+              actionData: {},
+              where: { id: id }
+            }
+          }
+        });
+        await window.vtoast.success("删除数据成功");
+      },
+      getConstantCollectionItemText(key, _value) {
+        const constantCollectionItemFind = this.constantCollection[key].find(e => e.value + '' === _value + '');
+        if (constantCollectionItemFind) {
+          return constantCollectionItemFind.text;
+        }
+        return _value;
+      },
+      formTitlePrefix(title, type) {
+        if (type === 'prev') {
+          return '历史-' + title;
+        }
+        return title;
+      }
+    }
+  })
+</script>
+
+<style scoped>
+</style>
+{% endblock %}

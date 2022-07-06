@@ -1,0 +1,47 @@
+<template id="edit-flow">
+
+  <!-- <el-form :model="flowData" ref="dataForm" label-width="100px" class="flowEditForm margin13" size="mini">
+    <el-form-item label="GUID">
+      <el-input disabled v-model="flowData.Id"></el-input>
+    </el-form-item>
+    <el-form-item label="流程名称">
+      <el-input v-model="flowData.Name"></el-input>
+    </el-form-item>
+    <el-form-item label="备注">
+      <el-input v-model="flowData.Remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4}"></el-input>
+    </el-form-item>
+  </el-form> -->
+  
+  <v-form v-model="isFormValid" ref="dataForm" lazy-validation>
+    <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field class="cus-v-input mr-2" dense outlined label="GUID" v-model="flowData.Id"></v-text-field>
+      </v-col>
+      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field class="cus-v-input mr-2" dense outlined label="流程名称" v-model="flowData.Name"></v-text-field>
+      </v-col>
+      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="flowData.Remark"></v-text-field>
+      </v-col>
+    </v-row>
+  </v-form>
+</template>
+
+<script>
+  Vue.component("edit-flow", {
+    template: '#edit-flow',
+    vuetify: new Vuetify(),
+    name: 'editFlow',
+    data() {
+      return {
+        flowData: {},
+        isFormValid: true
+      }
+    },
+    methods: {
+      init(data) {
+        this.flowData = data;
+      },
+    }
+  })
+</script>

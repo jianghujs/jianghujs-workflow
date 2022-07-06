@@ -1,0 +1,185 @@
+<template id="edit-node">
+
+  <!-- <el-form :model="node" ref="dataForm" label-width="100px" class="flowEditForm margin13" size="mini">
+    <el-form-item label="GUID">
+      <el-input disabled v-model="node.id"></el-input>
+    </el-form-item>
+    <el-form-item label="名称">
+      <el-input v-model="node.label"></el-input>
+    </el-form-item>
+    <el-form-item label="活动类型">
+      <el-select v-model="node.Type" placeholder="请选择">
+        <el-option v-for="item in TypeList" :key="item.Value" :label="item.Text" :value="item.Value">
+        </el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="备注">
+      <el-input v-model="node.Remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4}"></el-input>
+    </el-form-item>
+  </el-form> -->
+
+  <v-form v-model="isFormValid" ref="dataForm" lazy-validation>
+    <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field class="cus-v-input" dense outlined label="GUID" v-model="node.id"></v-text-field>
+      </v-col>
+      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field class="cus-v-input" dense outlined label="名称" v-model="node.label"></v-text-field>
+      </v-col>
+      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field class="cus-v-input" dense outlined label="备注说明" v-model="node.Remark"></v-text-field>
+      </v-col>
+      
+      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+        
+        <v-select
+          :items="assignTypeList"
+          dense outlined 
+          item-text="text"
+          item-value="value"
+          class="cus-v-input"
+          label="指派类型"
+          outlined
+          v-model="node.assignType"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-select
+          :items="optionList"
+          dense outlined 
+          item-text="text"
+          item-value="value"
+          class="cus-v-input"
+          :label="assignType"
+          :multiple="node.assignType === 'person'"
+          v-model="node.assignValue"
+          :disabled="!node.assignType"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+        <!-- <v-textarea
+          outlined
+          name="input-7-4"
+          label="允许的操作"
+          value=""
+          rows="3"
+          hide-details
+        ></v-textarea> -->
+        <v-text-field class="cus-v-input" dense outlined label="允许的操作（英文逗号分隔）" v-model="node.lineTypeList"></v-text-field>
+      </v-col>
+      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-select
+          :items="tpl"
+          dense outlined 
+          item-text="text"
+          item-value="value"
+          class="cus-v-input"
+          label="可写模板"
+          multiple
+          v-model="node.formId"
+        ></v-select>
+      </v-col>
+      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-select
+          :items="tpl"
+          dense outlined 
+          item-text="text"
+          item-value="value"
+          class="cus-v-input"
+          label="隐藏模板"
+          multiple
+          v-model="node.formIdHidden"
+        ></v-select>
+      </v-col>
+    </v-row>
+</template>
+
+<script>
+  Vue.component("edit-node", {
+    template: '#edit-node',
+    vuetify: new Vuetify(),
+    name: 'editNode',
+    props: {
+      user: {
+        type: Array,
+        default: () => {
+          return []
+        }
+      },
+      group: {
+        type: Array,
+        default: () => {
+          return []
+        }
+      },
+      tpl: {
+        type: Array,
+        default: () => {
+          return []
+        }
+      },
+    },
+    data() {
+      return {
+        isFormValid: true,
+        node: {},
+        typeList: [
+          { Value: 'start', Text: '起点' },
+          { Value: 'end', Text: '终点' },
+          { Value: 'userTask', Text: '审核节点' },
+          { Value: 'receiveTask', Text: '处理节点' }
+        ],
+        assignTypeList: [{value: 'person', text: '用户'}, {value: 'group', text: '组'}]
+      }
+    },
+    watch: {
+    },
+    created() {},
+    computed: {
+      showTask() {
+        return ['userTask', 'receiveTask'].includes(this.node.type);
+      },
+      assignType() {
+        if (!this.node.assignType) return '请选择指派类型';
+        return this.assignTypeList.find(e => e.value === this.node.assignType).text;
+      },
+      optionList() {
+        if (!this.node.assignType) {
+          return []
+        }
+        if (this.node.assignType === 'person') {
+          return this.user
+        }
+        if (this.node.assignType === 'group') {
+          return this.group
+        }
+      }
+    },
+    methods: {
+      init(data, node) {
+        this.node = node;
+        // data.nodeList.filter((node) => {
+        //   if (node.id === id) {
+        //     this.node = node;
+        //   }
+        // })
+      },
+      getOptionList() {
+        if (!this.node.assignType) {
+          return []
+        }
+        if (!this.node.assignType === 'person') {
+          return this.user
+        }
+        if (!this.node.assignType === 'group') {
+          return this.group
+        }
+      }
+    }
+  })
+</script>
+<style>
+  .v-textarea textarea {
+    line-height: 1.2rem;
+  }
+</style>
