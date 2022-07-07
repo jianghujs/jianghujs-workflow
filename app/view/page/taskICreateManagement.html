@@ -8,6 +8,7 @@ SQL END!-->
 
 <!-- 页面主要内容 -->
 <v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
+  <v-divider></v-divider>
   <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
 
     <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
@@ -21,14 +22,6 @@ SQL END!-->
       <v-text-field v-model="searchInput" label="表格过滤" class="cus-v-input" dense outlined></v-text-field>
     </v-col>
 
-    <v-btn
-        class="elevation-0"
-        color="success"
-        dark
-        @click="doUiAction('refreshTableData')"
-    >
-      查询
-    </v-btn>
   </v-row>
   <v-data-table fixed-header
                 :headers="headers"
@@ -46,9 +39,6 @@ SQL END!-->
     <template v-slot:item.action="{ item }">
       <v-btn small class="mr-2" @click="doUiAction('toTaskHistory', {item})">
         查看
-      </v-btn>
-      <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList" @click="doUiAction(tableButton.action, {item})">
-        {{ tableButton.text }}
       </v-btn>
     </template>
   </v-data-table>
@@ -225,7 +215,7 @@ new Vue({
       const { data: { appData: { rows } } } = await window.jianghuAxios({
         data: {
           appData: {
-            pageId: 'taskManagement',
+            pageId: 'taskICreateManagement',
             actionId: 'selectItemList',
             actionData: {},
             where: {},

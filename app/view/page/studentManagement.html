@@ -1,6 +1,19 @@
 {% extends 'template/jhTemplate.html'%}
 
 {% block vue_template %}
+
+<!-- 3 table 下  的单表 crud 页面 -->
+
+<!--SQL START
+-- 以下为 jianghu init 工具生成的参考 SQL，使用后删除
+-- 创建 page
+INSERT INTO `_page` (`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) SELECT 'studentManagement','页面','showInMenu','5','jhInsert',NULL,NULL,NULL FROM DUAL WHERE NOT EXISTS (SELECT `pageId` FROM `_page` WHERE `pageId`='studentManagement');
+
+-- 创建 resource
+INSERT INTO `_resource` (`accessControlTable`,`resourceHook`,`pageId`,`actionId`,`desc`,`resourceType`,`appDataSchema`,`resourceData`,`requestDemo`,`responseDemo`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) SELECT NULL,NULL,'studentManagement','selectItemList','✅查询-查询列表','sql','{}','{ \"table\": \"student\", \"operation\": \"select\" }','','','insert',NULL,NULL,NULL FROM DUAL WHERE NOT EXISTS (SELECT `pageId` FROM `_resource` WHERE `pageId`='studentManagement' AND `actionId`='selectItemList');
+INSERT INTO `_resource` (`accessControlTable`,`resourceHook`,`pageId`,`actionId`,`desc`,`resourceType`,`appDataSchema`,`resourceData`,`requestDemo`,`responseDemo`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) SELECT NULL,NULL,'studentManagement','insertItem','✅查询-添加成员','sql','{}','{ \"table\": \"student\", \"operation\": \"insert\" }','','','insert',NULL,NULL,NULL FROM DUAL WHERE NOT EXISTS (SELECT `pageId` FROM `_resource` WHERE `pageId`='studentManagement' AND `actionId`='insertItem');
+INSERT INTO `_resource` (`accessControlTable`,`resourceHook`,`pageId`,`actionId`,`desc`,`resourceType`,`appDataSchema`,`resourceData`,`requestDemo`,`responseDemo`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) SELECT NULL,NULL,'studentManagement','updateItem','✅查询-更新成员','sql','{}','{ \"table\": \"student\", \"operation\": \"update\" }','','','insert',NULL,NULL,NULL FROM DUAL WHERE NOT EXISTS (SELECT `pageId` FROM `_resource` WHERE `pageId`='studentManagement' AND `actionId`='updateItem');
+INSERT INTO `_resource` (`accessControlTable`,`resourceHook`,`pageId`,`actionId`,`desc`,`resourceType`,`appDataSchema`,`resourceData`,`requestDemo`,`responseDemo`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) SELECT NULL,NULL,'studentManagement','deleteItem','✅查询-删除信息','sql','{}','{ \"table\": \"student\", \"operation\": \"delete\" }','','','insert',NULL,NULL,NULL FROM DUAL WHERE NOT EXISTS (SELECT `pageId` FROM `_resource` WHERE `pageId`='studentManagement' AND `actionId`='deleteItem');
 SQL END!-->
 
 <jh-layout>
@@ -17,7 +30,17 @@ SQL END!-->
 
     <v-spacer></v-spacer>
 
-    <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
+    <!--<v-col cols="12" xs="3" sm="3" md="2" xl="2" class="pl-0">
+      <v-text-field v-model="serverSearchInput.articleTitle" label="文章标题" class="cus-v-input" dense outlined>
+      </v-text-field>
+    </v-col>
+    <v-col cols="12" xs="3" sm="3" md="2" xl="2" class="pa-xs-0 pa-xs-2 col-sm-8-flex pl-0">
+      <v-select @mouseup="openSelectCategoryDialog" v-model="serverSearchInput.categoryId"
+        :items="constantCollection.category" readonly label="分类" hide-details dense outlined hide-no-data
+        hide-selected />
+    </v-col>
+    -->
+    <v-col cols="12" xs="3" sm="3" md="2" xl="2" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
       <v-text-field v-model="searchInput" label="表格过滤" class="cus-v-input" dense outlined></v-text-field>
     </v-col>
 
@@ -44,9 +67,6 @@ SQL END!-->
 <!--      {{ getConstantCollectionItemText('level', item.level) }}-->
 <!--    </template>-->
     <template v-slot:item.action="{ item }">
-      <v-btn small class="mr-2" @click="doUiAction('toTaskHistory', {item})">
-        查看
-      </v-btn>
       <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList" @click="doUiAction(tableButton.action, {item})">
         {{ tableButton.text }}
       </v-btn>
@@ -67,51 +87,39 @@ SQL END!-->
     <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="任务ID" v-model="editItem['taskId']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="学生ID" v-model="editItem['studentId']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="任务名称" v-model="editItem['taskTitle']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="学生名字" v-model="editItem['name']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="任务状态：running 执行中；deny 拒绝；end 结束" v-model="editItem['taskStatus']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="性别" v-model="editItem['gender']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="表单" v-model="editItem['taskFormInput']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="出生日期" v-model="editItem['dateOfBirth']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="当前执行中节点ID" v-model="editItem['taskConfigId']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="班级ID" v-model="editItem['classId']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="执行线路id list: 逗号分隔" v-model="editItem['taskNextConfigList']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="年级" v-model="editItem['level']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="申请人" v-model="editItem['taskInitUser']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="身高" v-model="editItem['bodyHeight']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="当前执行的处理人员，用逗号分隔" v-model="editItem['taskEditUserList']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="学生状态" v-model="editItem['studentStatus']"></v-text-field>
       </v-col>
        
       <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="所有相关人员，用逗号分隔" v-model="editItem['taskViewUserList']"></v-text-field>
-      </v-col>
-       
-      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="editItem['taskComment']"></v-text-field>
-      </v-col>
-       
-      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="work flow流程JSON" v-model="editItem['workflowConfig']"></v-text-field>
-      </v-col>
-       
-      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="任务创建人" v-model="editItem['createByUser']"></v-text-field>
+        <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="editItem['remarks']"></v-text-field>
       </v-col>
        
 <!--      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">-->
@@ -175,15 +183,15 @@ new Vue({
     headers: [
       {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
        
-      {text: "任务ID", value: "taskId", width: 120}, 
-      {text: "任务名称", value: "taskTitle", width: 120}, 
-      {text: "任务状态：running 执行中；deny 拒绝；end 结束", value: "taskStatus", width: 120}, 
-      {text: "当前执行中节点ID", value: "taskConfigId", width: 120}, 
-      {text: "申请人", value: "taskInitUser", width: 120}, 
-      {text: "当前执行的处理人员，用逗号分隔", value: "taskEditUserList", width: 120}, 
-      {text: "所有相关人员，用逗号分隔", value: "taskViewUserList", width: 120}, 
-      {text: "备注", value: "taskComment", width: 120}, 
-      {text: "任务创建人", value: "createByUser", width: 120}, 
+      {text: "学生ID", value: "studentId", width: 120}, 
+      {text: "学生名字", value: "name", width: 120}, 
+      {text: "性别", value: "gender", width: 120}, 
+      {text: "出生日期", value: "dateOfBirth", width: 120}, 
+      {text: "班级ID", value: "classId", width: 120}, 
+      {text: "年级", value: "level", width: 120}, 
+      {text: "身高", value: "bodyHeight", width: 120}, 
+      {text: "学生状态", value: "studentStatus", width: 120}, 
+      {text: "备注", value: "remarks", width: 120}, 
       {text: "操作者", value: "operationByUser", width: 120},
       {text: "操作时间", value: "operationAt", width: 250},
       {text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed'},
@@ -192,6 +200,7 @@ new Vue({
     currentClickButton: {title: '新增', action: 'add'},
     editItem: {},
     tableButtonList: [
+      {text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem'},
       {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
     ],
     dialogSaveInfoAction: ''
@@ -225,7 +234,7 @@ new Vue({
       const { data: { appData: { rows } } } = await window.jianghuAxios({
         data: {
           appData: {
-            pageId: 'taskManagement',
+            pageId: 'studentManagement',
             actionId: 'selectItemList',
             actionData: {},
             where: {},
@@ -264,7 +273,7 @@ new Vue({
       await window.jianghuAxios({
         data: {
           appData: {
-            pageId: 'taskManagement',
+            pageId: 'studentManagement',
             actionId: 'insertItem',
             actionData: this.computedEditItem
           }
@@ -303,7 +312,7 @@ new Vue({
       await window.jianghuAxios({
         data: {
           appData: {
-            pageId: 'taskManagement',
+            pageId: 'studentManagement',
             actionId: 'updateItem',
             actionData: this.computedEditItem,
             where: {id: id}
@@ -327,7 +336,7 @@ new Vue({
       await window.jianghuAxios({
         data: {
           appData: {
-            pageId: 'taskManagement',
+            pageId: 'studentManagement',
             actionId: 'deleteItem',
             actionData: {},
             where: { id: id }
@@ -342,9 +351,6 @@ new Vue({
         return constantCollectionItemFind.text;
       }
       return _value;
-    },
-    toTaskHistory({item}) {
-        window.open(`/${window.appInfo.appId}/page/taskHistoryManagement?taskId=${item.taskId}`);
     }
   }
 })

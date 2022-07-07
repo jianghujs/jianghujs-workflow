@@ -32,6 +32,14 @@ const actionDataScheme = Object.freeze({
 });
 
 class TaskService extends Service {
+  async upcomingToUserId() {
+    const { userId, username } = this.ctx.userInfo;
+    this.ctx.request.body.appData.whereLike = { taskEditUserList: userId };
+  }
+  async upcomingToUserId() {
+    const { userId, username } = this.ctx.userInfo;
+    this.ctx.request.body.appData.whereLike = { taskEditUserList: userId };
+  }
   async whereToUserId() {
     const { where } = this.ctx.request.body.appData;
     const { userId, username } = this.ctx.userInfo;
@@ -95,7 +103,7 @@ class TaskService extends Service {
         taskLineLabel: line.type + '-' + line.label,
         taskCostDuration: 0
       }
-      const insert = await jianghuKnex(tableEnum.task_history).insert(history);
+      const insert = await jianghuKnex(tableEnum.task_history, this.ctx).insert(history);
       
     } else {
       throw new BizError(errorInfoEnum.article_not_found);
@@ -229,14 +237,14 @@ class TaskService extends Service {
       ...taskInfo,
       taskExplain: currentNode.label,
       taskConfigId: currentNode.id,
-      taskHandleDesc: line.label + '-' + line.type,
+      taskHandleDesc:  line.type + '-' + line.label,
       taskLineFrom: line.from,
       taskLineTo: line.to,
       taskLineLabel: line.type + '-' + line.label,
       taskCostDuration: parseInt((new Date().getTime() - new Date(prevHistory.operationAt).getTime()) / 1000)
     }
 
-    await jianghuKnex(tableEnum.task_history).insert(history);
+    await jianghuKnex(tableEnum.task_history, this.ctx).insert(history);
     // 修改任务步骤node 处理人\
     const nextLineList = lineList.filter(e => e.from === line.to);
     if (line.to.includes('end-')) {
@@ -248,15 +256,13 @@ class TaskService extends Service {
         taskLineFrom: line.from,
         taskLineTo: line.to,
         taskLineLabel: line.type + '-' + line.label,
-        taskCostDuration: 0,
-        operationByUser: username,
-        operationByUserId: userId,
+        taskCostDuration: 0
       }
-      await jianghuKnex(tableEnum.task_history).insert(endHistory);
+      await jianghuKnex(tableEnum.task_history, this.ctx).insert(endHistory);
     }
     const taskEditUserList = await this.getProcessUserList([currentNode]);
     const nextNode = nodeList.find(e => e.id === line.to);
-    await jianghuKnex(tableEnum.task).where({taskId}).update({
+    await jianghuKnex(tableEnum.task, this.ctx).where({taskId}).update({
       taskFormInput, 
       taskRemark, 
       taskNextConfigList: JSON.stringify(nextLineList), 
