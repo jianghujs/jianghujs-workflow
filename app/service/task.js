@@ -245,13 +245,16 @@ class TaskService extends Service {
     }
 
     await jianghuKnex(tableEnum.task_history, this.ctx).insert(history);
+    const nextNode = nodeList.find(e => e.id === line.to);
+    let taskEditUserList = await this.getProcessUserList([nextNode]);
     // 修改任务步骤node 处理人\
     const nextLineList = lineList.filter(e => e.from === line.to);
     if (line.to.includes('end-')) {
+      taskEditUserList = await this.getProcessUserList([currentNode]);
       const endHistory = {
         ...history,
         taskExplain: '结束',
-        taskConfigId: currentNode.id,
+        taskConfigId: nextNode.id,
         taskHandleDesc: '流程结束',
         taskLineFrom: line.from,
         taskLineTo: line.to,
@@ -260,8 +263,6 @@ class TaskService extends Service {
       }
       await jianghuKnex(tableEnum.task_history, this.ctx).insert(endHistory);
     }
-    const taskEditUserList = await this.getProcessUserList([currentNode]);
-    const nextNode = nodeList.find(e => e.id === line.to);
     await jianghuKnex(tableEnum.task, this.ctx).where({taskId}).update({
       taskFormInput, 
       taskRemark, 
