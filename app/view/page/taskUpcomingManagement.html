@@ -20,6 +20,14 @@ SQL END!-->
       <v-text-field v-model="searchInput" label="表格过滤" class="cus-v-input" dense outlined></v-text-field>
     </v-col>
 
+    <v-btn
+        class="elevation-0"
+        color="success"
+        dark
+        @click="doUiAction('refreshTableData')"
+    >
+      查询
+    </v-btn>
   </v-row>
   <v-data-table fixed-header
                 :headers="headers"
