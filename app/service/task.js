@@ -163,7 +163,8 @@ class TaskService extends Service {
     if (!taskInfo) {
       throw new BizError(errorInfoEnum.task_not_found);
     }
-    const taskStepperList = this.makeStepper(taskInfo.workflowConfig);
+    const taskHistory = await jianghuKnex(tableEnum.task_history).where({taskId: taskInfo.taskId}).orderBy('id', 'asc').select();
+    const taskStepperList = this.makeStepper(taskInfo.workflowConfig, taskHistory);
     taskInfo.workflowConfig = JSON.parse(taskInfo.workflowConfig);
     // 查找task 任务历史列表
     const taskHistoryList = await jianghuKnex(tableEnum.task_history).where({taskId}).orderBy('id', 'asc').select();
@@ -172,20 +173,26 @@ class TaskService extends Service {
     const nextLineList = taskInfo.taskStatus === 'running' ? JSON.parse(taskInfo.taskNextConfigList) : [];
     const taskTpl = JSON.parse(taskInfo.taskFormInput || '{"prev": {}, "input": {}, "formList": []}');
     const currentNode = taskInfo.workflowConfig.nodeList.find(e => e.id === taskInfo.taskConfigId);
-    return {taskStepperList, taskHistoryList, isAccess, nextLineList, taskTpl, step: taskStepperList.find(e => currentNode.id === e.id).value, currentNode: taskInfo.workflowConfig.nodeList.find(e => e.id === taskInfo.taskConfigId)};
+    return {taskStepperList, taskHistoryList, isAccess, nextLineList, taskTpl, step: taskHistory.length, currentNode: taskInfo.workflowConfig.nodeList.find(e => e.id === taskInfo.taskConfigId)};
   }
   /**
    * 制作节点步骤list
    * @param {*} processInfo 
    * @returns 
    */
-  makeStepper(workflowStructure) {
+  makeStepper(workflowStructure, taskHistory) {
+    const { jianghuKnex } = this.app;
     const {nodeList = [], lineList = []} = JSON.parse(workflowStructure || '{}');
-    const start = nodeList.find(e => e.id.includes('start-'));
     const nodeSortList = [];
-    nodeSortList.push(start);
-    for(let i = 0; i < nodeList.length; i++) {
+    for (const item of taskHistory) {
+      nodeSortList.push(nodeList.find(e => e.id === item.taskConfigId));
+    }
+    const length = nodeList.length - nodeSortList.length;
+    for(let i = 0; i < length; i++) {
       const nodeCache = this.getNextNodeSetup(nodeList, lineList, nodeSortList);
+      if (!nodeCache) {
+        continue;
+      }
       nodeSortList.push(nodeCache)
       if (nodeSortList.length >= nodeList.length) break;
     }
