@@ -3,8 +3,8 @@
 
 // ========================================常用 require start===========================================
 const Service = require('egg').Service;
-const validateUtil = require("egg-jianghu/app/common/validateUtil");
-const idGenerateUtil = require("egg-jianghu/app/common/idGenerateUtil");
+const validateUtil = require("@jianghujs/jianghu/app/common/validateUtil");
+const idGenerateUtil = require("@jianghujs/jianghu/app/common/idGenerateUtil");
 const dayjs = require("dayjs");
 const actionDataScheme = Object.freeze({
   beforHookForGenerateStudentId: {

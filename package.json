@@ -5,11 +5,11 @@
   "private": true,
   "egg": {
     "declarations": true,
-    "framework": "egg-jianghu"
+    "framework": "@jianghujs/jianghu"
   },
   "dependencies": {
     "egg": "^2.15.1",
-    "egg-jianghu": "2.0.10",
+    "@jianghujs/jianghu": "3.0.4",
     "egg-scripts": "^2.11.0"
   },
   "devDependencies": {

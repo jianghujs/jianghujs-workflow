@@ -11,8 +11,8 @@ const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const idGenerateUtil = require("egg-jianghu/app/common/idGenerateUtil");
-const validateUtil = require("egg-jianghu/app/common/validateUtil");
+const idGenerateUtil = require("@jianghujs/jianghu/app/common/idGenerateUtil");
+const validateUtil = require("@jianghujs/jianghu/app/common/validateUtil");
 const { BizError, errorInfoEnum } = require("../constant/error");
 const fs = require("fs"),
     fsPromises = require("fs").promises,
