@@ -27,8 +27,10 @@
           <v-btn color="success" small dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')">新增</v-btn>
           <span class="body-2">共{{ tableData.length }}条记录</span>
         </v-col>
-
         <v-spacer></v-spacer>
+        <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
+          <v-text-field v-model="searchInput" label="表格过滤" class="cus-v-input" dense filled single-line></v-text-field>
+        </v-col>
       </v-row>
       <v-data-table fixed-header
                     :headers="headers"
