@@ -13,7 +13,7 @@ CREATE TABLE `_cache` (
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间; E.g: 2021-05-28T10:24:54+08:00 ',
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 17 COMMENT = '缓存表';
+) ENGINE = InnoDB COMMENT = '缓存表';
 
 
 
@@ -34,7 +34,7 @@ CREATE TABLE `_constant` (
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间; E.g: 2021-05-28T10:24:54+08:00 ',
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 59 COMMENT = '常量表; 软删除未启用;';
+) ENGINE = InnoDB COMMENT = '常量表; 软删除未启用;';
 
 
 # ------------------------------------------------------------
@@ -65,7 +65,7 @@ CREATE TABLE `_file` (
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间; E.g: 2021-05-28T10:24:54+08:00 ',
   PRIMARY KEY (`id`),
   KEY `fileId_index` (`fileId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 12 COMMENT = '文件表; 软删除未启用;';
+) ENGINE = InnoDB COMMENT = '文件表; 软删除未启用;';
 
 
 # ------------------------------------------------------------
@@ -132,7 +132,7 @@ CREATE TABLE `_page` (
 
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (2,'help','帮助','dynamicInMenu','11','insert',NULL,NULL,NULL);
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (3,'login','登陆','','','insert',NULL,NULL,NULL);
-INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (6,'manual','操作手册','showInMenu','0','insert',NULL,NULL,NULL);
+INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (6,'manual','操作手册','dynamicInMenu','0','insert',NULL,NULL,NULL);
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (39,'taskManagement','任务管理','showInMenu','5','update','vscode','vscode','2022-07-05T16:40:32+08:00');
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (40,'taskHistoryManagement','任务详情','dynamicInMenu','5','update','vscode','vscode','2022-07-05T16:40:50+08:00');
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (41,'workflowManagement','流程管理','showInMenu','5','update','vscode','vscode','2022-07-05T16:40:58+08:00');
@@ -140,7 +140,6 @@ INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`ope
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (43,'taskICreateManagement','我创建的','showInMenu','0','insert','vscode','vscode','2022-07-07T08:57:21+08:00');
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (44,'taskRelatedManagement','我相关的','showInMenu','0','update','vscode','vscode','2022-07-07T09:29:29+08:00');
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (45,'taskUpcomingManagement','我的待办','showInMenu','0','insert','vscode','vscode','2022-07-07T09:22:14+08:00');
-INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (46,'studentManagement','studentManagement页面','dynamicInMenu','5','update','vscode','vscode','2022-07-07T16:06:55+08:00');
 
 
 
@@ -162,7 +161,7 @@ CREATE TABLE `_record_history` (
   PRIMARY KEY (`id`),
   KEY `index_record_id` (`recordId`),
   KEY `index_table_action` (`table`, `operation`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2185 COMMENT = '数据历史表';
+) ENGINE = InnoDB AUTO_INCREMENT = 2 COMMENT = '数据历史表';
 
 
 
@@ -278,8 +277,8 @@ CREATE TABLE `_resource_request_log` (
   `deviceId` varchar(255) DEFAULT NULL COMMENT '设备id',
   `userIpRegion` varchar(255) DEFAULT NULL COMMENT '用户Ip区域',
   `executeSql` varchar(255) DEFAULT NULL COMMENT '执行的sql',
-  `requestBody` json DEFAULT NULL COMMENT '请求body',
-  `responseBody` json DEFAULT NULL COMMENT '响应body',
+  `requestBody` text COMMENT '请求body',
+  `responseBody` text COMMENT '响应body',
   `responseStatus` varchar(255) DEFAULT NULL COMMENT '执行的结果;  success, fail',
   `operation` varchar(255) DEFAULT 'insert' COMMENT '操作; insert, update, jhInsert, jhUpdate, jhDelete jhRestore',
   `operationByUserId` varchar(255) DEFAULT NULL COMMENT '操作者userId',
@@ -288,7 +287,7 @@ CREATE TABLE `_resource_request_log` (
   PRIMARY KEY (`id`),
   KEY `resourceId_index` (`resourceId`),
   KEY `packageId_index` (`packageId`)
-) ENGINE = InnoDB AUTO_INCREMENT = 5117 COMMENT = '文件表; 软删除未启用;';
+) ENGINE = InnoDB AUTO_INCREMENT = 5176 COMMENT = '文件表; 软删除未启用;';
 
 
 
@@ -338,7 +337,7 @@ CREATE TABLE `_test_case` (
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名; recordContent.operationByUser',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间; recordContent.operationAt; E.g: 2021-05-28T10:24:54+08:00 ',
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 33 COMMENT = '测试用例表';
+) ENGINE = InnoDB COMMENT = '测试用例表';
 
 
 # ------------------------------------------------------------
@@ -477,7 +476,7 @@ CREATE TABLE `_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username_index` (`username`),
   UNIQUE KEY `userId_index` (`userId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 50 COMMENT = '用户表';
+) ENGINE = InnoDB AUTO_INCREMENT = 49 COMMENT = '用户表';
 
 
 # ------------------------------------------------------------
@@ -511,7 +510,7 @@ CREATE TABLE `_user_group_role` (
   PRIMARY KEY (`id`),
   KEY `groupId_index` (`groupId`),
   KEY `userId_index` (`userId`)
-) ENGINE = InnoDB AUTO_INCREMENT = 587 COMMENT = '用户群组角色关联表; 软删除未启用;';
+) ENGINE = InnoDB AUTO_INCREMENT = 579 COMMENT = '用户群组角色关联表; 软删除未启用;';
 
 
 # ------------------------------------------------------------
@@ -631,7 +630,7 @@ CREATE TABLE `_user_session` (
   KEY `userId_index` (`userId`),
   KEY `userId_deviceId_index` (`userId`, `deviceId`) USING BTREE,
   KEY `authToken_index` (`authToken`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 26 COMMENT = '用户session表; deviceId 维度;软删除未启用;';
+) ENGINE = InnoDB AUTO_INCREMENT = 27 COMMENT = '用户session表; deviceId 维度;软删除未启用;';
 
 
 
@@ -687,7 +686,7 @@ CREATE TABLE `student` (
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间; E.g: 2021-05-28T10:24:54+08:00 ',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `studentId` (`studentId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 181;
+) ENGINE = InnoDB AUTO_INCREMENT = 176;
 
 
 # ------------------------------------------------------------
@@ -820,7 +819,7 @@ CREATE TABLE `workflow` (
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 25 COMMENT = '流程表';
+) ENGINE = InnoDB AUTO_INCREMENT = 24 COMMENT = '流程表';
 
 
 # ------------------------------------------------------------
