@@ -36,10 +36,3 @@ use xianfeng-v1;
 4. 服务端搜索: studentManagement05.html
    * 应用协议：sql演示
 
-## FAQ
-
-- egg-jianghu mysql view
-```sql
-DROP VIEW IF EXISTS `_view01_user`;
-CREATE ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `_view01_user` AS select * from `_user`;
-```
