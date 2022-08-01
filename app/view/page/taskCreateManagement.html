@@ -1,29 +1,32 @@
-{% extends 'template/jhTemplate.html'%}
+{% extends 'template/jhTemplateV3.html'%}
 
 {% block vue_template %}
 
-<jh-layout>
+<jh-layout-v3>
 
+  <template slot="serverSearch">
+    <v-row class="ma-0 align-center flex-none pa-0" :class="{'pa-2': !isMobile, 'pa-2': isMobile}" style="justify-content: end">
+      
+      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+        <v-text-field v-model="serverSearchInput.processName" label="流程名称" class="cus-v-input "
+          :class="{'mr-2': !isMobile}" dense outlined  filled ></v-text-field>
+      </v-col>
+      <v-col :class="{'pt-2': isMobile, 'pl-0': isMobile, 'pr-0': !isMobile}" style="max-width: 77px">
+        <v-btn
+          class="elevation-0"
+          color="success"
+          dark
+          @click="doUiAction('refreshTableData')"
+        >
+          查询
+        </v-btn>
+      </v-col>
+    </v-row>
+  </template>
 
   <!-- 页面主要内容 -->
   <v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
     <v-card>
-      <v-list three-line subheader>
-        <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
-
-          <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-            <v-text-field v-model="serverSearchInput.processName" label="流程名称" class="cus-v-input "
-              :class="{'mr-2': !isMobile}" dense outlined></v-text-field>
-          </v-col>
-
-          <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-            <v-btn class="elevation-0" color="success" dark @click="doUiAction('refreshTableData')">
-              查询
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-list>
-      <v-divider></v-divider>
       <v-list three-line subheader>
         <v-subheader>流程列表</v-subheader>
         <v-list-item v-for="(item, index) in tableDataFromBackend" :key="index">
@@ -41,7 +44,7 @@
   </v-container>
 
   <!-- 编辑抽屉 -->
-  <v-navigation-drawer v-model="isEditDrawerShow" absolute temporary right width="80%" hide-overlay
+  <v-navigation-drawer v-model="isEditDrawerShow" :permanent="isEditDrawerShow" fixed temporary right width="80%"
     class="elevation-24">
     <v-form v-model="isFormValid" v-if="isEditDrawerShow" ref="form" lazy-validation>
       <v-row>
@@ -54,11 +57,13 @@
       <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
 
         <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="任务标题" v-model="editItem['taskTitle']">
+          <span style="color: #3F4254;" :style="{'line-height': isMobile ? '20px' : '42px', 'font-weight': isMobile ? 400 : 500}">任务标题</span>
+          <v-text-field class="cus-v-input mr-2" dense filled single-line label="任务标题" v-model="editItem['taskTitle']">
           </v-text-field>
         </v-col>
         
         <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3" v-for="(formItem, index) in editItem.workflowForm" :key="index">
+          <span style="color: #3F4254;" :style="{'line-height': isMobile ? '20px' : '42px', 'font-weight': isMobile ? 400 : 500}">{{formItem.component.outline}}</span>
           <v-list-item-content v-if="formItem.component.type === 'singleSelect'">
             <v-list-item-title class="formItem-title">{{ index+1 }}、 {{ formItem.component.outline }}</v-list-item-title>
             <v-radio-group :rules="requireRules" v-model="editItem.workflowFormData[formItem.id]" hide-details>
@@ -75,11 +80,11 @@
           </v-list-item-content>
 
           <v-list-item-content v-if="formItem.component.type === 'textarea'">
-            <v-textarea hide-details dense outlined placeholder="请输入" :rules="requireRules" :label="(index+1) + '. ' + formItem.component.outline" v-model="editItem.workflowFormData[formItem.id]" :rows="4"/>
+            <v-textarea hide-details dense filled single-line placeholder="请输入" :rules="requireRules" :label="(index+1) + '. ' + formItem.component.outline" v-model="editItem.workflowFormData[formItem.id]" :rows="4"/>
           </v-list-item-content>
 
           <v-list-item-content v-if="formItem.component.type === 'input'">
-            <v-text-field class="cus-v-input mr-2" dense outlined placeholder="请输入" :rules="requireRules" :label="(index+1) + '. ' + formItem.component.outline"  v-model="editItem.workflowFormData[formItem.id]" ></v-text-field>
+            <v-text-field class="cus-v-input mr-2" dense filled single-line placeholder="请输入" :rules="requireRules" :label="(index+1) + '. ' + formItem.component.outline"  v-model="editItem.workflowFormData[formItem.id]" ></v-text-field>
           </v-list-item-content>
         </v-col>
       </v-row>
@@ -93,7 +98,7 @@
     </v-form>
   </v-navigation-drawer>
 
-</jh-layout>
+</jh-layout-v3>
 
 {% endblock %}
 

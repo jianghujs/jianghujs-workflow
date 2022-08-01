@@ -1,108 +1,112 @@
-{% extends 'template/jhTemplate.html'%}
+{% extends 'template/jhTemplateV3.html'%}
 
 {% block vue_template %}
 
-
-<jh-layout>
-
-
-<!-- 页面主要内容 -->
-<v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
-  <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
-
-    <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
-      <v-btn color="success" small dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')">新增</v-btn>
-      <span class="body-2">共{{ tableData.length }}条记录</span>
-    </v-col>
-
-    <v-spacer></v-spacer>
-
-    <!-- <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
-      <v-text-field v-model="serverSearchInput.classId" label="班级ID" class="cus-v-input" :class="{'mr-2': !isMobile}" dense outlined></v-text-field>
-    </v-col> -->
-
-    <v-btn
-      class="elevation-0"
-      color="success"
-      dark
-      @click="doUiAction('refreshTableData')"
-    >
-      查询
-    </v-btn>
-  </v-row>
-  <v-data-table fixed-header
-                :headers="headers"
-                :items="tableData"
-                :search="searchInput"
-                :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
-                :items-per-page="20"
-                mobile-breakpoint="0"
-                :loading="isTableLoading"
-                checkbox-color="success"
-                class="elevation-0 mt-0 mb-xs-4 flex-fill d-flex flex-column">
-<!--    <template v-slot:item.level="{ item }">-->
-<!--      {{ getConstantCollectionItemText('level', item.level) }}-->
-<!--    </template>-->
-    <template v-slot:item.action="{ item }">
-      <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList" @click="doUiAction(tableButton.action, {item})">
-        {{ tableButton.text }}
-      </v-btn>
-    </template>
-  </v-data-table>
-</v-container>
-
-<v-dialog v-model="dialog" fullscreen hide-overlay persistent transition="dialog-bottom-transition">
-  <v-card>
-    <v-toolbar dark color="primary">
-      <v-btn icon dark @click="dialog = false">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-      <v-toolbar-title>流程编辑</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn dark text @click="doUiAction(dialogSaveInfoAction)">
-          保存
+<jh-layout-v3>
+  <template slot="serverSearch">
+    <v-row class="ma-0 align-center flex-none pa-0" :class="{'pa-2': !isMobile, 'pa-2': isMobile}" style="justify-content: end">
+      <v-col :class="{'pt-2': isMobile, 'pl-0': isMobile, 'pr-0': !isMobile}" style="max-width: 77px">
+        <v-btn
+          class="elevation-0"
+          color="success"
+          dark
+          @click="doUiAction('refreshTableData')"
+        >
+          查询
         </v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
-    <v-list three-line subheader>
-      <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+      </v-col>
+    </v-row>
+  </template>
 
-        <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="流程名" v-model="editItem['workflowName']" :rules="requireRules"> 
-          </v-text-field>
+  <!-- 页面主要内容 -->
+  <v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
+    <v-card>
+      <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
+
+        <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
+          <v-btn color="success" small dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')">新增</v-btn>
+          <span class="body-2">共{{ tableData.length }}条记录</span>
         </v-col>
 
-        <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="分类" v-model="editItem['workflowCategory']" :rules="requireRules">
-          </v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="editItem['workflowRemark']">
-          </v-text-field>
-        </v-col>
+        <v-spacer></v-spacer>
       </v-row>
-    </v-list>
-    <v-divider></v-divider>
-    <v-list three-line subheader>
-      <v-subheader>模板设置</v-subheader>
-      <v-list-item>
-        <tpl-form-design v-if="dialog" :form="editItem.workflowForm">
-        </tpl-form-design>
-      </v-list-item>
-    </v-list>
-    <v-list three-line subheader>
-      <v-subheader>流程设置</v-subheader>
-      <v-list-item>
-        <process-flow v-if="dialog" :data="editItem.workflowConfig" :user="constantCollection.userList" :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
-        </process-flow>
-      </v-list-item>
-    </v-list>
-  </v-card>
-</v-dialog>
+      <v-data-table fixed-header
+                    :headers="headers"
+                    :items="tableData"
+                    :search="searchInput"
+                    :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
+                    :items-per-page="20"
+                    mobile-breakpoint="0"
+                    :loading="isTableLoading"
+                    checkbox-color="success"
+                    class="elevation-0 mt-0 mb-xs-4 flex-fill d-flex flex-column">
+    <!--    <template v-slot:item.level="{ item }">-->
+    <!--      {{ getConstantCollectionItemText('level', item.level) }}-->
+    <!--    </template>-->
+        <template v-slot:item.action="{ item }">
+          <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList" @click="doUiAction(tableButton.action, {item})">
+            {{ tableButton.text }}
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-card>
+  </v-container>
 
-</jh-layout>
+  <v-dialog v-model="dialog" fullscreen hide-overlay persistent transition="dialog-bottom-transition">
+    <v-card>
+      <v-toolbar dark color="primary">
+        <v-btn icon dark @click="dialog = false" class="ml-2">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-toolbar-title>流程编辑</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn dark text @click="doUiAction(dialogSaveInfoAction)">
+            保存
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-list three-line subheader>
+        <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
+
+          <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+            <span style="color: #3F4254;" :style="{'line-height': isMobile ? '20px' : '42px', 'font-weight': isMobile ? 400 : 500}">流程名</span>
+            <v-text-field class="cus-v-input mr-2" dense filled single-line label="流程名" v-model="editItem['workflowName']" :rules="requireRules"> 
+            </v-text-field>
+          </v-col>
+
+          <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+            <span style="color: #3F4254;" :style="{'line-height': isMobile ? '20px' : '42px', 'font-weight': isMobile ? 400 : 500}">分类</span>
+            <v-text-field class="cus-v-input mr-2" dense filled single-line label="分类" v-model="editItem['workflowCategory']" :rules="requireRules">
+            </v-text-field>
+          </v-col>
+
+          <v-col cols="12" sm="12" md="3" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
+            <span style="color: #3F4254;" :style="{'line-height': isMobile ? '20px' : '42px', 'font-weight': isMobile ? 400 : 500}">备注</span>
+            <v-text-field class="cus-v-input mr-2" dense filled single-line label="备注" v-model="editItem['workflowRemark']">
+            </v-text-field>
+          </v-col>
+        </v-row>
+      </v-list>
+      <v-divider></v-divider>
+      <v-list three-line subheader>
+        <v-subheader>模板设置</v-subheader>
+        <v-list-item>
+          <tpl-form-design v-if="dialog" :form="editItem.workflowForm">
+          </tpl-form-design>
+        </v-list-item>
+      </v-list>
+      <v-list three-line subheader>
+        <v-subheader>流程设置</v-subheader>
+        <v-list-item>
+          <process-flow v-if="dialog" :data="editItem.workflowConfig" :user="constantCollection.userList" :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
+          </process-flow>
+        </v-list-item>
+      </v-list>
+    </v-card>
+  </v-dialog>
+
+</jh-layout-v3>
 
 {% endblock %}
 
