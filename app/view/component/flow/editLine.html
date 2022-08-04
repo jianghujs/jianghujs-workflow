@@ -16,36 +16,44 @@
       <el-input v-model="line.Remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4}"></el-input>
     </el-form-item>
   </el-form> -->
-  
+
   <v-form v-model="isFormValid" ref="dataForm" lazy-validation>
-    <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="GUID" v-model="line.id"></v-text-field>
+    <v-row class="px-2" :class="{'pb-7': isMobile}">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">GUID</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="GUID" v-model="line.id"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined disabled label="源活动" v-model="line.from"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">源活动</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line disabled label="源活动" v-model="line.from"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined disabled label="目标活动" v-model="line.to"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">目标活动</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line disabled label="目标活动" v-model="line.to"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="名称" v-model="line.label"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="名称" v-model="line.label"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">操作类型</span>
         <v-select
           :items="lineTypeList"
-          dense outlined 
+          dense filled single-line
           class="cus-v-input mr-2"
           label="操作类型"
-          outlined
+          color="success"
+          item-color="success"
           v-model="line.type"
         ></v-select>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="任务Resource" v-model="line.hook"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">任务Resource</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="任务Resource" v-model="line.hook"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="备注说明" v-model="line.Remark"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">备注说明</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="备注说明" v-model="line.Remark"></v-text-field>
       </v-col>
     </v-row>
   </v-form>
@@ -73,6 +81,11 @@
         },
         deep: true
       }
+    },
+    computed: {
+      isMobile() {
+        return window.innerWidth < 600;
+      },
     },
     methods: {
       init(item, lineTypeList) {

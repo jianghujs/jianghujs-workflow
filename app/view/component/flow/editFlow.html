@@ -11,17 +11,20 @@
       <el-input v-model="flowData.Remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4}"></el-input>
     </el-form-item>
   </el-form> -->
-  
+
   <v-form v-model="isFormValid" ref="dataForm" lazy-validation>
-    <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="GUID" v-model="flowData.Id"></v-text-field>
+    <v-row class="px-2" :class="{'pb-7': isMobile}">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">GUID</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="GUID" v-model="flowData.Id"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="流程名称" v-model="flowData.Name"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">流程名称</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="流程名称" v-model="flowData.Name"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="flowData.Remark"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">备注</span>
+        <v-text-field class="cus-v-input mr-2" dense filled single-line label="备注" v-model="flowData.Remark"></v-text-field>
       </v-col>
     </v-row>
   </v-form>
@@ -37,6 +40,11 @@
         flowData: {},
         isFormValid: true
       }
+    },
+    computed: {
+      isMobile() {
+        return window.innerWidth < 600;
+      },
     },
     methods: {
       init(data) {

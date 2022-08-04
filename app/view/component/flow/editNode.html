@@ -19,34 +19,42 @@
   </el-form> -->
 
   <v-form v-model="isFormValid" ref="dataForm" lazy-validation>
-    <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input" dense outlined label="GUID" v-model="node.id"></v-text-field>
+    <v-row class="px-2" :class="{'pb-7': isMobile}">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">GUID</span>
+        <v-text-field class="cus-v-input" dense filled single-line label="GUID" v-model="node.id"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input" dense outlined label="名称" v-model="node.label"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
+        <v-text-field class="cus-v-input" dense filled single-line label="名称" v-model="node.label"></v-text-field>
       </v-col>
-      <v-col cols="12" class="pa-xs-0 pb-xs-4 pb-3">
-        <v-text-field class="cus-v-input" dense outlined label="备注说明" v-model="node.Remark"></v-text-field>
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">备注说明</span>
+        <v-text-field class="cus-v-input" dense filled single-line label="备注说明" v-model="node.Remark"></v-text-field>
       </v-col>
-      
-      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
-        
+
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
+
         <v-select
           :items="assignTypeList"
-          dense outlined 
+          dense filled single-line
           item-text="text"
+          color="success"
+          item-color="success"
           item-value="value"
           class="cus-v-input"
           label="指派类型"
-          outlined
           v-model="node.assignType"
         ></v-select>
       </v-col>
-      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
         <v-select
           :items="optionList"
-          dense outlined 
+          color="success"
+          item-color="success"
+          dense filled single-line
           item-text="text"
           item-value="value"
           class="cus-v-input"
@@ -56,22 +64,26 @@
           :disabled="!node.assignType"
         ></v-select>
       </v-col>
-      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
         <!-- <v-textarea
-          outlined
+          filled single-line
           name="input-7-4"
           label="允许的操作"
           value=""
           rows="3"
           hide-details
         ></v-textarea> -->
-        <v-text-field class="cus-v-input" dense outlined label="允许的操作（英文逗号分隔）" v-model="node.lineTypeList"></v-text-field>
+        <v-text-field class="cus-v-input" dense filled single-line label="允许的操作（英文逗号分隔）" v-model="node.lineTypeList"></v-text-field>
       </v-col>
-      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
         <v-select
           :items="tpl"
-          dense outlined 
+          dense filled single-line
           item-text="text"
+          color="success"
+          item-color="success"
           item-value="value"
           class="cus-v-input"
           label="可写模板"
@@ -79,12 +91,15 @@
           v-model="node.formId"
         ></v-select>
       </v-col>
-      <v-col cols="12" v-if="showTask" class="pa-xs-0 pb-xs-4 pb-3">
+      <v-col cols="12" class=" pb-3">
+        <span class="inputLabel">名称</span>
         <v-select
           :items="tpl"
-          dense outlined 
+          dense filled single-line
           item-text="text"
           item-value="value"
+          color="success"
+          item-color="success"
           class="cus-v-input"
           label="隐藏模板"
           multiple
@@ -134,8 +149,10 @@
     },
     watch: {
     },
-    created() {},
     computed: {
+      isMobile() {
+        return window.innerWidth < 600;
+      },
       showTask() {
         return ['userTask', 'receiveTask'].includes(this.node.type);
       },

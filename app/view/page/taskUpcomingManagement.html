@@ -4,143 +4,42 @@
 
 <jh-layout-v3>
 
-  <template slot="serverSearch">
-    <v-row class="ma-0 align-center flex-none pa-0" :class="{'pa-2': !isMobile, 'pa-2': isMobile}" style="justify-content: end">
-      <v-col :class="{'pt-2': isMobile, 'pl-0': isMobile, 'pr-0': !isMobile}" style="max-width: 77px">
-        <v-btn
-          class="elevation-0"
-          color="success"
-          dark
-          @click="doUiAction('refreshTableData')"
-        >
-          查询
-        </v-btn>
-      </v-col>
-    </v-row>
-  </template>
 
-  <!-- 页面主要内容 -->
-  <v-container class="fullScreen d-flex flex-column pa-xs-0 pa-0">
-    <v-card>
-      
-      <v-row class="ma-0 pa-xs-4 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
+<!-- 页面主要内容 -->
+<v-card :class="{'px-2': isMobile}">
 
-        <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
-          <span class="body-2">共{{ tableData.length }}条记录</span>
-        </v-col>
+  <v-row class="ma-0 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
 
-        <v-spacer></v-spacer>
+    <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
+      <span class="body-2">共{{ tableData.length }}条记录</span>
+    </v-col>
 
-        <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="pa-xs-0 pa-xs-2 col-sm-8-flex">
-          <v-text-field v-model="searchInput" label="表格过滤" class="cus-v-input" dense filled single-line></v-text-field>
-        </v-col>
-      </v-row>
-      <v-data-table fixed-header
-                    :headers="headers"
-                    :items="tableData"
-                    :search="searchInput"
-                    :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
-                    :items-per-page="20"
-                    mobile-breakpoint="0"
-                    :loading="isTableLoading"
-                    checkbox-color="success"
-                    class="elevation-0 mt-0 mb-xs-4 flex-fill d-flex flex-column">
-    <!--    <template v-slot:item.level="{ item }">-->
-    <!--      {{ getConstantCollectionItemText('level', item.level) }}-->
-    <!--    </template>-->
-        <template v-slot:item.action="{ item }">
-          <v-btn small color="warning" class="mr-2" @click="doUiAction('toTaskHistory', {item})">
-            查看
-          </v-btn>
-        </template>
-      </v-data-table>
-    </v-card>
-  </v-container>
+    <v-spacer></v-spacer>
 
-  <!-- 编辑抽屉 -->
-  <v-navigation-drawer v-model="isEditDrawerShow" absolute temporary right width="80%" hide-overlay class="elevation-24">
-    <v-form v-model="isFormValid" v-if="isEditDrawerShow" ref="form" lazy-validation>
-      <v-row>
-        <span class="title pa-6">{{ currentClickButton.title }}信息</span>
-        <v-spacer></v-spacer>
-        <v-btn class="mt-7 mr-8 elevation-0" fab x-small @click="isEditDrawerShow = false">
-          <v-icon dark>mdi-close</v-icon>
-        </v-btn>
-      </v-row>
-      <v-row class="pa-0 ma-0 pa-xs-4 pb-xs-4 flex-none">
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="任务ID" v-model="editItem['taskId']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="任务名称" v-model="editItem['taskTitle']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="任务状态：running 执行中；deny 拒绝；end 结束" v-model="editItem['taskStatus']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="表单" v-model="editItem['taskFormInput']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="当前执行中节点ID" v-model="editItem['taskConfigId']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="执行线路id list: 逗号分隔" v-model="editItem['taskNextConfigList']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="申请人" v-model="editItem['taskInitUser']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="当前执行的处理人员，用逗号分隔" v-model="editItem['taskEditUserList']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="所有相关人员，用逗号分隔" v-model="editItem['taskViewUserList']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="备注" v-model="editItem['taskComment']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="work flow流程JSON" v-model="editItem['workflowConfig']"></v-text-field>
-        </v-col>
-        
-        <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">
-          <v-text-field class="cus-v-input mr-2" dense outlined label="任务创建人" v-model="editItem['createByUser']"></v-text-field>
-        </v-col>
-        
-  <!--      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">-->
-  <!--        &lt;!&ndash; 必填字段样式 demo :rules="requireRules" &ndash;&gt;-->
-  <!--        <v-text-field class="cus-v-input mr-2" dense outlined label="学生ID" v-model="editItem.studentId" :rules="requireRules"></v-text-field>-->
-  <!--      </v-col>-->
-  <!--      &lt;!&ndash; select 字段 demo &ndash;&gt;-->
-  <!--      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">-->
-  <!--        <v-select class="cus-v-input mr-2" dense outlined clearable label="班级ID" v-model="editItem.classId" :items="constantCollection.classId"></v-select>-->
-  <!--      </v-col>-->
-  <!--      &lt;!&ndash; 日期选择 demo &ndash;&gt;-->
-  <!--      <v-col cols="12" sm="12" md="4" xl="3" class="pa-xs-0 pb-xs-4 pb-3">-->
-  <!--        <v-menu class="cus-v-input mr-2" offset-y max-width="290">-->
-  <!--          <template v-slot:activator="{ on, attrs }">-->
-  <!--            <v-text-field class="cus-v-input mr-2" dense outlined v-on="on" label="出生日期" v-model="editItem.dateOfBirth"></v-text-field>-->
-  <!--          </template>-->
-  <!--          <v-date-picker color="success" elevation="20" v-model="editItem.dateOfBirth"></v-date-picker>-->
-  <!--        </v-menu>-->
-  <!--      </v-col>-->
-      </v-row>
-      <v-row class="justify-end pr-6">
-        <v-btn color="success" small @click="doUiAction(dialogSaveInfoAction)" :style="{width: isMobile ? 'calc(100% - 45px)' : '200px'}" :class="{'mb-2': isMobile, 'mr-4': isMobile}">保存</v-btn>
-        <v-btn class="ml-2" small @click="isEditDrawerShow = false" :style="{width: isMobile ? 'calc(100% - 45px)' : '200px'}" :class="{'mr-4': isMobile}">取消</v-btn>
-      </v-row>
-    </v-form>
-  </v-navigation-drawer>
+    <v-col cols="12" xs="8" sm="4" md="3" xl="3" class="px-0">
+      <v-text-field v-model="searchInput" prefix="表格过滤:" color="success" class="cus-v-input" dense filled
+                    single-line></v-text-field>
+    </v-col>
+  </v-row>
+  <v-data-table fixed-header
+                :headers="headers"
+                :items="tableData"
+                :search="searchInput"
+                :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
+                :items-per-page="20"
+                mobile-breakpoint="0"
+                :loading="isTableLoading"
+                checkbox-color="success"
+                :class="{'mx-2': isMobile}"
+                color="success"
+                class="elevation-0 mt-0 flex-fill d-flex flex-column">
+    <template v-slot:item.action="{ item }">
+      <v-btn small color="success" class="mr-2" @click="doUiAction('toTaskHistory', {item})">
+        查看
+      </v-btn>
+    </template>
+  </v-data-table>
+</v-card>
 
 </jh-layout-v3>
 
@@ -156,45 +55,29 @@ new Vue({
   mixins: [window.jianghuUiActionMixins],
   data: () => ({
     // 表格相关数据
-    isFormValid: true,
     requireRules: [
       v => !!v || 'This is required',
     ],
-    constantCollection: {
-    },
-
-    serverSearchInput: {
-      studentId: null,
-      classId: null
-    },
     currentTableGenderType: 'all',
-    isEditDrawerShow: false,
     searchInput: null,
     isTableLoading: true,
     tableDataFromBackend: [],
     headers: [
       {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
-       
-      {text: "任务ID", value: "taskId", width: 120}, 
-      {text: "任务名称", value: "taskTitle", width: 120}, 
-      {text: "任务状态", value: "taskStatus", width: 120}, 
-      {text: "当前执行中节点ID", value: "taskConfigId", width: 120}, 
-      {text: "申请人", value: "taskInitUser", width: 120}, 
-      {text: "当前执行的处理人员", value: "taskEditUserList", width: 120}, 
-      {text: "所有相关人员", value: "taskViewUserList", width: 120}, 
-      {text: "备注", value: "taskComment", width: 120}, 
-      {text: "任务创建人", value: "createByUser", width: 120}, 
+
+      {text: "任务ID", value: "taskId", width: 120},
+      {text: "任务名称", value: "taskTitle", width: 120},
+      {text: "任务状态", value: "taskStatus", width: 120},
+      {text: "当前执行中节点ID", value: "taskConfigId", width: 120},
+      {text: "申请人", value: "taskInitUser", width: 120},
+      {text: "当前执行的处理人员", value: "taskEditUserList", width: 120},
+      {text: "所有相关人员", value: "taskViewUserList", width: 120},
+      {text: "备注", value: "taskComment", width: 120},
+      {text: "任务创建人", value: "createByUser", width: 120},
       {text: "操作者", value: "operationByUser", width: 120},
       {text: "操作时间", value: "operationAt", width: 250},
-      {text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed'},
+      {text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed'},
     ],
-
-    currentClickButton: {title: '新增', action: 'add'},
-    editItem: {},
-    tableButtonList: [
-      {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
-    ],
-    dialogSaveInfoAction: ''
   }),
   computed: {
     isMobile() {
@@ -206,30 +89,26 @@ new Vue({
       }
       return this.tableDataFromBackend.filter(({gender}) => gender === this.currentTableGenderType);
     },
-    computedEditItem() {
-      return this.editItem;
-    },
   },
   watch: {},
   async created() {
     await this.doUiAction('refreshTableData');
   },
-  mounted() {},
+  mounted() {
+  },
   methods: {
     /**
      * 获取表格数据
      */
     async refreshTableData() {
       this.isTableLoading = true;
-      const serverSearchInput = _.pickBy(this.serverSearchInput, value=> !!value);
-      const { data: { appData: { rows } } } = await window.jianghuAxios({
+      const {data: {appData: {rows}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'taskUpcomingManagement',
             actionId: 'selectItemList',
             actionData: {},
             where: {},
-            whereLike: serverSearchInput,
             orderBy: [{column: 'operationAt', order: 'desc'}]
           }
         }
@@ -239,112 +118,9 @@ new Vue({
       this.isTableLoading = false;
     },
 
-    // startCreateItem
-    async clearItemData() {
-      this.editItem = {};
-    },
 
-    async openCreateItemDialog() {
-      this.currentClickButton = {action: 'add', title: '新增'};
-      this.isEditDrawerShow = true;
-      this.dialogSaveInfoAction = 'createItem';
-    },
-
-    // createItem
-    async confirmCreateItemDialog() {
-      return window.confirmDialog({title: '新增', content: '确定新增吗？'})
-    },
-
-    /**
-     * 新增数据
-     */
-    async doCreateItem() {
-      delete this.computedEditItem.id;
-      await window.vtoast.loading("新增数据");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'taskManagement',
-            actionId: 'insertItem',
-            actionData: this.computedEditItem
-          }
-        }
-      })
-      await window.vtoast.success("新增数据成功");
-    },
-
-    async closeDrawerShow() {
-      this.isEditDrawerShow = false;
-    },
-
-    // startUpdateItem
-    async prepareItemData({item}) {
-      this.editItem = {...item};
-    },
-
-    async openUpdateDialog() {
-      this.currentClickButton = {action: 'edit', title: '修改'};
-      this.isEditDrawerShow = true;
-      this.dialogSaveInfoAction = 'updateItem';
-    },
-
-    // updateItem
-    async confirmUpdateItemDialog() {
-      return window.confirmDialog({title: '修改', content: '确定修改吗？'});
-    },
-
-    /**
-     * 保存数据
-     */
-    async doUpdateItem() {
-      const id = this.computedEditItem.id;
-      delete this.computedEditItem.id;
-      await window.vtoast.loading("修改数据");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'taskManagement',
-            actionId: 'updateItem',
-            actionData: this.computedEditItem,
-            where: {id: id}
-          }
-        }
-      })
-      await window.vtoast.success("修改数据成功");
-    },
-
-    // updateItem
-    async confirmDeleteItemDialog() {
-      return window.confirmDialog({title: '删除', content: '确定删除吗？'});
-    },
-
-    /**
-     * 删除数据
-     */
-    async doDeleteItem({item}) {
-      const { id } = item;
-      await window.vtoast.loading("删除数据");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'taskManagement',
-            actionId: 'deleteItem',
-            actionData: {},
-            where: { id: id }
-          }
-        }
-      });
-      await window.vtoast.success("删除数据成功");
-    },
-    getConstantCollectionItemText(key, _value) {
-      const constantCollectionItemFind = this.constantCollection[key].find(({value}) => value === _value);
-      if(constantCollectionItemFind) {
-        return constantCollectionItemFind.text;
-      }
-      return _value;
-    },
     toTaskHistory({item}) {
-        window.open(`/${window.appInfo.appId}/page/taskHistoryManagement?taskId=${item.taskId}`);
+      location.href = `/${window.appInfo.appId}/page/taskHistoryManagement?taskId=${item.taskId}`;
     }
   }
 })

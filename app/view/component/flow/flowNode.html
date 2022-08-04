@@ -31,6 +31,9 @@
       }
     },
     computed: {
+        isMobile() {
+          return window.innerWidth < 600;
+        },
       // 节点容器样式
       flowNodeContainer: {
         get() {

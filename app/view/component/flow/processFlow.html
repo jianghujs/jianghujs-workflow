@@ -1,35 +1,52 @@
 <template id="process-flow">
   <div class="process-flow-container">
-    <div class="flow-menu">
-      <div class="menu-item" v-for="item in menuList" draggable="true" @dragstart="drag(item)">
+    <v-card class="flow-menu pa-4 mr-4" color="#f5f8fa" width="140px">
+      <div block color="white" class="menu-item mb-3" v-for="item in menuList" draggable="true" @dragstart="drag(item)">
         <i :class="item.icon"></i>
         <div>{{item.name}}</div>
       </div>
-      <hr>
-      <div class="menu-item" @click="isConnect=true">
+      <v-divider></v-divider>
+      <v-btn block class="menu-item mt-3" :color="isConnect ? 'success' : 'white'" @click="isConnect=true">
         <i class="el-icon-bottom-right"></i>
         <div>连线</div>
-      </div>
-      <div class="menu-item" @click="isConnect=false">
+      </v-btn>
+      <v-btn block class="menu-item" :color="!isConnect ? 'success' : 'white'" @click="isConnect=false">
         <i class="el-icon-rank"></i>
         <div>选择</div>
-      </div>
+      </v-btn>
 
-    </div>
-    <div class="flow-detail">
+    </v-card>
+    <v-card class="flow-detail pa-4 mr-4" color="#f5f8fa">
       <div id="flowContent" ref="flowContent" @drop="drop($event)" @dragover="allowDrop($event)" @click="editFlow()"
         @dblclick="isConnect=false">
         <flow-node v-for="node in data.nodeList" :key="node.id" :node="node" :id="node.id" :isconnect="isConnect"
           @delete-node="deleteNode" @change-node-site="changeNodeSite" @edit-node="editNode">
         </flow-node>
       </div>
-    </div>
-    <div class="flow-edit" v-if="editType">
-      <div class="flow-edit-content">
-        <edit-node ref="nodeForm" v-show="editType=='node'" :user="user" :group="group" :tpl="tpl"></edit-node>
-        <edit-line ref="lineForm" v-show="editType=='line'" @line-save="lineLabelSave"></edit-line>
-      </div>
-    </div>
+    </v-card>
+    <v-card class="flow-edit pa-4" v-if="editType" color="#f5f8fa">
+      <template v-if="editType=='node' || editType=='line'">
+        <div class="mb-3">
+          <v-icon>mdi-application-edit-outline</v-icon>
+          <span style="transform: translateY(2px); display: inline-block; ">{{editType=='node' ? '节点' : '连线'}}属性</span>
+        </div>
+        <v-card>
+          <div class="flow-edit-content">
+            <edit-node ref="nodeForm" v-show="editType=='node'" :user="user" :group="group" :tpl="tpl"></edit-node>
+            <edit-line ref="lineForm" v-show="editType=='line'" @line-save="lineLabelSave"></edit-line>
+          </div>
+        </v-card>
+      </template>
+      <template v-else>
+        <div class="mb-3">
+          <v-icon>mdi-application-edit-outline</v-icon>
+          <span style="transform: translateY(2px); display: inline-block; ">属性面板</span>
+        </div>
+        <div style="text-align: center;line-height: 100px; color: #999999">
+          请选择节点或连接线
+        </div>
+      </template>
+    </v-card>
 
   </div>
 </template>
@@ -249,7 +266,7 @@
           _this.jsPlumb.importDefaults(_this.jsplumbSetting)
           // 会使整个jsPlumb立即重绘。
           _this.jsPlumb.setSuspendDrawing(false, true);
-          
+
           // 初始化节点
           _this.loadEasyFlow()
 
@@ -466,12 +483,12 @@
             if (!lineTypeList.includes(item.type) ) {
               // 1 - 删除画布连线 | 2 - 清空line的操作属性
               // _this.jsPlumb.deleteConnection(conn)
-              
+
               // 从 lineList 数组移除
               // _this.data.lineList.splice(index,1);
               // 不渲染表单
               // return
-              
+
               // 默认修改类型为第一个
               if (!preNode.id.includes('start-')) {
                 if (add) {
@@ -591,10 +608,7 @@
 
   .flow-menu {
     width: 100px;
-    padding: 10px;
-    margin: 0 10px;
     border: 1px solid #EBEEF5;
-    padding: 12px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
     word-break: break-all;
     border-radius: 4px;
@@ -602,13 +616,16 @@
 
   .menu-item {
     text-align: center;
-    box-shadow: 0 0 4px #696969;
     margin-bottom: 8px;
     cursor: pointer;
     font-size: 14px;
     color: #606266;
+    background: #FFFFFF;
     padding: 5px 0;
     border-radius: 5px;
+  }
+  .menu-item:hover {
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
   }
 
   .menu-item>i {
@@ -626,14 +643,11 @@
 
   .flow-edit-content {
     min-height: 100%;
-    background: #FFF;
     color: #606266;
     line-height: 1.4;
     text-align: justify;
     font-size: 14px;
-    border: 1px solid #EBEEF5;
     padding: 12px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
     word-break: break-all;
     border-radius: 4px;
   }
