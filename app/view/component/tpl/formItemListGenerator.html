@@ -99,7 +99,7 @@
         <span style="transform: translateY(2px); display: inline-block;">组件属性</span>
       </div>
       <div v-if="selectCanvaIndex >= 0 && formItemList[selectCanvaIndex]">
-        <v-card class="pa-4 mt-4"
+        <v-card class="mt-5" flat
                 v-if="formItemList[selectCanvaIndex].component.type === 'singleSelect' || formItemList[selectCanvaIndex].component.type === 'multipleSelect'">
           <v-row no-gutters>
             <v-col cols="12">
