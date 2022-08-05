@@ -104,9 +104,9 @@ class TaskService extends Service {
         taskCostDuration: 0
       }
       const insert = await jianghuKnex(tableEnum.task_history, this.ctx).insert(history);
-      
+
     } else {
-      throw new BizError(errorInfoEnum.article_not_found);
+      throw new BizError(errorInfoEnum.line_not_found);
     }
   }
 
@@ -151,7 +151,7 @@ class TaskService extends Service {
   }
   /**
    * 工单历史信息
-   * @returns 
+   * @returns
    */
   async getTaskHistoryInfo() {
     const { actionData } = this.ctx.request.body.appData;
@@ -177,8 +177,8 @@ class TaskService extends Service {
   }
   /**
    * 制作节点步骤list
-   * @param {*} processInfo 
-   * @returns 
+   * @param {*} processInfo
+   * @returns
    */
   makeStepper(workflowStructure, taskHistory) {
     const { jianghuKnex } = this.app;
@@ -206,10 +206,10 @@ class TaskService extends Service {
   }
   /**
    * 获取下一个步骤节点
-   * @param {*} nodeAllList 
-   * @param {*} lineAllList 
-   * @param {*} nodeSortList 
-   * @returns 
+   * @param {*} nodeAllList
+   * @param {*} lineAllList
+   * @param {*} nodeSortList
+   * @returns
    */
   getNextNodeSetup(nodeAllList, lineAllList, nodeSortList) {
     const lastNode = nodeSortList[nodeSortList.length - 1];
@@ -221,12 +221,12 @@ class TaskService extends Service {
     return nodeAllList.find(e => lineIds.includes(e.id) && !(nodeSortList.find(s => s.id === e.id)));
   }
   async submitNode() {
-    
+
     const { actionData } = this.ctx.request.body.appData;
     const { jianghuKnex, config } = this.app;
     const { type, taskId, taskRemark, taskTpl, taskComment } = actionData;
     const { userId, username } = this.ctx.userInfo;
-    
+
     const taskInfo = await jianghuKnex(tableEnum.task).where({taskId}).first();
     delete taskInfo.id;
     const {nodeList = [], lineList = []} = JSON.parse(taskInfo.workflowConfig || '{}');
@@ -271,11 +271,11 @@ class TaskService extends Service {
       await jianghuKnex(tableEnum.task_history, this.ctx).insert(endHistory);
     }
     await jianghuKnex(tableEnum.task, this.ctx).where({taskId}).update({
-      taskFormInput, 
-      taskRemark, 
-      taskNextConfigList: JSON.stringify(nextLineList), 
-      taskEditUserList, 
-      taskConfigId: nextNode.id, 
+      taskFormInput,
+      taskRemark,
+      taskNextConfigList: JSON.stringify(nextLineList),
+      taskEditUserList,
+      taskConfigId: nextNode.id,
       taskStatus: (nextLineList.length === 0 || currentNode.id.includes('end-')) ? 'end' : type === 'deny' ? 'deny' : 'running',
       taskComment
     });

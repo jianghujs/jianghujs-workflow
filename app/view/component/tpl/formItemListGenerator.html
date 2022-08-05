@@ -43,7 +43,7 @@
             <v-list-item>
 
               <v-list-item-content v-if="formItem.component.type === 'singleSelect'">
-                <v-radio-group :disabled="true" :label="(index+1) + formItem.component.outline">
+                <v-radio-group :disabled="true" :label="(index+1) + '. ' + formItem.component.outline">
                   <v-radio hide-details v-for="(option, optionIndex) in formItem.component.property.selectOptionList"
                            :key="optionIndex" :label="option.value" :value="option.value"></v-radio>
                 </v-radio-group>
