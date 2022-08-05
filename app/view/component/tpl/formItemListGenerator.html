@@ -1,6 +1,6 @@
 <template id="form-item-list-generator">
-  <v-card :class="{'d-flex': !isMobile, 'form-item-list-generator-content': !isMobile}">
-    <v-card color="#f5f8fa" :style="{'width': isMobile ? '100%' : '300px'}"
+  <v-card color="#f5f8fa" :class="{'d-flex': !isMobile, 'form-item-list-generator-content': !isMobile}">
+    <v-card :style="{'width': isMobile ? '100%' : '300px'}"
             :class="{'pa-4': !isMobile, 'pa-2': isMobile, 'mr-6': !isMobile}">
       <div class="left-component-item-title" :style="{'white-space': 'nowrap'}">
         <v-icon>mdi-puzzle-outline</v-icon>
@@ -23,7 +23,7 @@
       </draggable>
     </v-card>
 
-    <v-card class="formItemList py-10 pl-4 pr-4" color="#f5f8fa" style="position: relative;">
+    <v-card class="formItemList py-10 pl-4 pr-4" style="position: relative;">
       <v-btn small color="error" @click.stop="emptyCanva" class="mr-2 mt-2"
              style="position: absolute; right: 8px; top: 0;">
         <span>重置</span>
@@ -93,7 +93,7 @@
       </v-row>
     </v-card>
 
-    <v-card color="#f5f8fa" :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ml-6': !isMobile}">
+    <v-card :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ml-6': !isMobile}">
       <div class="property-title">
         <v-icon>mdi-application-edit-outline</v-icon>
         <span style="transform: translateY(2px); display: inline-block;">组件属性</span>
@@ -139,11 +139,11 @@
           </v-row>
         </v-card>
         <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].component.type === 'textarea'">
-          <v-text-field class="cus-v-input black" dense filled single-line label="多行文本"
+          <v-text-field class="cus-v-input" dense filled single-line label="多行文本"
                         v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
         </v-card>
         <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].component.type === 'input'">
-          <v-text-field class="cus-v-input black" dense filled single-line label="单行文本"
+          <v-text-field class="cus-v-input" dense filled single-line label="单行文本"
                         v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
         </v-card>
       </div>
@@ -313,16 +313,16 @@ Vue.component("form-item-list-generator", {
 
 .left-component-item-body {
   padding: 8px 10px;
-  background: #ffffff;
+  background: #f5f8fa;
   font-size: 12px;
   cursor: move;
-  border: 1px dashed #ffffff;
+  border: 1px dashed #f5f8fa;
   border-radius: 3px;
 }
 
 .left-component-item-body:hover {
   border: 1px dashed #4caf50;
-  background: #e6fde3;
+  background: #f5f8fa;
   color: #4caf50;
 }
 

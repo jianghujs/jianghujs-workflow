@@ -130,11 +130,19 @@ new Vue({
 
     // startCreateItem
     async clearItemData() {
+      if(this.isMobile) {
+        window.vtoast.fail({message: '该功能只能在电脑使用'})
+        return false;
+      }
       window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=add`;
     },
 
     // startUpdateItem
     async prepareItemData({item}) {
+      if(this.isMobile) {
+        window.vtoast.fail({message: '该功能只能在电脑使用'})
+        return false;
+      }
       sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
       window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=edit`;
     },

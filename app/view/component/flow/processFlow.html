@@ -1,22 +1,22 @@
 <template id="process-flow">
   <div class="process-flow-container">
-    <v-card class="flow-menu pa-4 mr-4" color="#f5f8fa" width="140px">
-      <div block color="white" class="menu-item mb-3" v-for="item in menuList" draggable="true" @dragstart="drag(item)">
+    <v-card class="flow-menu pa-4 mr-4" width="140px">
+      <div class="menu-item mb-3" v-for="item in menuList" draggable="true" @dragstart="drag(item)">
         <i :class="item.icon"></i>
         <div>{{item.name}}</div>
       </div>
       <v-divider></v-divider>
-      <v-btn block class="menu-item mt-3" :color="isConnect ? 'success' : 'white'" @click="isConnect=true">
+      <v-btn block class="menu-item mt-3" :color="isConnect ? 'success' : 'gray'" @click="isConnect=true">
         <i class="el-icon-bottom-right"></i>
         <div>连线</div>
       </v-btn>
-      <v-btn block class="menu-item" :color="!isConnect ? 'success' : 'white'" @click="isConnect=false">
+      <v-btn block class="menu-item" :color="!isConnect ? 'success' : 'gray'" @click="isConnect=false">
         <i class="el-icon-rank"></i>
         <div>选择</div>
       </v-btn>
 
     </v-card>
-    <v-card class="flow-detail pa-4 mr-4" color="#f5f8fa">
+    <v-card class="flow-detail pa-4 mr-4">
       <div id="flowContent" ref="flowContent" @drop="drop($event)" @dragover="allowDrop($event)" @click="editFlow()"
         @dblclick="isConnect=false">
         <flow-node v-for="node in data.nodeList" :key="node.id" :node="node" :id="node.id" :isconnect="isConnect"
@@ -24,18 +24,16 @@
         </flow-node>
       </div>
     </v-card>
-    <v-card class="flow-edit pa-4" v-if="editType" color="#f5f8fa">
-      <template v-if="editType=='node' || editType=='line'">
+    <v-card class="flow-edit pa-4" v-if="editType">
+      <template v-if="editType == 'node' || editType == 'line'">
         <div class="mb-3">
           <v-icon>mdi-application-edit-outline</v-icon>
-          <span style="transform: translateY(2px); display: inline-block; ">{{editType=='node' ? '节点' : '连线'}}属性</span>
+          <span style="transform: translateY(2px); display: inline-block; ">{{editType == 'node' ? '节点' : '连线'}}属性</span>
         </div>
-        <v-card>
           <div class="flow-edit-content">
-            <edit-node ref="nodeForm" v-show="editType=='node'" :user="user" :group="group" :tpl="tpl"></edit-node>
-            <edit-line ref="lineForm" v-show="editType=='line'" @line-save="lineLabelSave"></edit-line>
+            <edit-node ref="nodeForm" v-show="editType == 'node'" :user="user" :group="group" :tpl="tpl"></edit-node>
+            <edit-line ref="lineForm" v-show="editType == 'line'" @line-save="lineLabelSave"></edit-line>
           </div>
-        </v-card>
       </template>
       <template v-else>
         <div class="mb-3">
@@ -620,7 +618,7 @@
     cursor: pointer;
     font-size: 14px;
     color: #606266;
-    background: #FFFFFF;
+    background: #f5f8fa;
     padding: 5px 0;
     border-radius: 5px;
   }
