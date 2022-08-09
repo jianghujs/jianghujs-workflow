@@ -290,7 +290,7 @@ CREATE TABLE `_resource_request_log` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `resourceId_index` (`resourceId`) USING BTREE,
   KEY `packageId_index` (`packageId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5551 COMMENT = '文件表; 软删除未启用;';
+) ENGINE = InnoDB AUTO_INCREMENT = 5556 COMMENT = '文件表; 软删除未启用;';
 
 
 
@@ -816,8 +816,8 @@ CREATE TABLE `workflow` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `workflowId` varchar(255) DEFAULT NULL COMMENT '流程ID',
   `workflowName` varchar(255) DEFAULT NULL COMMENT '流程名',
-  `workflowForm` json DEFAULT NULL COMMENT 'form表单',
-  `workflowConfig` json DEFAULT NULL COMMENT '流程线路节点',
+  `workflowForm` text COMMENT 'form表单',
+  `workflowConfig` text COMMENT '流程线路节点',
   `workflowCategory` varchar(255) DEFAULT NULL COMMENT '分类ID',
   `workflowRemark` varchar(1024) DEFAULT NULL COMMENT '备注',
   `operation` varchar(255) DEFAULT 'insert' COMMENT '操作: insert, update, jhInsert, jhUpdate, jhDelete jhRestore',
@@ -825,13 +825,14 @@ CREATE TABLE `workflow` (
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 24 COMMENT = '流程表';
+) ENGINE = InnoDB AUTO_INCREMENT = 25 COMMENT = '流程表';
 
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: workflow
 # ------------------------------------------------------------
 
+INSERT INTO `workflow` (`id`,`workflowId`,`workflowName`,`workflowForm`,`workflowConfig`,`workflowCategory`,`workflowRemark`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (23,'1001','ceshi ','[{\"id\": \"input_v5KqrcgN\", \"component\": {\"icon\": \"mdi-form-textarea\", \"type\": \"input\", \"title\": \"金额\", \"outline\": \"金额\", \"property\": {}}}, {\"id\": \"input_npIModIb\", \"component\": {\"icon\": \"mdi-form-textarea\", \"type\": \"input\", \"title\": \"备注\", \"outline\": \"备注\", \"property\": {}}}]','{\"lineList\": [{\"id\": \"line-6e88ce2cc148\", \"to\": \"userTask-b7ac8a109948\", \"from\": \"receiveTask-0fee61790848\", \"type\": \"同意\", \"label\": \"通过审核\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-7af22202cd48\", \"to\": \"userTask-280f7cc4f948\", \"from\": \"receiveTask-d3cfbd2f2c48\", \"type\": \"同意\", \"label\": \"通过审核\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-56e65e1b6248\", \"to\": \"receiveTask-0fee61790848\", \"from\": \"userTask-280f7cc4f948\", \"type\": \"移交\", \"label\": \"移交\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-f7a77463a148\", \"to\": \"receiveTask-d3cfbd2f2c48\", \"from\": \"start-b356baa16848\", \"type\": \"同意\", \"label\": \"连线名称\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-614ad15e7a48\", \"to\": \"receiveTask-d3cfbd2f2c48\", \"from\": \"userTask-280f7cc4f948\", \"type\": \"拒绝\", \"label\": \"驳回\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-4c7d72debd48\", \"to\": \"receiveTask-0fee61790848\", \"from\": \"userTask-b7ac8a109948\", \"type\": \"拒绝\", \"label\": \"驳回\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-58a5bf293648\", \"to\": \"end-6455e366fe48\", \"from\": \"userTask-280f7cc4f948\", \"type\": \"同意\", \"label\": \"通过审批\", \"Remark\": \"\", \"endpoint\": \"Dot\"}, {\"id\": \"line-800303750748\", \"to\": \"end-6455e366fe48\", \"from\": \"userTask-b7ac8a109948\", \"type\": \"同意\", \"label\": \"通过审批\", \"Remark\": \"\", \"endpoint\": \"Dot\"}], \"nodeList\": [{\"id\": \"start-b356baa16848\", \"top\": \"59px\", \"left\": \"148px\", \"type\": \"start\", \"label\": \"申请报销\", \"Remark\": \"\", \"lineTypeList\": \"同意\"}, {\"id\": \"end-6455e366fe48\", \"top\": \"369px\", \"left\": \"524px\", \"type\": \"end\", \"label\": \"完成报销\", \"lineTypeList\": \"\"}, {\"id\": \"receiveTask-d3cfbd2f2c48\", \"top\": \"178px\", \"left\": \"149px\", \"type\": \"receiveTask\", \"label\": \"初步审核\", \"formId\": [\"input_h9_FzChA\"], \"assignType\": \"person\", \"assignValue\": [\"W00001\"], \"lineTypeList\": \"同意,拒绝\"}, {\"id\": \"receiveTask-0fee61790848\", \"top\": \"176px\", \"left\": \"454px\", \"type\": \"receiveTask\", \"label\": \"二次审核\", \"formId\": [\"input_h9_FzChA\"], \"assignType\": \"person\", \"assignValue\": [\"W00002\"], \"lineTypeList\": \"同意,拒绝\"}, {\"id\": \"userTask-b7ac8a109948\", \"top\": \"292px\", \"left\": \"524px\", \"type\": \"userTask\", \"label\": \"审批节点\", \"formId\": [\"input_h9_FzChA\"], \"lineTypeList\": \"同意,拒绝\"}, {\"id\": \"userTask-280f7cc4f948\", \"top\": \"289px\", \"left\": \"234px\", \"type\": \"userTask\", \"label\": \"审批节点\", \"formId\": [\"input_h9_FzChA\"], \"assignType\": \"person\", \"assignValue\": [\"admin\"], \"lineTypeList\": \"同意,拒绝,移交\"}]}','财务',NULL,'jhUpdate','admin','系统管理员','2022-08-09T21:45:50+08:00');
 
 
 
