@@ -26,6 +26,8 @@ module.exports = appInfo => {
     helpPage: `/${appId}/page/help`,
     uploadDir,
     downloadBasePath,
+    primaryColor: "#4caf50",
+    primaryColorA80: "#EEF7EE",
     static: {
       maxAge: 0,
       buffer: false,
