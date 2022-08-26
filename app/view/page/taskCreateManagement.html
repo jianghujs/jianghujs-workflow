@@ -107,7 +107,6 @@
     el: '#app',
     template: '#app-template',
     vuetify: new Vuetify(),
-    mixins: [window.jianghuUiActionMixins],
     data: () => ({
       // 表格相关数据
       isFormValid: true,
@@ -167,6 +166,26 @@
     },
     mounted() { },
     methods: {
+      async doUiAction(actionId, actionData) {
+        switch (actionId) {
+          case 'refreshTableData':
+            await this.refreshTableData(actionData);
+            break;
+          case 'startCreateItem':
+            await this.clearItemData(actionData);
+            await this.openCreateItemDialog(actionData);
+            break;
+          case 'createItem':
+            await this.confirmCreateItemDialog(actionData);
+            await this.doCreateItem(actionData);
+            await this.refreshTableData(actionData);
+            await this.closeDrawerShow(actionData);
+            break;
+          default:
+            console.error("[doAction] actionId not find", { actionId });
+            break;
+        }
+      },
       /**
        * 获取表格数据
        */
@@ -209,7 +228,9 @@
 
       // createItem
       async confirmCreateItemDialog() {
-        return window.confirmDialog({ title: '新增', content: '确定新增吗？' })
+        if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
+          throw new Error("[confirmCreateFormDialog] 否");
+        }
       },
 
       /**
@@ -232,73 +253,6 @@
 
       async closeDrawerShow() {
         this.isEditDrawerShow = false;
-      },
-
-      // startUpdateItem
-      async prepareItemData({ item }) {
-        this.editItem = { ...item };
-      },
-
-      async openUpdateDialog() {
-        this.currentClickButton = { action: 'edit', title: '修改' };
-        this.isEditDrawerShow = true;
-        this.dialogSaveInfoAction = 'updateItem';
-      },
-
-      // updateItem
-      async confirmUpdateItemDialog() {
-        return window.confirmDialog({ title: '修改', content: '确定修改吗？' });
-      },
-
-      /**
-       * 保存数据
-       */
-      async doUpdateItem() {
-        const id = this.computedEditItem.id;
-        delete this.computedEditItem.id;
-        await window.vtoast.loading("修改数据");
-        await window.jianghuAxios({
-          data: {
-            appData: {
-              pageId: 'taskManagement',
-              actionId: 'updateItem',
-              actionData: this.computedEditItem,
-              where: { id: id }
-            }
-          }
-        })
-        await window.vtoast.success("修改数据成功");
-      },
-
-      // updateItem
-      async confirmDeleteItemDialog() {
-        return window.confirmDialog({ title: '删除', content: '确定删除吗？' });
-      },
-
-      /**
-       * 删除数据
-       */
-      async doDeleteItem({ item }) {
-        const { id } = item;
-        await window.vtoast.loading("删除数据");
-        await window.jianghuAxios({
-          data: {
-            appData: {
-              pageId: 'taskManagement',
-              actionId: 'deleteItem',
-              actionData: {},
-              where: { id: id }
-            }
-          }
-        });
-        await window.vtoast.success("删除数据成功");
-      },
-      getConstantCollectionItemText(key, _value) {
-        const constantCollectionItemFind = this.constantCollection[key].length ? this.constantCollection[key].find(e => e && e.value+'' === _value+'') : '';
-        if (constantCollectionItemFind) {
-          return constantCollectionItemFind.text;
-        }
-        return _value || '';
       }
     }
   })

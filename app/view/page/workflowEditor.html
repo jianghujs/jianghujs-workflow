@@ -58,7 +58,6 @@ new Vue({
   el: '#app',
   template: '#app-template',
   vuetify: new Vuetify(),
-  mixins: [window.jianghuUiActionMixins],
   data: () => ({
     // 表格相关数据
     isFormValid: true,
@@ -167,6 +166,21 @@ new Vue({
   mounted() {
   },
   methods: {
+    async doUiAction(actionId, actionData) {
+        switch (actionId) {
+          case 'createItem':
+            await this.confirmCreateItemDialog(actionData);
+            await this.doCreateItem(actionData);
+            break;
+          case 'updateItem':
+            await this.confirmUpdateItemDialog(actionData);
+            await this.doUpdateItem(actionData);
+            break;
+          default:
+            console.error("[doUiAction] actionId not find", { actionId });
+            break;
+        }
+    },
     buildEditItem() {
       const item = {
         workflowId: this.editItem.workflowId || null,
@@ -227,13 +241,11 @@ new Vue({
 
     // createItem
     async confirmCreateItemDialog() {
-      return window.confirmDialog({title: '新增', content: '确定新增吗？'})
-    },
-    validate() {
-      if (!this.editItem.workflowId || !this.editItem.workflowId) {
-
+      if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
+          throw new Error("[confirmCreateFormDialog] 否");
       }
     },
+
     /**
      * 新增数据
      */
@@ -255,7 +267,9 @@ new Vue({
 
     // updateItem
     async confirmUpdateItemDialog() {
-      return window.confirmDialog({title: '修改', content: '确定修改吗？'});
+      if (await window.confirmDialog({title: "修改", content: "确定修改吗？"}) === false) {
+          throw new Error("[confirmUpdateItemDialog] 否");
+      }
     },
 
     /**

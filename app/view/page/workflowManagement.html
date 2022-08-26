@@ -8,7 +8,7 @@
   <v-row class="ma-0 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
 
     <v-col cols="12" xs="12" sm="4" md="4" xl="4" class="pl-0">
-      <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('startCreateItem')">新增</v-btn>
+      <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('createItem')">新增</v-btn>
       <span class="body-2">共{{ tableData.length }}条记录</span>
     </v-col>
     <v-spacer></v-spacer>
@@ -49,7 +49,6 @@ new Vue({
   el: '#app',
   template: '#app-template',
   vuetify: new Vuetify(),
-  mixins: [window.jianghuUiActionMixins],
   data: () => ({
     // 表格相关数据
     requireRules: [
@@ -79,7 +78,7 @@ new Vue({
     currentClickButton: {title: '新增', action: 'add'},
     editItem: {},
     tableButtonList: [
-      {text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem'},
+      {text: '修改', buttonType: 'edit', color: 'success', action: 'updateItem'},
       {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
     ],
     dialogSaveInfoAction: '',
@@ -102,6 +101,29 @@ new Vue({
   mounted() {
   },
   methods: {
+    async doUiAction(actionId, actionData) {
+        switch (actionId) {
+          case 'refreshTableData':
+            await this.refreshTableData(actionData);
+            break;
+          case 'createItem':
+            await this.prepareValidate(actionData);
+            await this.doCreateItem(actionData);
+            break;
+          case 'updateItem':
+            await this.prepareValidate(actionData);
+            await this.doUpdateItem(actionData);
+            break;
+          case 'deleteItem':
+            await this.confirmDeleteItemDialog(actionData);
+            await this.doDeleteItem(actionData);
+            await this.refreshTableData(actionData);
+            break;
+          default:
+            console.error("[doUiAction] actionId not find", { actionId });
+            break;
+        }
+    },
     /**
      * 获取表格数据
      */
@@ -128,27 +150,28 @@ new Vue({
       this.isTableLoading = false;
     },
 
-    // startCreateItem
-    async clearItemData() {
-      if(this.isMobile) {
-        window.vtoast.fail({message: '该功能只能在电脑使用'})
-        return false;
-      }
+    async prepareValidate() {
+        if(this.isMobile) {
+          window.vtoast.fail({message: '该功能只能在电脑使用'})
+          return false;
+        }
+    },
+    
+    // CreateItem
+    async doCreateItem() {
       window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=add`;
     },
 
-    // startUpdateItem
-    async prepareItemData({item}) {
-      if(this.isMobile) {
-        window.vtoast.fail({message: '该功能只能在电脑使用'})
-        return false;
-      }
+    // UpdateItem
+    async doUpdateItem({item}) {
       sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
       window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=edit`;
     },
 
     async confirmDeleteItemDialog() {
-      return window.confirmDialog({title: '删除', content: '确定删除吗？'});
+      if (await window.confirmDialog({title: "删除", content: "确定删除吗？"}) === false) {
+          throw new Error("[confirmDeleteItemDialog] 否");
+      }
     },
 
     /**

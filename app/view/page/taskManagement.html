@@ -51,7 +51,6 @@ new Vue({
   el: '#app',
   template: '#app-template',
   vuetify: new Vuetify(),
-  mixins: [window.jianghuUiActionMixins],
   data: () => ({
     // 表格相关数据
     isFormValid: true,
@@ -114,6 +113,24 @@ new Vue({
   mounted() {
   },
   methods: {
+    async doUiAction(actionId, actionData) {
+        switch (actionId) {
+          case 'refreshTableData':
+            await this.refreshTableData(actionData);
+            break;
+          case 'deleteItem':
+            await this.confirmDeleteItemDialog(actionData);
+            await this.doDeleteItem(actionData);
+            await this.refreshTableData(actionData);
+            break;
+          case 'toTaskHistory':
+            await this.toTaskHistory(actionData);
+            break;
+          default:
+            console.error("[doUiAction] actionId not find", { actionId });
+            break;
+        }
+    },
     /**
      * 获取表格数据
      */
@@ -137,7 +154,9 @@ new Vue({
 
     // updateItem
     async confirmDeleteItemDialog() {
-      return window.confirmDialog({title: '删除', content: '确定删除吗？'});
+      if (await window.confirmDialog({title: "删除", content: "确定删除吗？"}) === false) {
+          throw new Error("[confirmDeleteItemDialog] 否");
+      }
     },
 
     /**
@@ -158,6 +177,7 @@ new Vue({
       });
       await window.vtoast.success("删除数据成功");
     },
+    // 跳转
     toTaskHistory({item}) {
       location.href = `/${window.appInfo.appId}/page/taskHistoryManagement?taskId=${item.taskId}`;
     }

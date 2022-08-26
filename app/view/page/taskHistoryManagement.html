@@ -69,7 +69,7 @@
                   :disabled="currentNode && currentNode.id && currentNode.id.includes('end-')" :rows="4"/>
     </v-col>
     <v-col cols="12" style="text-align: center;" class="mb-3">
-      <v-btn color="success" class="mx-4" v-for="item in nextLineList" @click="submitNode(item.type)">
+      <v-btn color="success" class="mx-4" v-for="item in nextLineList" @click="doUiAction('submitNode', item.type)">
         {{ item.type }}-{{ item.label }}
       </v-btn>
     </v-col>
@@ -120,7 +120,6 @@ new Vue({
   el: '#app',
   template: '#app-template',
   vuetify: new Vuetify(),
-  mixins: [window.jianghuUiActionMixins],
   data: () => ({
     step: 1,
     // 表格相关数据
@@ -197,26 +196,16 @@ new Vue({
   mounted() {
   },
   methods: {
-    /**
-     * 获取表格数据
-     */
-    async refreshTableData() {
-      this.isTableLoading = true;
-      const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
-      const {data: {appData: {rows}}} = await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'taskCreateManagement',
-            actionId: 'selectProcessList',
-            actionData: {},
-            where: {},
-            whereLike: serverSearchInput,
-            orderBy: [{column: 'operationAt', order: 'desc'}]
-          }
+    async doUiAction(actionId, actionData) {
+        switch (actionId) {
+          case 'submitNode':
+            await this.submitNode(actionData);
+            await this.getTaskHistoryList(actionData);
+            break;
+          default:
+            console.error("[doUiAction] actionId not find", { actionId });
+            break;
         }
-      });
-      this.tableDataFromBackend = _.groupBy(rows, 'categoryId');
-      this.isTableLoading = false;
     },
 
     /**
@@ -253,22 +242,6 @@ new Vue({
       this.step = step;
     },
 
-    // startCreateItem
-    async clearItemData({processVersionId}) {
-      this.editItem = {processVersionId};
-    },
-
-    async openCreateItemDialog() {
-      this.currentClickButton = {action: 'add', title: '新增'};
-      this.isEditDrawerShow = true;
-      this.dialogSaveInfoAction = 'createItem';
-    },
-
-    // createItem
-    async confirmCreateItemDialog() {
-      return window.confirmDialog({title: '新增', content: '确定新增吗？'})
-    },
-
     /**
      * 新增数据
      */
@@ -284,79 +257,8 @@ new Vue({
         }
       })
       await window.vtoast.success("提交数据成功");
-      this.getTaskHistoryList();
     },
 
-    async closeDrawerShow() {
-      this.isEditDrawerShow = false;
-    },
-
-    // startUpdateItem
-    async prepareItemData({item}) {
-      this.editItem = {...item};
-    },
-
-    async openUpdateDialog() {
-      this.currentClickButton = {action: 'edit', title: '修改'};
-      this.isEditDrawerShow = true;
-      this.dialogSaveInfoAction = 'updateItem';
-    },
-
-    // updateItem
-    async confirmUpdateItemDialog() {
-      return window.confirmDialog({title: '修改', content: '确定修改吗？'});
-    },
-
-    /**
-     * 保存数据
-     */
-    async doUpdateItem() {
-      const id = this.computedEditItem.id;
-      delete this.computedEditItem.id;
-      await window.vtoast.loading("修改数据");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'taskManagement',
-            actionId: 'updateItem',
-            actionData: this.computedEditItem,
-            where: {id: id}
-          }
-        }
-      })
-      await window.vtoast.success("修改数据成功");
-    },
-
-    // updateItem
-    async confirmDeleteItemDialog() {
-      return window.confirmDialog({title: '删除', content: '确定删除吗？'});
-    },
-
-    /**
-     * 删除数据
-     */
-    async doDeleteItem({item}) {
-      const {id} = item;
-      await window.vtoast.loading("删除数据");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'taskManagement',
-            actionId: 'deleteItem',
-            actionData: {},
-            where: {id: id}
-          }
-        }
-      });
-      await window.vtoast.success("删除数据成功");
-    },
-    getConstantCollectionItemText(key, _value) {
-      const constantCollectionItemFind = this.constantCollection[key].find(e => e.value + '' === _value + '');
-      if (constantCollectionItemFind) {
-        return constantCollectionItemFind.text;
-      }
-      return _value;
-    },
     formTitlePrefix(title, type) {
       if (type === 'prev') {
         return '历史-' + title;

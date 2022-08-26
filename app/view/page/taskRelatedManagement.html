@@ -50,7 +50,6 @@ new Vue({
   el: '#app',
   template: '#app-template',
   vuetify: new Vuetify(),
-  mixins: [window.jianghuUiActionMixins],
   data: () => ({
     // 表格相关数据
     requireRules: [
@@ -95,6 +94,19 @@ new Vue({
   mounted() {
   },
   methods: {
+    async doUiAction(actionId, actionData) {
+        switch (actionId) {
+          case 'refreshTableData':
+            await this.refreshTableData(actionData);
+            break;
+          case 'toTaskHistory':
+            await this.toTaskHistory(actionData);
+            break;
+          default:
+            console.error("[doUiAction] actionId not find", { actionId });
+            break;
+        }
+    },
     /**
      * 获取表格数据
      */
