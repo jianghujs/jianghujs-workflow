@@ -166,8 +166,8 @@
     },
     mounted() { },
     methods: {
-      async doUiAction(actionId, actionData) {
-        switch (actionId) {
+      async doUiAction(uiActionId, actionData) {
+        switch (uiActionId) {
           case 'refreshTableData':
             await this.refreshTableData(actionData);
             break;
@@ -182,7 +182,7 @@
             await this.closeDrawerShow(actionData);
             break;
           default:
-            console.error("[doAction] actionId not find", { actionId });
+            console.error("[doAction] uiActionId not find", { uiActionId });
             break;
         }
       },
