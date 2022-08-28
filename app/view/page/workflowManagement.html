@@ -9,7 +9,7 @@
 
     <v-col cols="12" xs="12" sm="4" md="4" xl="4" class="pl-0">
       <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('createItem')">新增</v-btn>
-      <span class="body-2">共{{ tableData.length }}条记录</span>
+      <span class="body-2">共{{ tableDataFromBackend.length }}条记录</span>
     </v-col>
     <v-spacer></v-spacer>
     <v-col cols="12" xs="12" sm="4" md="3" xl="3" class="px-0">
@@ -19,7 +19,7 @@
   </v-row>
   <v-data-table fixed-header
                 :headers="headers"
-                :items="tableData"
+                :items="tableDataFromBackend"
                 :search="searchInput"
                 :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
                 :items-per-page="20"
@@ -50,6 +50,7 @@ new Vue({
   template: '#app-template',
   vuetify: new Vuetify(),
   data: () => ({
+    isMobile: window.innerWidth < 600,
     // 表格相关数据
     requireRules: [
       v => !!v || 'This is required',
@@ -58,7 +59,6 @@ new Vue({
       studentId: null,
       classId: null
     },
-    currentTableGenderType: 'all',
     isEditDrawerShow: false,
     searchInput: null,
     isTableLoading: true,
@@ -84,40 +84,29 @@ new Vue({
     dialogSaveInfoAction: '',
     dialog: false,
   }),
-  computed: {
-    isMobile() {
-      return window.innerWidth < 600;
-    },
-    tableData() {
-      if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
-        return this.tableDataFromBackend;
-      }
-      return this.tableDataFromBackend.filter(({gender}) => gender === this.currentTableGenderType);
-    },
-  },
   async created() {
     await this.doUiAction('refreshTableData');
   },
   mounted() {
   },
   methods: {
-    async doUiAction(uiActionId, actionData) {
+    async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
           case 'refreshTableData':
-            await this.refreshTableData(actionData);
+            await this.refreshTableData(uiActionData);
             break;
           case 'createItem':
-            await this.prepareValidate(actionData);
-            await this.doCreateItem(actionData);
+            await this.prepareValidate(uiActionData);
+            await this.doCreateItem(uiActionData);
             break;
           case 'updateItem':
-            await this.prepareValidate(actionData);
-            await this.doUpdateItem(actionData);
+            await this.prepareValidate(uiActionData);
+            await this.doUpdateItem(uiActionData);
             break;
           case 'deleteItem':
-            await this.confirmDeleteItemDialog(actionData);
-            await this.doDeleteItem(actionData);
-            await this.refreshTableData(actionData);
+            await this.confirmDeleteItemDialog(uiActionData);
+            await this.doDeleteItem(uiActionData);
+            await this.refreshTableData(uiActionData);
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
@@ -156,7 +145,7 @@ new Vue({
           return false;
         }
     },
-    
+
     // CreateItem
     async doCreateItem() {
       window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=add`;

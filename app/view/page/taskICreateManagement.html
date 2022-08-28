@@ -10,7 +10,7 @@
   <v-row class="ma-0 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
 
     <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
-      <span class="body-2">共{{ tableData.length }}条记录</span>
+      <span class="body-2">共{{ tableDataFromBackend.length }}条记录</span>
     </v-col>
 
     <v-spacer></v-spacer>
@@ -21,7 +21,7 @@
     </v-col>
   </v-row>
   <v-data-table :headers="headers"
-                :items="tableData"
+                :items="tableDataFromBackend"
                 :search="searchInput"
                 :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
                 :items-per-page="20"
@@ -50,6 +50,7 @@ new Vue({
   template: '#app-template',
   vuetify: new Vuetify(),
   data: () => ({
+    isMobile: window.innerWidth < 600,
     // 表格相关数据
     requireRules: [
       v => !!v || 'This is required',
@@ -75,17 +76,6 @@ new Vue({
       {text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed'},
     ],
   }),
-  computed: {
-    isMobile() {
-      return window.innerWidth < 600;
-    },
-    tableData() {
-      if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
-        return this.tableDataFromBackend;
-      }
-      return this.tableDataFromBackend.filter(({gender}) => gender === this.currentTableGenderType);
-    },
-  },
   watch: {},
   async created() {
     await this.doUiAction('refreshTableData');
@@ -93,13 +83,13 @@ new Vue({
   mounted() {
   },
   methods: {
-    async doUiAction(uiActionId, actionData) {
+    async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
           case 'refreshTableData':
-            await this.refreshTableData(actionData);
+            await this.refreshTableData(uiActionData);
             break;
           case 'toTaskHistory':
-            await this.toTaskHistory(actionData);
+            await this.toTaskHistory(uiActionData);
             break;
           default:
             console.error("[doAction] uiActionId not find", { uiActionId });

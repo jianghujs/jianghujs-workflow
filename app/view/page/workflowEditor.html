@@ -59,8 +59,8 @@ new Vue({
   template: '#app-template',
   vuetify: new Vuetify(),
   data: () => ({
+    isMobile: window.innerWidth < 600,
     // 表格相关数据
-    isFormValid: true,
     requireRules: [
       v => !!v || 'This is required',
     ],
@@ -70,75 +70,17 @@ new Vue({
       workflowFormList: []
     },
 
-    serverSearchInput: {
-      studentId: null,
-      classId: null
-    },
-    currentTableGenderType: 'all',
-    isEditDrawerShow: false,
-    searchInput: null,
-    isTableLoading: true,
-    tableDataFromBackend: [],
-    headers: [
-      {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
-
-      {text: "流程ID", value: "workflowId", width: 120},
-      {text: "流程名", value: "workflowName", width: 120},
-      {text: "分类ID", value: "workflowCategory", width: 120},
-      {text: "备注", value: "workFlowRemark", width: 120},
-      {text: "操作者", value: "operationByUser", width: 120},
-      {text: "操作时间", value: "operationAt", width: 250},
-      {text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed'},
-    ],
-
-    currentClickButton: {title: '新增', action: 'add'},
     editItem: {},
-    tableButtonList: [
-      {text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem'},
-      {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
-    ],
     dialogSaveInfoAction: 'createItem',
     dialog: false,
   }),
-  computed: {
-    isMobile() {
-      return window.innerWidth < 600;
-    },
-    tableData() {
-      if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
-        return this.tableDataFromBackend;
-      }
-      return this.tableDataFromBackend.filter(({gender}) => gender === this.currentTableGenderType);
-    },
-    computedEditItem() {
-      return this.editItem;
-    },
-  },
   watch: {
     'editItem.workflowForm': {
       handler(val) {
         if (!val) return
-
-        this.constantCollection.workflowFormList = [];
-        for (const item of val) {
-          this.constantCollection.workflowFormList.push({
-            text: item.component.outline,
-            value: item.id
-          })
-        }
+        this.buildWorkflowFormList(val);
         if (!this.editItem.workflowConfig) return;
-        for (const config of this.editItem.workflowConfig.nodeList) {
-          if (!config.formId) return;
-          const formId = []
-          for (const item of config.formId) {
-            if (!this.constantCollection.workflowFormList.find(e => e.value === item)) {
-              formId.push(item)
-            }
-          }
-          config.formId = formId
-          console.log(config.outline, config.formId)
-        }
-
+        this.buildWorkflowConfig()
       },
       deep: true,
       immediate: true
@@ -148,15 +90,7 @@ new Vue({
     const searchParams = new URLSearchParams(location.search.substring(1));
     const type = searchParams.get('type');
     if(type === 'edit') {
-      const workflowEditItem = sessionStorage.getItem('workflowEditItem');
-      if(workflowEditItem) {
-        this.dialogSaveInfoAction = 'updateItem';
-        this.editItem = JSON.parse(workflowEditItem);
-        sessionStorage.removeItem('workflowEditItem');
-        console.log(this.editItem);
-      } else {
-        history.back();
-      }
+      this.syncEditItem()
     } else {
       this.clearItemData();
     }
@@ -166,15 +100,15 @@ new Vue({
   mounted() {
   },
   methods: {
-    async doUiAction(uiActionId, actionData) {
+    async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
           case 'createItem':
-            await this.confirmCreateItemDialog(actionData);
-            await this.doCreateItem(actionData);
+            await this.confirmCreateItemDialog(uiActionData);
+            await this.doCreateItem(uiActionData);
             break;
           case 'updateItem':
-            await this.confirmUpdateItemDialog(actionData);
-            await this.doUpdateItem(actionData);
+            await this.confirmUpdateItemDialog(uiActionData);
+            await this.doUpdateItem(uiActionData);
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
@@ -194,6 +128,30 @@ new Vue({
         item.id = this.editItem.id;
       }
       return item;
+    },
+
+    buildWorkflowFormList(val) {
+      this.constantCollection.workflowFormList = [];
+      for (const item of val) {
+        this.constantCollection.workflowFormList.push({
+          text: item.component.outline,
+          value: item.id
+        })
+      }
+    },
+
+    buildWorkflowConfig() {
+      for (const config of this.editItem.workflowConfig.nodeList) {
+        if (!config.formId) return;
+        const formId = []
+        for (const item of config.formId) {
+          if (!this.constantCollection.workflowFormList.find(e => e.value === item)) {
+            formId.push(item)
+          }
+        }
+        config.formId = formId
+        console.log(config.outline, config.formId)
+      }
     },
 
     /**
@@ -238,6 +196,17 @@ new Vue({
     async clearItemData() {
       this.editItem = {workflowForm: [], workflowConfig: {lineList: [], nodeList: []}};
     },
+    syncEditItem() {
+      const workflowEditItem = sessionStorage.getItem('workflowEditItem');
+      if(workflowEditItem) {
+        this.dialogSaveInfoAction = 'updateItem';
+        this.editItem = JSON.parse(workflowEditItem);
+        sessionStorage.removeItem('workflowEditItem');
+        console.log(this.editItem);
+      } else {
+        history.back();
+      }
+    },
 
     // createItem
     async confirmCreateItemDialog() {
@@ -250,7 +219,7 @@ new Vue({
      * 新增数据
      */
     async doCreateItem() {
-      delete this.computedEditItem.id;
+      delete this.editItem.id;
       const item = this.buildEditItem();
       await window.vtoast.loading("新增数据");
       await window.jianghuAxios({

@@ -121,6 +121,7 @@ new Vue({
   template: '#app-template',
   vuetify: new Vuetify(),
   data: () => ({
+    isMobile: window.innerWidth < 600,
     step: 1,
     // 表格相关数据
     isFormValid: true,
@@ -135,11 +136,9 @@ new Vue({
     serverSearchInput: {
       processName: null
     },
-    currentTableGenderType: 'all',
     isEditDrawerShow: false,
     searchInput: null,
     isTableLoading: true,
-    tableDataFromBackend: [],
     headers: [
       {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
 
@@ -173,20 +172,6 @@ new Vue({
     taskStepperList: [],
     currentNode: {}
   }),
-  computed: {
-    isMobile() {
-      return window.innerWidth < 600;
-    },
-    tableData() {
-      if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
-        return this.tableDataFromBackend;
-      }
-      return this.tableDataFromBackend.filter(({gender}) => gender === this.currentTableGenderType);
-    },
-    computedEditItem() {
-      return this.editItem;
-    },
-  },
   watch: {},
   async created() {
     const searchParams = new URLSearchParams(location.search.substring(1));
@@ -196,11 +181,11 @@ new Vue({
   mounted() {
   },
   methods: {
-    async doUiAction(uiActionId, actionData) {
+    async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
           case 'submitNode':
-            await this.submitNode(actionData);
-            await this.getTaskHistoryList(actionData);
+            await this.submitNode(uiActionData);
+            await this.getTaskHistoryList(uiActionData);
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });

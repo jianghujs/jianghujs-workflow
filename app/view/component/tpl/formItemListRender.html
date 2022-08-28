@@ -36,9 +36,7 @@
 <script>
   Vue.component("form-item-list-render", {
     template: '#form-item-list-render',
-    mixins: [ window.jianghuUiActionMixins ],
     vuetify: new Vuetify(),
-    vueComponent: "formItemListRender",
     name: 'form-item-list-render',
     props: {
         formItemList: {
@@ -63,7 +61,7 @@
     watch: {
       form: {
         deep: true,
-        
+
       }
     },
     destroyed() {},

@@ -7,7 +7,7 @@
   <template slot="serverSearch">
     <v-row class="ma-0 align-center" :class="{'pa-0': isMobile, 'pa-2': !isMobile}" style="justify-content: end">
       <v-col cols="12" sm="12" xs="5" md="3" xl="2" class="pb-3" :class="{'pl-0': isMobile, 'pt-0': isMobile}">
-        <v-text-field v-model="serverSearchInput.processName" color="success"  prefix="流程名称：" class="cus-v-input" :class="{'mr-2': !isMobile}" dense filled single-line></v-text-field>
+        <v-text-field v-model="serverSearchInput.workflowName" color="success"  prefix="流程名称：" class="cus-v-input" :class="{'mr-2': !isMobile}" dense filled single-line></v-text-field>
       </v-col>
       <v-col class="pl-0 pr-0" :class="{'pt-0': isMobile}" style="max-width: 57px">
         <v-btn
@@ -26,7 +26,7 @@
   <!-- 页面主要内容 -->
     <v-card :class="{'px-2': isMobile}">
       <v-data-table :headers="headers"
-                    :items="tableData"
+                    :items="tableDataFromBackend"
                     :search="searchInput"
                     :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
                     :items-per-page="20"
@@ -108,6 +108,7 @@
     template: '#app-template',
     vuetify: new Vuetify(),
     data: () => ({
+      isMobile: window.innerWidth < 600,
       // 表格相关数据
       isFormValid: true,
       requireRules: [
@@ -118,9 +119,8 @@
       },
 
       serverSearchInput: {
-        processName: null
+        workflowName: null
       },
-      currentTableGenderType: 'all',
       isEditDrawerShow: false,
       searchInput: null,
       isTableLoading: true,
@@ -146,40 +146,25 @@
       ],
       dialogSaveInfoAction: ''
     }),
-    computed: {
-      isMobile() {
-        return window.innerWidth < 600;
-      },
-      tableData() {
-        if (!this.currentTableGenderType || this.currentTableGenderType === 'all') {
-          return this.tableDataFromBackend;
-        }
-        return this.tableDataFromBackend.filter(({ gender }) => gender === this.currentTableGenderType);
-      },
-      computedEditItem() {
-        return this.editItem;
-      },
-    },
-    watch: {},
     async created() {
       await this.doUiAction('refreshTableData');
     },
     mounted() { },
     methods: {
-      async doUiAction(uiActionId, actionData) {
+      async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
           case 'refreshTableData':
-            await this.refreshTableData(actionData);
+            await this.refreshTableData(uiActionData);
             break;
           case 'startCreateItem':
-            await this.clearItemData(actionData);
-            await this.openCreateItemDialog(actionData);
+            await this.clearItemData(uiActionData);
+            await this.openCreateItemDialog(uiActionData);
             break;
           case 'createItem':
-            await this.confirmCreateItemDialog(actionData);
-            await this.doCreateItem(actionData);
-            await this.refreshTableData(actionData);
-            await this.closeDrawerShow(actionData);
+            await this.confirmCreateItemDialog(uiActionData);
+            await this.doCreateItem(uiActionData);
+            await this.refreshTableData(uiActionData);
+            await this.closeDrawerShow(uiActionData);
             break;
           default:
             console.error("[doAction] uiActionId not find", { uiActionId });
@@ -216,7 +201,7 @@
       },
 
       // startCreateItem
-      async clearItemData({item: { workflowForm, workflowConfig, workflowId }}) {
+      clearItemData({item: { workflowForm, workflowConfig, workflowId }}) {
         this.editItem = {workflowForm, workflowFormData: {}, workflowId};
       },
 
@@ -237,14 +222,14 @@
        * 新增数据
        */
       async doCreateItem() {
-        delete this.computedEditItem.id;
+        delete this.editItem.id;
         await window.vtoast.loading("新增数据");
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'taskCreateManagement',
               actionId: 'insertItem',
-              actionData: this.computedEditItem
+              actionData: this.editItem
             }
           }
         })
