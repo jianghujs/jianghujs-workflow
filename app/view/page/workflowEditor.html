@@ -29,15 +29,23 @@
           </v-text-field>
         </v-col>
       </v-row>
+      
     </v-card>
 
   <div class=" pb-4" style="font-size: 18px; font-weight: bold">模板设置</div>
-      <tpl-form-design :form="editItem.workflowForm">
+      <tpl-form-design :form="editItem.workflowForm" v-if="!loading">
       </tpl-form-design>
       <div class="pt-8 pb-4" style="font-size: 18px; font-weight: bold">流程设置</div>
-      <process-flow :data="editItem.workflowConfig" :user="constantCollection.userList"
+      <process-flow v-if="!loading" :data="editItem.workflowConfig" :user="constantCollection.userList"
                     :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
       </process-flow>
+      
+    <v-overlay :value="loading" absolute>
+      <v-progress-circular
+        indeterminate
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
 </template>
 </jh-layout-v3>
 
@@ -73,6 +81,7 @@ new Vue({
     editItem: {},
     dialogSaveInfoAction: 'createItem',
     dialog: false,
+    loading: false,
   }),
   watch: {
     'editItem.workflowForm': {
@@ -88,9 +97,10 @@ new Vue({
   },
   async created() {
     const searchParams = new URLSearchParams(location.search.substring(1));
-    const type = searchParams.get('type');
-    if(type === 'edit') {
-      this.syncEditItem()
+    const id = searchParams.get('id');
+    if(id) {
+      this.editItem = {id};
+      await this.syncEditItem()
     } else {
       this.clearItemData();
     }
@@ -105,10 +115,12 @@ new Vue({
           case 'createItem':
             await this.confirmCreateItemDialog(uiActionData);
             await this.doCreateItem(uiActionData);
+            await this.syncEditItem()
             break;
           case 'updateItem':
             await this.confirmUpdateItemDialog(uiActionData);
             await this.doUpdateItem(uiActionData);
+            await this.syncEditItem()
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
@@ -194,18 +206,33 @@ new Vue({
 
     // startCreateItem
     async clearItemData() {
+      this.dialogSaveInfoAction = 'createItem';
       this.editItem = {workflowForm: [], workflowConfig: {lineList: [], nodeList: []}};
     },
-    syncEditItem() {
-      const workflowEditItem = sessionStorage.getItem('workflowEditItem');
-      if(workflowEditItem) {
-        this.dialogSaveInfoAction = 'updateItem';
-        this.editItem = JSON.parse(workflowEditItem);
-        sessionStorage.removeItem('workflowEditItem');
-        console.log(this.editItem);
+    async syncEditItem() {
+      const _this = this;
+      this.loading = true;
+      this.dialogSaveInfoAction = 'updateItem';
+      const {data: {appData: {rows}}} = await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'selectItemList',
+            where: {id: this.editItem.id},
+          }
+        }
+      });
+      if (!rows.length) {
+        this.clearItemData();
       } else {
-        history.back();
+        const item = rows[0];
+        item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
+        item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
+        this.editItem = item;
       }
+      setTimeout(function() {
+        _this.loading = false;
+      }, 500)
     },
 
     // createItem
@@ -222,7 +249,7 @@ new Vue({
       delete this.editItem.id;
       const item = this.buildEditItem();
       await window.vtoast.loading("新增数据");
-      await window.jianghuAxios({
+      const { data: { appData: { resultData: { rows } } } } = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -231,6 +258,8 @@ new Vue({
           }
         }
       })
+      this.editItem.id = rows[0];
+      history.pushState({}, '', `?id=${rows[0]}`);
       await window.vtoast.success("新增数据成功");
     },
 

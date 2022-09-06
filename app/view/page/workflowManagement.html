@@ -148,13 +148,13 @@ new Vue({
 
     // CreateItem
     async doCreateItem() {
-      window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=add`;
+      window.location.href = `/${window.appInfo.appId}/page/workflowEditor`;
     },
 
     // UpdateItem
     async doUpdateItem({item}) {
       sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
-      window.location.href = `/${window.appInfo.appId}/page/workflowEditor?type=edit`;
+      window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
     },
 
     async confirmDeleteItemDialog() {
