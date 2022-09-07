@@ -45,7 +45,7 @@
     </v-card>
 
   <!-- 编辑抽屉 -->
-  <v-navigation-drawer v-model="isEditDrawerShow" fixed temporary right width="40%"
+  <v-navigation-drawer v-model="isEditDrawerShow" :permanent="isEditDrawerShow" fixed temporary right width="40%"
     class="elevation-24">
     <v-form v-model="isFormValid" v-if="isEditDrawerShow" ref="form" lazy-validation>
       <v-row class="pt-8">
@@ -66,7 +66,7 @@
         <v-col cols="12" class=" pb-3" v-for="(formItem, index) in editItem.workflowForm" :key="index">
           <span class="inputLabel">{{ index+1 }}、 {{ formItem.component.outline }}</span>
           <v-list-item-content v-if="formItem.component.type === 'singleSelect'">
-            <v-radio-group row :rules="requireRules" v-model="editItem.workflowFormData[formItem.id]" hide-details>
+            <v-radio-group row v-model="editItem.workflowFormData[formItem.id]" hide-details>
               <v-radio v-for="(option, optionIndex) in formItem.component.property.selectOptionList"
                 :key="optionIndex" :label="option.value"></v-radio>
             </v-radio-group>
@@ -74,7 +74,7 @@
 
           <v-list-item-content v-if="formItem.component.type === 'multipleSelect'">
             <div v-for="(option, optionIndex) in formItem.component.property.selectOptionList" :key="optionIndex">
-              <v-checkbox :rules="requireRules" style="margin-top: 0px;" :label="option.value" v-model="editItem.workflowFormData[formItem.id]" hide-details color="red"></v-checkbox>
+              <v-checkbox style="margin-top: 0px;" :label="option.value" :value="option.value" v-model="editItem.workflowFormData[formItem.id]" hide-details color="red"></v-checkbox>
             </div>
           </v-list-item-content>
 
@@ -202,7 +202,14 @@
 
       // startCreateItem
       clearItemData({item: { workflowForm, workflowConfig, workflowId }}) {
-        this.editItem = {workflowForm, workflowFormData: {}, workflowId};
+        const workflowFormData = {};
+        workflowForm.forEach(e => {
+          workflowFormData[e.id] = '';
+          if (e.component.type === 'multipleSelect') {
+            workflowFormData[e.id] = [];
+          } 
+        })
+        this.editItem = {workflowForm, workflowFormData, workflowId};
       },
 
       async openCreateItemDialog() {

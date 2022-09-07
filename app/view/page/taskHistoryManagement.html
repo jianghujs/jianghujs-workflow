@@ -31,7 +31,7 @@
               <v-radio hide-details v-for="(option, optionIndex) in formItem.component.property.selectOptionList"
                        :disabled="key === 'prev' || !(currentNode.formId || []).includes(formItem.id)"
                        :key="optionIndex"
-                       :label="option.value" v-model="taskTpl[key][formItem.id]"></v-radio>
+                       :label="option.value"></v-radio>
             </v-radio-group>
           </template>
 
@@ -41,7 +41,8 @@
             <div v-for="(option, optionIndex) in formItem.component.property.selectOptionList" :key="optionIndex">
               <v-checkbox style="margin-top: 0px;"
                           :disabled="key === 'prev' || !(currentNode.formId || []).includes(formItem.id)"
-                          :label="option.value" v-model="taskTpl[key][formItem.id]" hide-details
+                          :label="option.value" :value="option.value" 
+                          v-model="taskTpl[key][formItem.id]" hide-details
                           color="red"></v-checkbox>
             </div>
           </template>
