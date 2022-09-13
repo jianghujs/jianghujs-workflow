@@ -68,11 +68,6 @@ CREATE TABLE `_file` (
 ) ENGINE = InnoDB COMMENT = '文件表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _file
-# ------------------------------------------------------------
-
-
 
 
 # ------------------------------------------------------------
@@ -180,8 +175,8 @@ CREATE TABLE `_resource` (
   `actionId` varchar(255) DEFAULT NULL COMMENT 'action id; E.g: selectXXXByXXX',
   `desc` varchar(255) DEFAULT NULL COMMENT '描述',
   `resourceType` varchar(255) DEFAULT NULL COMMENT 'resource 类型; E.g: auth service sql',
-  `appDataSchema` text COMMENT 'appData 参数校验',
-  `resourceData` text COMMENT 'resource 数据; { "service": "auth", "serviceFunction": "passwordLogin" } or  { "table": "${tableName}", "action": "select", "whereCondition": ".where(function() {this.whereNot( { recordStatus: \\"active\\" })})" }',
+  `appDataSchema` json DEFAULT NULL COMMENT 'appData 参数校验',
+  `resourceData` json DEFAULT NULL COMMENT 'resource 数据; { "service": "auth", "serviceFunction": "passwordLogin" } or  { "table": "${tableName}", "action": "select", "whereCondition": ".where(function() {this.whereNot( { recordStatus: \\"active\\" })})" }',
   `requestDemo` text COMMENT '请求Demo',
   `responseDemo` text COMMENT '响应Demo',
   `operation` varchar(255) DEFAULT 'insert' COMMENT '操作; insert, update, jhInsert, jhUpdate, jhDelete jhRestore',
@@ -289,7 +284,7 @@ CREATE TABLE `_resource_request_log` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `resourceId_index` (`resourceId`) USING BTREE,
   KEY `packageId_index` (`packageId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6377 COMMENT = '文件表; 软删除未启用;';
+) ENGINE = InnoDB AUTO_INCREMENT = 6401 COMMENT = '文件表; 软删除未启用;';
 
 
 
@@ -361,7 +356,7 @@ CREATE TABLE `_ui` (
   `uiActionId` varchar(255) DEFAULT NULL COMMENT 'action id; E.g: selectXXXByXXX',
   `desc` varchar(255) DEFAULT NULL COMMENT '描述',
   `uiActionConfig` text COMMENT 'ui 动作数据',
-  `appDataSchema` text COMMENT 'ui 校验数据',
+  `appDataSchema` json DEFAULT NULL COMMENT 'ui 校验数据',
   `operation` varchar(255) DEFAULT 'insert' COMMENT '操作; insert, update, jhInsert, jhUpdate, jhDelete jhRestore',
   `operationByUserId` varchar(255) DEFAULT NULL COMMENT '操作者userId',
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
@@ -603,16 +598,6 @@ CREATE TABLE `student` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 176;
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: student
-# ------------------------------------------------------------
-
-INSERT INTO `student` (`id`,`studentId`,`name`,`gender`,`dateOfBirth`,`classId`,`level`,`bodyHeight`,`studentStatus`,`remarks`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (161,'G00003','小虾米','male','2022-01-25','2021-01级-02班','02','180','正常','小虾米','jhUpdate','admin','系统管理员','2022-05-01T15:29:52+08:00');
-INSERT INTO `student` (`id`,`studentId`,`name`,`gender`,`dateOfBirth`,`classId`,`level`,`bodyHeight`,`studentStatus`,`remarks`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (168,'100067','1111','male','2022-05-02','2021-01级-01班','01',NULL,NULL,NULL,'jhUpdate','admin','系统管理员','2022-05-01T23:38:23+08:00');
-INSERT INTO `student` (`id`,`studentId`,`name`,`gender`,`dateOfBirth`,`classId`,`level`,`bodyHeight`,`studentStatus`,`remarks`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (173,'121432','21434',NULL,NULL,'2021-01级-01班',NULL,NULL,NULL,NULL,'jhInsert','admin','系统管理员','2022-05-01T23:37:58+08:00');
-INSERT INTO `student` (`id`,`studentId`,`name`,`gender`,`dateOfBirth`,`classId`,`level`,`bodyHeight`,`studentStatus`,`remarks`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (174,'admin','系统管理员','male','2022-05-02','2021-01级-01班','01',NULL,NULL,NULL,'jhUpdate','admin','系统管理员','2022-05-03T21:17:52+08:00');
-INSERT INTO `student` (`id`,`studentId`,`name`,`gender`,`dateOfBirth`,`classId`,`level`,`bodyHeight`,`studentStatus`,`remarks`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (175,'1000221','221','male','2022-05-08','2021-01级-02班','01',NULL,NULL,NULL,'jhUpdate','admin','系统管理员','2022-05-03T20:50:51+08:00');
-
 
 
 # ------------------------------------------------------------
@@ -639,7 +624,7 @@ CREATE TABLE `task` (
   `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 53 COMMENT = '任务表';
+) ENGINE = InnoDB AUTO_INCREMENT = 54 COMMENT = '任务表';
 
 
 # ------------------------------------------------------------
@@ -680,7 +665,7 @@ CREATE TABLE `task_history` (
   `operationByUserId` varchar(255) DEFAULT NULL COMMENT '操作者userId',
   `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 107 COMMENT = '任务表';
+) ENGINE = InnoDB AUTO_INCREMENT = 108 COMMENT = '任务表';
 
 
 # ------------------------------------------------------------
