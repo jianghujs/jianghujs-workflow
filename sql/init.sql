@@ -472,7 +472,7 @@ CREATE TABLE `_user_group_role_page` (
 # ------------------------------------------------------------
 
 
-INSERT INTO `_user_group_role_page` (`id`,`user`, `group`, `role`, `page`, `allowOrDeny`, `desc`, `operation`, `operationByUserId`, `operationByUser`, `operationAt`) VALUES (1, '*', 'login', '*', '*', 'allow', ‘所有页面; 开放给登陆用户;', 'insert', NULL, NULL, NULL);
+INSERT INTO `_user_group_role_page` (`id`,`user`, `group`, `role`, `page`, `allowOrDeny`, `desc`, `operation`, `operationByUserId`, `operationByUser`, `operationAt`) VALUES (1, '*', 'login', '*', '*', 'allow', '所有页面; 开放给登陆用户;', 'insert', NULL, NULL, NULL);
 
 
 
@@ -502,8 +502,8 @@ CREATE TABLE `_user_group_role_resource` (
 # DATA DUMP FOR TABLE: _user_group_role_resource
 # ------------------------------------------------------------
 
-INSERT INTO `jianghu_multiple_component`.`_user_group_role_resource` (`id`, `user`, `group`, `role`, `resource`, `allowOrDeny`, `desc`, `operation`, `operationByUserId`, `operationByUser`, `operationAt`) VALUES (1, '*', 'login', '*', 'allPage.*', 'allow', '所有权限, 开放给所有登陆成功的用户', 'insert', NULL, NULL, NULL);
-INSERT INTO `jianghu_multiple_component`.`_user_group_role_resource` (`id`, `user`, `group`, `role`, `resource`, `allowOrDeny`, `desc`, `operation`, `operationByUserId`, `operationByUser`, `operationAt`) VALUES (2, '*', 'login', '*', '*', 'allow', '所有权限, 开放给所有登陆成功的用户', 'insert', NULL, NULL, NULL);
+INSERT INTO `_user_group_role_resource` (`id`, `user`, `group`, `role`, `resource`, `allowOrDeny`, `desc`, `operation`, `operationByUserId`, `operationByUser`, `operationAt`) VALUES (1, '*', 'login', '*', 'allPage.*', 'allow', '所有权限, 开放给所有登陆成功的用户', 'insert', NULL, NULL, NULL);
+INSERT INTO `_user_group_role_resource` (`id`, `user`, `group`, `role`, `resource`, `allowOrDeny`, `desc`, `operation`, `operationByUserId`, `operationByUser`, `operationAt`) VALUES (2, '*', 'login', '*', '*', 'allow', '所有权限, 开放给所有登陆成功的用户', 'insert', NULL, NULL, NULL);
 
 
 
