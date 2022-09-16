@@ -3,8 +3,8 @@ npm-debug.log
 yarn-error.log
 *.log
 node_modules/
-# package-lock.json
-# yarn.lock
+package-lock.json
+yarn.lock
 coverage/
 .idea/
 .github/
