@@ -37,9 +37,6 @@ CREATE TABLE `_constant` (
 ) ENGINE = InnoDB COMMENT = '常量表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _constant
-# ------------------------------------------------------------
 
 
 
@@ -91,9 +88,6 @@ CREATE TABLE `_group` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 9 COMMENT = '群组表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _group
-# ------------------------------------------------------------
 
 INSERT INTO `_group` (`id`,`groupId`,`groupName`,`groupDesc`,`groupAvatar`,`groupExtend`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (1,'adminGroup','管理组','管理组',NULL,'{}','insert',NULL,NULL,NULL);
 INSERT INTO `_group` (`id`,`groupId`,`groupName`,`groupDesc`,`groupAvatar`,`groupExtend`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (6,'wudang','武当','武当',NULL,'{}','insert',NULL,NULL,NULL);
@@ -122,9 +116,6 @@ CREATE TABLE `_page` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 48 COMMENT = '页面表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _page
-# ------------------------------------------------------------
 
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageFile`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (2,'help','帮助','helpV3','dynamicInMenu','11','insert',NULL,NULL,NULL);
 INSERT INTO `_page` (`id`,`pageId`,`pageName`,`pageFile`,`pageType`,`sort`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (3,'login','登陆','loginV3','','','insert',NULL,NULL,NULL);
@@ -187,9 +178,6 @@ CREATE TABLE `_resource` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 263 COMMENT = '请求资源表; 软删除未启用; resourceId=`${appId}.${pageId}.${actionId}`';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _resource
-# ------------------------------------------------------------
 
 INSERT INTO `_resource` (`id`,`accessControlTable`,`resourceHook`,`pageId`,`actionId`,`desc`,`resourceType`,`appDataSchema`,`resourceData`,`requestDemo`,`responseDemo`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (1,NULL,NULL,'allPage','getChunkInfo','✅ 文件分片下载-获取分片信息','service','{}','{\"service\": \"file\", \"serviceFunction\": \"getChunkInfo\"}','','','jhUpdate','admin','adminName','2022-05-03T12:46:39+08:00');
 INSERT INTO `_resource` (`id`,`accessControlTable`,`resourceHook`,`pageId`,`actionId`,`desc`,`resourceType`,`appDataSchema`,`resourceData`,`requestDemo`,`responseDemo`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (2,NULL,NULL,'allPage','uploadFileDone','✅ 文件分片上传-所有分片上传完毕','service','{}','{\"service\": \"file\", \"serviceFunction\": \"uploadFileDone\"}','','','update',NULL,NULL,'2022-05-04T16:02:58+08:00');
@@ -307,9 +295,6 @@ CREATE TABLE `_role` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 8 COMMENT = '角色表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _role
-# ------------------------------------------------------------
 
 INSERT INTO `_role` (`id`,`roleId`,`roleName`,`roleDesc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (3,'appAdmin','系统管理员','','insert',NULL,NULL,NULL);
 INSERT INTO `_role` (`id`,`roleId`,`roleName`,`roleDesc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (6,'boss','掌门','','insert',NULL,NULL,NULL);
@@ -337,9 +322,6 @@ CREATE TABLE `_test_case` (
 ) ENGINE = InnoDB COMMENT = '测试用例表';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _test_case
-# ------------------------------------------------------------
 
 
 
@@ -365,9 +347,6 @@ CREATE TABLE `_ui` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 193 COMMENT = 'ui 施工方案';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _ui
-# ------------------------------------------------------------
 
 
 
@@ -398,9 +377,6 @@ CREATE TABLE `_user` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 49 COMMENT = '用户表';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _user
-# ------------------------------------------------------------
 
 INSERT INTO `_user` (`id`,`idSequence`,`userId`,`username`,`clearTextPassword`,`password`,`md5Salt`,`userStatus`,`userType`,`config`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (42,NULL,'admin','系统管理员','123456','38d61d315e62546fe7f1013e31d42f57','Xs4JSZnhiwsR','active',NULL,NULL,'insert',NULL,NULL,NULL);
 INSERT INTO `_user` (`id`,`idSequence`,`userId`,`username`,`clearTextPassword`,`password`,`md5Salt`,`userStatus`,`userType`,`config`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (43,NULL,'W00001','张三丰','123456','38d61d315e62546fe7f1013e31d42f57','Xs4JSZnhiwsR','active','common',NULL,'jhUpdate','vscode','vscode','2022-07-07T16:52:42+08:00');
@@ -432,9 +408,6 @@ CREATE TABLE `_user_group_role` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 579 COMMENT = '用户群组角色关联表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _user_group_role
-# ------------------------------------------------------------
 
 INSERT INTO `_user_group_role` (`id`,`userId`,`groupId`,`roleId`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (568,'admin','adminGroup','appAdmin','insert',NULL,NULL,NULL);
 INSERT INTO `_user_group_role` (`id`,`userId`,`groupId`,`roleId`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (569,'W00001','adminGroup','appAdmin','jhUpdate','vscode','vscode','2022-07-07T16:55:07+08:00');
@@ -467,16 +440,10 @@ CREATE TABLE `_user_group_role_page` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 31 COMMENT = '用户群组角色 - 页面 映射表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _user_group_role_page
-# ------------------------------------------------------------
 
 INSERT INTO `_user_group_role_page` (`id`,`user`,`group`,`role`,`page`,`allowOrDeny`,`desc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (1,'*','public','*','login','allow','登陆页面; 开放所有用户;','insert',NULL,NULL,NULL);
 INSERT INTO `_user_group_role_page` (`id`,`user`,`group`,`role`,`page`,`allowOrDeny`,`desc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (2,'*','login','*','help,manual','allow','工具页; 开放给登陆用户;','insert',NULL,NULL,NULL);
 INSERT INTO `_user_group_role_page` (`id`,`user`,`group`,`role`,`page`,`allowOrDeny`,`desc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (3,'*','login','*','*','allow','所有页面; 开放给登陆用户;','insert',NULL,NULL,NULL);
-
-
-
 
 
 
@@ -501,16 +468,10 @@ CREATE TABLE `_user_group_role_resource` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 135 COMMENT = '用户群组角色 - 请求资源 映射表; 软删除未启用;';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: _user_group_role_resource
-# ------------------------------------------------------------
 
 INSERT INTO `_user_group_role_resource` (`id`,`user`,`group`,`role`,`resource`,`allowOrDeny`,`desc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (1,'*','public','*','login.passwordLogin','allow','登陆resource, 开放给所有用户','insert',NULL,NULL,NULL);
 INSERT INTO `_user_group_role_resource` (`id`,`user`,`group`,`role`,`resource`,`allowOrDeny`,`desc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (2,'*','login','*','allPage.*','allow','工具类resource, 开放给所有登陆成功的用户','insert',NULL,NULL,NULL);
 INSERT INTO `_user_group_role_resource` (`id`,`user`,`group`,`role`,`resource`,`allowOrDeny`,`desc`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (3,'*','login','*','*','allow','所有resource, 开放给所有登陆成功的用户','insert',NULL,NULL,NULL);
-
-
-
 
 
 
@@ -562,9 +523,6 @@ CREATE TABLE `access_control_student` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 52 COMMENT = '学生表的 accessControl 表';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: access_control_student
-# ------------------------------------------------------------
 
 INSERT INTO `access_control_student` (`id`,`userId`,`username`,`resourceData`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (50,'G00001','洪七公','{ \"where\":{\"level\": \"02\"} }','insert',NULL,NULL,NULL);
 INSERT INTO `access_control_student` (`id`,`userId`,`username`,`resourceData`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (51,'H00001','岳不群','{ \"where\":{\"level\": \"02\"} }','insert',NULL,NULL,NULL);
@@ -598,6 +556,8 @@ CREATE TABLE `student` (
 
 
 
+
+
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: task
 # ------------------------------------------------------------
@@ -625,9 +585,6 @@ CREATE TABLE `task` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 54 COMMENT = '任务表';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: task
-# ------------------------------------------------------------
 
 INSERT INTO `task` (`id`,`taskId`,`taskTitle`,`taskStatus`,`taskFormInput`,`taskConfigId`,`taskNextConfigList`,`taskInitUser`,`taskEditUserList`,`taskViewUserList`,`taskComment`,`workflowConfig`,`createByUser`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (53,'1000','0907任务深情','running','{\"input\":{\"input_s5wcxWAi\":\"100\",\"textarea_4r_5gkmw\":\"100\",\"singleSelect_0jNoUCKM\":0,\"multipleSelect_CvKc9LuB\":[\"2\",\"3\"]},\"formList\":[{\"id\":\"input_s5wcxWAi\",\"component\":{\"title\":\"单行文本\",\"type\":\"input\",\"outline\":\"金额\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"textarea_4r_5gkmw\",\"component\":{\"title\":\"多行文本\",\"type\":\"textarea\",\"outline\":\"金额大小\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"singleSelect_0jNoUCKM\",\"component\":{\"title\":\"单选\",\"type\":\"singleSelect\",\"outline\":\"单选\",\"property\":{\"selectOptionList\":[{\"value\":\"1\"},{\"value\":\"2\"},{\"value\":\"3\"}]},\"icon\":\"mdi-checkbox-marked-circle\"}},{\"id\":\"multipleSelect_CvKc9LuB\",\"component\":{\"title\":\"多选\",\"type\":\"multipleSelect\",\"outline\":\"多选\",\"property\":{\"selectOptionList\":[{\"value\":\"1\"},{\"value\":\"2\"},{\"value\":\"3\"}]},\"icon\":\"mdi-checkbox-marked\"}}]}','receiveTask-d3cfbd2f2c48','[{\"id\":\"line-7af22202cd48\",\"to\":\"userTask-280f7cc4f948\",\"from\":\"receiveTask-d3cfbd2f2c48\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"}]','admin','W00001','W00001,W00002,G00001,admin',NULL,'{\"lineList\":[{\"id\":\"line-6e88ce2cc148\",\"to\":\"userTask-b7ac8a109948\",\"from\":\"receiveTask-0fee61790848\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-7af22202cd48\",\"to\":\"userTask-280f7cc4f948\",\"from\":\"receiveTask-d3cfbd2f2c48\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-56e65e1b6248\",\"to\":\"receiveTask-0fee61790848\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"移交\",\"label\":\"移交\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-f7a77463a148\",\"to\":\"receiveTask-d3cfbd2f2c48\",\"from\":\"start-b356baa16848\",\"type\":\"同意\",\"label\":\"连线名称\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-614ad15e7a48\",\"to\":\"receiveTask-d3cfbd2f2c48\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"拒绝\",\"label\":\"驳回\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-4c7d72debd48\",\"to\":\"receiveTask-0fee61790848\",\"from\":\"userTask-b7ac8a109948\",\"type\":\"拒绝\",\"label\":\"驳回\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-58a5bf293648\",\"to\":\"end-6455e366fe48\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"同意\",\"label\":\"通过审批\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-800303750748\",\"to\":\"end-6455e366fe48\",\"from\":\"userTask-b7ac8a109948\",\"type\":\"同意\",\"label\":\"通过审批\",\"Remark\":\"\",\"endpoint\":\"Dot\"}],\"nodeList\":[{\"id\":\"start-b356baa16848\",\"top\":\"59px\",\"left\":\"148px\",\"type\":\"start\",\"label\":\"申请报销\",\"Remark\":\"\",\"lineTypeList\":\"同意\"},{\"id\":\"end-6455e366fe48\",\"top\":\"351px\",\"left\":\"630px\",\"type\":\"end\",\"label\":\"完成报销\",\"lineTypeList\":\"\"},{\"id\":\"receiveTask-d3cfbd2f2c48\",\"top\":\"177px\",\"left\":\"149px\",\"type\":\"receiveTask\",\"label\":\"初步审核\",\"formId\":[\"input_h9_FzChA\",\"input_v5KqrcgN\",\"input_npIModIb\"],\"assignType\":\"person\",\"assignValue\":[\"W00001\"],\"lineTypeList\":\"同意,拒绝\",\"formIdHidden\":[]},{\"id\":\"receiveTask-0fee61790848\",\"top\":\"246px\",\"left\":\"366px\",\"type\":\"receiveTask\",\"label\":\"二次审核\",\"formId\":[\"input_h9_FzChA\"],\"assignType\":\"person\",\"assignValue\":[\"W00002\",\"G00001\"],\"lineTypeList\":\"同意,拒绝\"},{\"id\":\"userTask-b7ac8a109948\",\"top\":\"248px\",\"left\":\"630px\",\"type\":\"userTask\",\"label\":\"审批节点\",\"formId\":[\"input_h9_FzChA\"],\"lineTypeList\":\"同意,拒绝\"},{\"id\":\"userTask-280f7cc4f948\",\"top\":\"349px\",\"left\":\"324px\",\"type\":\"userTask\",\"label\":\"审批节点\",\"formId\":[\"input_h9_FzChA\"],\"assignType\":\"person\",\"assignValue\":[\"admin\"],\"lineTypeList\":\"同意,拒绝,移交\"}]}','admin','insert','admin','系统管理员','2022-09-07T22:33:08+08:00');
 
@@ -666,9 +623,6 @@ CREATE TABLE `task_history` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 108 COMMENT = '任务表';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: task_history
-# ------------------------------------------------------------
 
 INSERT INTO `task_history` (`id`,`taskId`,`taskTitle`,`taskStatus`,`taskFormInput`,`taskConfigId`,`taskNextConfigList`,`taskInitUser`,`taskEditUserList`,`taskViewUserList`,`taskComment`,`workflowConfig`,`createByUser`,`taskExplain`,`taskHandleDesc`,`taskLineFrom`,`taskLineTo`,`taskLineLabel`,`taskCostDuration`,`operation`,`operationByUser`,`operationByUserId`,`operationAt`) VALUES (107,'1000','0907任务深情','running','{\"input\":{\"input_s5wcxWAi\":\"100\",\"textarea_4r_5gkmw\":\"100\",\"singleSelect_0jNoUCKM\":0,\"multipleSelect_CvKc9LuB\":[\"2\",\"3\"]},\"formList\":[{\"id\":\"input_s5wcxWAi\",\"component\":{\"title\":\"单行文本\",\"type\":\"input\",\"outline\":\"金额\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"textarea_4r_5gkmw\",\"component\":{\"title\":\"多行文本\",\"type\":\"textarea\",\"outline\":\"金额大小\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"singleSelect_0jNoUCKM\",\"component\":{\"title\":\"单选\",\"type\":\"singleSelect\",\"outline\":\"单选\",\"property\":{\"selectOptionList\":[{\"value\":\"1\"},{\"value\":\"2\"},{\"value\":\"3\"}]},\"icon\":\"mdi-checkbox-marked-circle\"}},{\"id\":\"multipleSelect_CvKc9LuB\",\"component\":{\"title\":\"多选\",\"type\":\"multipleSelect\",\"outline\":\"多选\",\"property\":{\"selectOptionList\":[{\"value\":\"1\"},{\"value\":\"2\"},{\"value\":\"3\"}]},\"icon\":\"mdi-checkbox-marked\"}}]}','receiveTask-d3cfbd2f2c48','[{\"id\":\"line-7af22202cd48\",\"to\":\"userTask-280f7cc4f948\",\"from\":\"receiveTask-d3cfbd2f2c48\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"}]','admin','W00001','W00001,W00002,G00001,admin',NULL,'{\"lineList\":[{\"id\":\"line-6e88ce2cc148\",\"to\":\"userTask-b7ac8a109948\",\"from\":\"receiveTask-0fee61790848\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-7af22202cd48\",\"to\":\"userTask-280f7cc4f948\",\"from\":\"receiveTask-d3cfbd2f2c48\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-56e65e1b6248\",\"to\":\"receiveTask-0fee61790848\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"移交\",\"label\":\"移交\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-f7a77463a148\",\"to\":\"receiveTask-d3cfbd2f2c48\",\"from\":\"start-b356baa16848\",\"type\":\"同意\",\"label\":\"连线名称\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-614ad15e7a48\",\"to\":\"receiveTask-d3cfbd2f2c48\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"拒绝\",\"label\":\"驳回\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-4c7d72debd48\",\"to\":\"receiveTask-0fee61790848\",\"from\":\"userTask-b7ac8a109948\",\"type\":\"拒绝\",\"label\":\"驳回\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-58a5bf293648\",\"to\":\"end-6455e366fe48\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"同意\",\"label\":\"通过审批\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-800303750748\",\"to\":\"end-6455e366fe48\",\"from\":\"userTask-b7ac8a109948\",\"type\":\"同意\",\"label\":\"通过审批\",\"Remark\":\"\",\"endpoint\":\"Dot\"}],\"nodeList\":[{\"id\":\"start-b356baa16848\",\"top\":\"59px\",\"left\":\"148px\",\"type\":\"start\",\"label\":\"申请报销\",\"Remark\":\"\",\"lineTypeList\":\"同意\"},{\"id\":\"end-6455e366fe48\",\"top\":\"351px\",\"left\":\"630px\",\"type\":\"end\",\"label\":\"完成报销\",\"lineTypeList\":\"\"},{\"id\":\"receiveTask-d3cfbd2f2c48\",\"top\":\"177px\",\"left\":\"149px\",\"type\":\"receiveTask\",\"label\":\"初步审核\",\"formId\":[\"input_h9_FzChA\",\"input_v5KqrcgN\",\"input_npIModIb\"],\"assignType\":\"person\",\"assignValue\":[\"W00001\"],\"lineTypeList\":\"同意,拒绝\",\"formIdHidden\":[]},{\"id\":\"receiveTask-0fee61790848\",\"top\":\"246px\",\"left\":\"366px\",\"type\":\"receiveTask\",\"label\":\"二次审核\",\"formId\":[\"input_h9_FzChA\"],\"assignType\":\"person\",\"assignValue\":[\"W00002\",\"G00001\"],\"lineTypeList\":\"同意,拒绝\"},{\"id\":\"userTask-b7ac8a109948\",\"top\":\"248px\",\"left\":\"630px\",\"type\":\"userTask\",\"label\":\"审批节点\",\"formId\":[\"input_h9_FzChA\"],\"lineTypeList\":\"同意,拒绝\"},{\"id\":\"userTask-280f7cc4f948\",\"top\":\"349px\",\"left\":\"324px\",\"type\":\"userTask\",\"label\":\"审批节点\",\"formId\":[\"input_h9_FzChA\"],\"assignType\":\"person\",\"assignValue\":[\"admin\"],\"lineTypeList\":\"同意,拒绝,移交\"}]}','admin','申请报销','流转','start-b356baa16848','receiveTask-d3cfbd2f2c48','同意-连线名称','0','insert','系统管理员','admin','2022-09-07T22:33:08+08:00');
 
@@ -695,9 +649,6 @@ CREATE TABLE `workflow` (
 ) ENGINE = InnoDB AUTO_INCREMENT = 29 COMMENT = '流程表';
 
 
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: workflow
-# ------------------------------------------------------------
 
 INSERT INTO `workflow` (`id`,`workflowId`,`workflowName`,`workflowForm`,`workflowConfig`,`workflowCategory`,`workflowRemark`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (23,'1001','ceshi 0907','[{\"id\":\"input_s5wcxWAi\",\"component\":{\"title\":\"单行文本\",\"type\":\"input\",\"outline\":\"金额\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"textarea_4r_5gkmw\",\"component\":{\"title\":\"多行文本\",\"type\":\"textarea\",\"outline\":\"金额大小\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"singleSelect_0jNoUCKM\",\"component\":{\"title\":\"单选\",\"type\":\"singleSelect\",\"outline\":\"单选\",\"property\":{\"selectOptionList\":[{\"value\":\"1\"},{\"value\":\"2\"},{\"value\":\"3\"}]},\"icon\":\"mdi-checkbox-marked-circle\"}},{\"id\":\"multipleSelect_CvKc9LuB\",\"component\":{\"title\":\"多选\",\"type\":\"multipleSelect\",\"outline\":\"多选\",\"property\":{\"selectOptionList\":[{\"value\":\"1\"},{\"value\":\"2\"},{\"value\":\"3\"}]},\"icon\":\"mdi-checkbox-marked\"}}]','{\"lineList\":[{\"id\":\"line-6e88ce2cc148\",\"to\":\"userTask-b7ac8a109948\",\"from\":\"receiveTask-0fee61790848\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-7af22202cd48\",\"to\":\"userTask-280f7cc4f948\",\"from\":\"receiveTask-d3cfbd2f2c48\",\"type\":\"同意\",\"label\":\"通过审核\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-56e65e1b6248\",\"to\":\"receiveTask-0fee61790848\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"移交\",\"label\":\"移交\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-f7a77463a148\",\"to\":\"receiveTask-d3cfbd2f2c48\",\"from\":\"start-b356baa16848\",\"type\":\"同意\",\"label\":\"连线名称\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-614ad15e7a48\",\"to\":\"receiveTask-d3cfbd2f2c48\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"拒绝\",\"label\":\"驳回\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-4c7d72debd48\",\"to\":\"receiveTask-0fee61790848\",\"from\":\"userTask-b7ac8a109948\",\"type\":\"拒绝\",\"label\":\"驳回\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-58a5bf293648\",\"to\":\"end-6455e366fe48\",\"from\":\"userTask-280f7cc4f948\",\"type\":\"同意\",\"label\":\"通过审批\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"id\":\"line-800303750748\",\"to\":\"end-6455e366fe48\",\"from\":\"userTask-b7ac8a109948\",\"type\":\"同意\",\"label\":\"通过审批\",\"Remark\":\"\",\"endpoint\":\"Dot\"}],\"nodeList\":[{\"id\":\"start-b356baa16848\",\"top\":\"59px\",\"left\":\"148px\",\"type\":\"start\",\"label\":\"申请报销\",\"Remark\":\"\",\"lineTypeList\":\"同意\"},{\"id\":\"end-6455e366fe48\",\"top\":\"351px\",\"left\":\"630px\",\"type\":\"end\",\"label\":\"完成报销\",\"lineTypeList\":\"\"},{\"id\":\"receiveTask-d3cfbd2f2c48\",\"top\":\"177px\",\"left\":\"149px\",\"type\":\"receiveTask\",\"label\":\"初步审核\",\"formId\":[\"input_h9_FzChA\",\"input_v5KqrcgN\",\"input_npIModIb\"],\"assignType\":\"person\",\"assignValue\":[\"W00001\"],\"lineTypeList\":\"同意,拒绝\",\"formIdHidden\":[]},{\"id\":\"receiveTask-0fee61790848\",\"top\":\"246px\",\"left\":\"366px\",\"type\":\"receiveTask\",\"label\":\"二次审核\",\"formId\":[\"input_h9_FzChA\"],\"assignType\":\"person\",\"assignValue\":[\"W00002\",\"G00001\"],\"lineTypeList\":\"同意,拒绝\"},{\"id\":\"userTask-b7ac8a109948\",\"top\":\"248px\",\"left\":\"630px\",\"type\":\"userTask\",\"label\":\"审批节点\",\"formId\":[\"input_h9_FzChA\"],\"lineTypeList\":\"同意,拒绝\"},{\"id\":\"userTask-280f7cc4f948\",\"top\":\"349px\",\"left\":\"324px\",\"type\":\"userTask\",\"label\":\"审批节点\",\"formId\":[\"input_h9_FzChA\"],\"assignType\":\"person\",\"assignValue\":[\"admin\"],\"lineTypeList\":\"同意,拒绝,移交\"}]}','财务',NULL,'jhUpdate','admin','系统管理员','2022-09-07T13:51:42+08:00');
 INSERT INTO `workflow` (`id`,`workflowId`,`workflowName`,`workflowForm`,`workflowConfig`,`workflowCategory`,`workflowRemark`,`operation`,`operationByUserId`,`operationByUser`,`operationAt`) VALUES (25,'1003','差旅报销审批流','[{\"id\":\"input_pFyJOHJ_\",\"component\":{\"title\":\"单行文本\",\"type\":\"input\",\"outline\":\"出发地\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"input_ZhhMcBuu\",\"component\":{\"title\":\"单行文本\",\"type\":\"input\",\"outline\":\"目的地\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"input_R2zzvdbt\",\"component\":{\"title\":\"单行文本\",\"type\":\"input\",\"outline\":\"报销金额\",\"property\":{},\"icon\":\"mdi-form-textarea\"}},{\"id\":\"singleSelect_uRYtR5Qd\",\"component\":{\"title\":\"单选\",\"type\":\"singleSelect\",\"outline\":\"项目\",\"property\":{\"selectOptionList\":[{\"value\":\"A项目\"},{\"value\":\"B项目\"},{\"value\":\"C项目\"},{\"value\":\"D项目\"}]},\"icon\":\"mdi-checkbox-marked-circle\"}}]','{\"lineList\":[{\"from\":\"start-65644f2d3448\",\"to\":\"userTask-03c49310f248\",\"label\":\"进入审批流(自动)\",\"type\":\"\",\"id\":\"line-d0f962b80948\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"from\":\"userTask-03c49310f248\",\"to\":\"userTask-aa4ea99a9f48\",\"label\":\"长老同意\",\"type\":\"同意\",\"id\":\"line-5cf3a4816548\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"from\":\"userTask-aa4ea99a9f48\",\"to\":\"end-3f55d5225d48\",\"label\":\"掌门同意\",\"type\":\"同意\",\"id\":\"line-44e482e2ef48\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"from\":\"userTask-03c49310f248\",\"to\":\"end-9680fce31948\",\"label\":\"长老拒绝\",\"type\":\"拒绝\",\"id\":\"line-2b7361c1be48\",\"Remark\":\"\",\"endpoint\":\"Dot\"},{\"from\":\"userTask-aa4ea99a9f48\",\"to\":\"end-9680fce31948\",\"label\":\"掌门拒绝\",\"type\":\"拒绝\",\"id\":\"line-e4146ac08e48\",\"Remark\":\"\",\"endpoint\":\"Dot\"}],\"nodeList\":[{\"id\":\"end-3f55d5225d48\",\"label\":\"差旅报销-同意申请\",\"top\":\"241px\",\"left\":\"645px\",\"type\":\"end\",\"lineTypeList\":\"\"},{\"id\":\"end-9680fce31948\",\"label\":\"差旅报销-拒绝申请\",\"top\":\"288px\",\"left\":\"417px\",\"type\":\"end\",\"lineTypeList\":\"\"},{\"id\":\"start-65644f2d3448\",\"label\":\"差旅报销-提交申请\",\"top\":\"31px\",\"left\":\"78px\",\"type\":\"start\",\"lineTypeList\":\"\",\"Remark\":\"\",\"formId\":[\"input_pFyJOHJ_\",\"input_ZhhMcBuu\",\"input_R2zzvdbt\",\"singleSelect_uRYtR5Qd\"]},{\"id\":\"userTask-03c49310f248\",\"label\":\"差旅报销-长老审批\",\"top\":\"96px\",\"left\":\"261px\",\"type\":\"userTask\",\"lineTypeList\":\"同意,拒绝\",\"assignType\":\"person\",\"assignValue\":[\"W00002\"]},{\"id\":\"userTask-aa4ea99a9f48\",\"label\":\"差旅报销-掌门审批\",\"top\":\"180px\",\"left\":\"493px\",\"type\":\"userTask\",\"lineTypeList\":\"同意,拒绝\",\"assignType\":\"person\",\"assignValue\":[\"W00001\"]}]}','财务',NULL,'jhUpdate','admin','系统管理员','2022-08-30T16:41:32+08:00');
