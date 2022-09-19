@@ -218,36 +218,6 @@ INSERT INTO `_resource` (`id`,`accessControlTable`,`resourceHook`,`pageId`,`acti
 
 
 # ------------------------------------------------------------
-# SCHEMA DUMP FOR TABLE: _resource_request_log
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `_resource_request_log`;
-CREATE TABLE `_resource_request_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `resourceId` varchar(255) DEFAULT NULL COMMENT 'resource id;',
-  `packageId` varchar(255) DEFAULT NULL COMMENT 'resource package id',
-  `userIp` varchar(255) DEFAULT NULL COMMENT '用户ip;',
-  `userAgent` varchar(255) DEFAULT NULL COMMENT '设备信息',
-  `userId` varchar(255) DEFAULT NULL COMMENT '用户ID',
-  `deviceId` varchar(255) DEFAULT NULL COMMENT '设备id',
-  `userIpRegion` varchar(255) DEFAULT NULL COMMENT '用户Ip区域',
-  `executeSql` varchar(255) DEFAULT NULL COMMENT '执行的sql',
-  `requestBody` longtext COMMENT '请求body',
-  `responseBody` longtext COMMENT '响应body',
-  `responseStatus` varchar(255) DEFAULT NULL COMMENT '执行的结果;  success, fail',
-  `operation` varchar(255) DEFAULT 'insert' COMMENT '操作; insert, update, jhInsert, jhUpdate, jhDelete jhRestore',
-  `operationByUserId` varchar(255) DEFAULT NULL COMMENT '操作者userId',
-  `operationByUser` varchar(255) DEFAULT NULL COMMENT '操作者用户名',
-  `operationAt` varchar(255) DEFAULT NULL COMMENT '操作时间; E.g: 2021-05-28T10:24:54+08:00 ',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `resourceId_index` (`resourceId`) USING BTREE,
-  KEY `packageId_index` (`packageId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6401 COMMENT = '文件表; 软删除未启用;';
-
-
-
-
-# ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: _role
 # ------------------------------------------------------------
 
