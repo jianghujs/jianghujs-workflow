@@ -201,13 +201,15 @@ new Vue({
       const {
         data: {
           appData: {
-            taskHistoryList,
-            taskStepperList,
-            taskTpl,
-            isAccess,
-            nextLineList,
-            step,
-            currentNode
+            resultData: {
+              taskHistoryList,
+              taskStepperList,
+              taskTpl,
+              isAccess,
+              nextLineList,
+              step,
+              currentNode
+            }
           }
         }
       } = await window.jianghuAxios({

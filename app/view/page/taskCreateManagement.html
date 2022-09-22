@@ -177,7 +177,7 @@
       async refreshTableData() {
         this.isTableLoading = true;
         const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
-        const { data: { appData: { rows } } } = await window.jianghuAxios({
+        const { data: { appData: { resultData: {rows} } } } = await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'taskCreateManagement',

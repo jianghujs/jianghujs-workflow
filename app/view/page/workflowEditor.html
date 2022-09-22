@@ -170,7 +170,7 @@ new Vue({
      * 获取表格数据
      */
     async getUserList() {
-      const {data: {appData: {rows}}} = await window.jianghuAxios({
+      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -188,7 +188,7 @@ new Vue({
      * 获取表格数据
      */
     async getGroupList() {
-      const {data: {appData: {rows}}} = await window.jianghuAxios({
+      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
