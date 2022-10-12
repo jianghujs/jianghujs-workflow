@@ -103,7 +103,7 @@ new Vue({
      */
     async refreshTableData() {
       this.isTableLoading = true;
-      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
+      const result = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'taskUpcomingManagement',
@@ -115,7 +115,7 @@ new Vue({
         }
       });
 
-      this.tableDataFromBackend = rows;
+      this.tableDataFromBackend = result.data.appData.resultData.rows;
       this.isTableLoading = false;
     },
 
