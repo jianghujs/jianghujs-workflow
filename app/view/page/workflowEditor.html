@@ -170,7 +170,7 @@ new Vue({
      * 获取表格数据
      */
     async getUserList() {
-      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
+      const { rows } = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -179,7 +179,7 @@ new Vue({
             where: {},
           }
         }
-      });
+      })).data.appData.resultData;
       this.constantCollection.userList = rows.map(e => {
         return {text: e.username, value: e.userId}
       })
@@ -188,7 +188,7 @@ new Vue({
      * 获取表格数据
      */
     async getGroupList() {
-      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
+      const { rows } = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -197,7 +197,7 @@ new Vue({
             where: {},
           }
         }
-      });
+      })).data.appData.resultData;
       this.constantCollection.groupList = rows.map(e => {
         return {text: e.groupName, value: e.groupId}
       });
@@ -213,7 +213,7 @@ new Vue({
       const _this = this;
       this.loading = true;
       this.dialogSaveInfoAction = 'updateItem';
-      const {data: {appData: {rows}}} = await window.jianghuAxios({
+      const { rows } = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -221,7 +221,7 @@ new Vue({
             where: {id: this.editItem.id},
           }
         }
-      });
+      })).data.appData.resultData;
       if (!rows.length) {
         this.clearItemData();
       } else {
@@ -249,7 +249,7 @@ new Vue({
       delete this.editItem.id;
       const item = this.buildEditItem();
       await window.vtoast.loading("新增数据");
-      const { data: { appData: { resultData: { rows } } } } = await window.jianghuAxios({
+      const { rows } = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -257,7 +257,7 @@ new Vue({
             actionData: item
           }
         }
-      })
+      })).data.appData.resultData;
       this.editItem.id = rows[0];
       history.pushState({}, '', `?id=${rows[0]}`);
       await window.vtoast.success("新增数据成功");

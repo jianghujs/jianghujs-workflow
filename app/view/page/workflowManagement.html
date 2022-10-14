@@ -119,7 +119,7 @@ new Vue({
     async refreshTableData() {
       this.isTableLoading = true;
       const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
-      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
+      const { rows } = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -130,7 +130,7 @@ new Vue({
             orderBy: [{column: 'operationAt', order: 'desc'}]
           }
         }
-      });
+      })).data.appData.resultData;
       for (const item of rows) {
         item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
         item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];

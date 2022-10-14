@@ -199,20 +199,14 @@ new Vue({
      */
     async getTaskHistoryList() {
       const {
-        data: {
-          appData: {
-            resultData: {
-              taskHistoryList,
-              taskStepperList,
-              taskTpl,
-              isAccess,
-              nextLineList,
-              step,
-              currentNode
-            }
-          }
-        }
-      } = await window.jianghuAxios({
+        taskHistoryList,
+        taskStepperList,
+        taskTpl,
+        isAccess,
+        nextLineList,
+        step,
+        currentNode
+      } = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'taskHistoryManagement',
@@ -220,7 +214,7 @@ new Vue({
             actionData: {taskId: this.taskId},
           }
         }
-      });
+      })).data.appData.resultData;
       this.taskHistoryList = taskHistoryList;
       this.taskTpl = taskTpl;
       this.taskStepperList = taskStepperList;
