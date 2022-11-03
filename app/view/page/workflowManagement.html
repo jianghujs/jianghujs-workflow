@@ -3,41 +3,41 @@
 {% block vue_template %}
 
 <jh-layout-v3>
-<!-- 页面主要内容 -->
-<v-card :class="{'px-2': isMobile}">
-  <v-row class="ma-0 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
+  <!-- 页面主要内容 -->
+  <v-card :class="{'px-2': isMobile}">
+    <v-row class="ma-0 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
+      <v-col cols="12" xs="12" sm="4" md="4" xl="4" class="pl-0">
+        <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('createItem')">新增</v-btn>
+        <span class="body-2">共{{ tableDataFromBackend.length }}条记录</span>
+      </v-col>
+      <v-spacer></v-spacer>
+      <v-col cols="12" xs="12" sm="4" md="3" xl="3" class="px-0">
+        <v-text-field v-model="searchInput" prefix="表格过滤:" color="success" class="cus-v-input" dense filled
+                      single-line></v-text-field>
+      </v-col>
+    </v-row>
 
-    <v-col cols="12" xs="12" sm="4" md="4" xl="4" class="pl-0">
-      <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('createItem')">新增</v-btn>
-      <span class="body-2">共{{ tableDataFromBackend.length }}条记录</span>
-    </v-col>
-    <v-spacer></v-spacer>
-    <v-col cols="12" xs="12" sm="4" md="3" xl="3" class="px-0">
-      <v-text-field v-model="searchInput" prefix="表格过滤:" color="success" class="cus-v-input" dense filled
-                    single-line></v-text-field>
-    </v-col>
-  </v-row>
-  <v-data-table fixed-header
-                :headers="headers"
-                :items="tableDataFromBackend"
-                :search="searchInput"
-                :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
-                :items-per-page="20"
-                mobile-breakpoint="0"
-                :loading="isTableLoading"
-                checkbox-color="success"
-                :class="{'mx-2': isMobile}"
-                color="success"
-                class="elevation-0 mt-0 flex-fill d-flex flex-column">
-
-    <template v-slot:item.action="{ item }">
-      <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList"
-             @click="doUiAction(tableButton.action, {item})">
-        {{ tableButton.text }}
-      </v-btn>
-    </template>
-  </v-data-table>
-</v-card>
+    <v-data-table 
+        fixed-header
+        :headers="headers"
+        :items="tableDataFromBackend"
+        :search="searchInput"
+        :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
+        :items-per-page="20"
+        mobile-breakpoint="0"
+        :loading="isTableLoading"
+        checkbox-color="success"
+        :class="{'mx-2': isMobile}"
+        color="success"
+        class="elevation-0 mt-0 flex-fill d-flex flex-column">
+        <template v-slot:item.action="{ item }">
+          <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList"
+                @click="doUiAction(tableButton.action, {item})">
+            {{ tableButton.text }}
+          </v-btn>
+        </template>
+    </v-data-table>
+  </v-card>
 </jh-layout-v3>
 
 {% endblock %}
@@ -51,38 +51,23 @@ new Vue({
   vuetify: new Vuetify(),
   data: () => ({
     isMobile: window.innerWidth < 600,
-    // 表格相关数据
-    requireRules: [
-      v => !!v || 'This is required',
-    ],
-    serverSearchInput: {
-      studentId: null,
-      classId: null
-    },
-    isEditDrawerShow: false,
     searchInput: null,
     isTableLoading: true,
     tableDataFromBackend: [],
     headers: [
       {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
-
       {text: "流程ID", value: "workflowId", width: 120},
-      {text: "流程名", value: "workflowName", width: 120},
+      {text: "流程名", value: "workflowName", width: 200},
       {text: "分类ID", value: "workflowCategory", width: 120},
       {text: "备注", value: "workFlowRemark", width: 120},
       {text: "操作者", value: "operationByUser", width: 120},
       {text: "操作时间", value: "operationAt", width: 250},
       {text: '操作', value: 'action', align: 'center', sortable: false, width: 160, class: 'fixed', cellClass: 'fixed'},
     ],
-
-    currentClickButton: {title: '新增', action: 'add'},
-    editItem: {},
     tableButtonList: [
       {text: '编辑', buttonType: 'edit', color: 'success', action: 'updateItem'},
       {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
-    ],
-    dialogSaveInfoAction: '',
-    dialog: false,
+    ]
   }),
   async created() {
     await this.doUiAction('refreshTableData');
@@ -118,22 +103,19 @@ new Vue({
      */
     async refreshTableData() {
       this.isTableLoading = true;
-      const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
-      const { rows } = (await window.jianghuAxios({
+      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
             actionId: 'selectItemList',
-            actionData: {},
-            where: {},
-            whereLike: serverSearchInput,
             orderBy: [{column: 'operationAt', order: 'desc'}]
           }
         }
-      })).data.appData.resultData;
+      });
       for (const item of rows) {
         item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
         item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
+        item.operationAt = dayjs(item.operationAt).format('YYYY-MM-DD HH:mm:ss');
       }
       this.tableDataFromBackend = rows;
       this.isTableLoading = false;
@@ -186,11 +168,6 @@ new Vue({
 </script>
 
 <style scoped>
-.v-dialog--fullscreen .v-sheet {
-  height: unset;
-  top: unset;
-  position: unset;
-  background: white;
-}
+
 </style>
 {% endblock %}

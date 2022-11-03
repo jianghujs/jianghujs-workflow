@@ -1,6 +1,6 @@
 <template id="process-flow">
   <div class="process-flow-container">
-    <v-card class="flow-menu pa-4 mr-4" width="140px">
+    <v-card v-if="!readonly" class="flow-menu pa-4 mr-4" width="140px">
       <div class="menu-item mb-3" v-for="item in menuList" draggable="true" @dragstart="drag(item)">
         <i :class="item.icon"></i>
         <div>{{item.name}}</div>
@@ -16,23 +16,42 @@
       </v-btn>
 
     </v-card>
-    <v-card class="flow-detail pa-4 mr-4">
-      <div id="flowContent" ref="flowContent" @drop="drop($event)" @dragover="allowDrop($event)" @click="editFlow()"
-        @dblclick="isConnect=false">
-        <flow-node v-for="node in data.nodeList" :key="node.id" :node="node" :id="node.id" :isconnect="isConnect"
-          @delete-node="deleteNode" @change-node-site="changeNodeSite" @edit-node="editNode">
-        </flow-node>
+    <v-card class="flow-detail pa-0">
+      <div id="flowContent" ref="flowContent" @drop="drop($event)" @dragover="allowDrop($event)" @dblclick="isConnect=false">
+        <div id="flow">
+          <div
+            v-show="auxiliaryLine.isShowXLine"
+            class="auxiliary-line-x"
+            :style="{
+              width: auxiliaryLinePos.width,
+              top: auxiliaryLinePos.y + 'px',
+              left: auxiliaryLinePos.offsetX + 'px'
+            }"
+          ></div>
+          <div
+            v-show="auxiliaryLine.isShowYLine"
+            class="auxiliary-line-y"
+            :style="{
+              height: auxiliaryLinePos.height,
+              left: auxiliaryLinePos.x + 'px',
+              top: auxiliaryLinePos.offsetY + 'px'
+            }"
+          ></div>
+          <flow-node v-for="node in data.nodeList" :current="currentNodeId" :key="node.id" :node="node" :id="node.id" :readonly="readonly" :isconnect="isConnect"
+            @delete-node="deleteNode" @change-node-site="changeNodeSite" @edit-node="editNode">
+          </flow-node>
+        </div>
       </div>
     </v-card>
-    <v-card class="flow-edit pa-4" v-if="editType">
+    <v-card v-show="!readonly" class="flow-edit pa-4 ml-4">
       <template v-if="editType == 'node' || editType == 'line'">
         <div class="mb-3">
           <v-icon>mdi-application-edit-outline</v-icon>
           <span style="transform: translateY(2px); display: inline-block; ">{{editType == 'node' ? '节点' : '连线'}}属性</span>
         </div>
           <div class="flow-edit-content">
-            <edit-node ref="nodeForm" v-show="editType == 'node'" :user="user" :group="group" :tpl="tpl"></edit-node>
-            <edit-line ref="lineForm" v-show="editType == 'line'" @line-save="lineLabelSave"></edit-line>
+            <edit-node ref="nodeForm" v-if="editType == 'node'" :user="user" :group="group" :tpl="tpl"></edit-node>
+            <edit-line ref="lineForm" v-if="editType == 'line'" @line-save="lineLabelSave"></edit-line>
           </div>
       </template>
       <template v-else>
@@ -51,6 +70,7 @@
 
 <link href="/<$ ctx.app.config.appId $>/public/jsplumb/jsplumbtoolkit-defaults.css" rel="stylesheet">
 <script src="/<$ ctx.app.config.appId $>/public/jsplumb/jsplumb.min.js"></script>
+<script src="/<$ ctx.app.config.appId $>/public/panzoom/panzoom.min.js"></script>
 
 <script type="module">
 
@@ -85,6 +105,14 @@
         default: () => {
           return []
         }
+      },
+      currentNodeId: {
+        type: String,
+        default: ''
+      },
+      readonly: {
+        type: Boolean,
+        default: false
       },
     },
     data: () => {
@@ -124,6 +152,15 @@
           icon: 'el-icon-s-tools'
         },
         ],
+        auxiliaryLine: { isShowXLine: false, isShowYLine: false }, //对齐辅助线是否显示
+        auxiliaryLinePos: {
+          width: "100%",
+          height: "100%",
+          offsetX: 0,
+          offsetY: 0,
+          x: 20,
+          y: 20
+        },
         jsPlumb: null, // jsPlumb 实例
         index: 1,
         // 默认设置参数
@@ -132,7 +169,7 @@
           Anchors: ['Top', 'TopCenter', 'TopRight', 'TopLeft', 'Right', 'RightMiddle', 'Bottom', 'BottomCenter',
             'BottomRight', 'BottomLeft', 'Left', 'LeftMiddle'
           ],
-          Container: 'flowContent',
+          Container: 'flow',
           // 连线的样式 StateMachine、Flowchart,有四种默认类型：Bezier（贝塞尔曲线），Straight（直线），Flowchart（流程图），State machine（状态机）
           Connector: 'Straight',
           //这个是鼠标拉出来的线的属性
@@ -203,7 +240,7 @@
         timer: null, //定时器,判断单双击,
         currentConnect: '', //当前的连接线
         currentLine: '', //当前连接线数据
-        editType: '', //编辑的类型
+        editType: 'flow', //编辑的类型
         connectorPaintStyle,
         // 鼠标悬浮在连接线上的样式
         connectorHoverStyle,
@@ -242,12 +279,10 @@
     },
     created() { },
     mounted() {
-      console.log('data', this.data)
       this.jsPlumb = jsPlumb.getInstance();
       this.$nextTick(() => {
         this.init();
       });
-      this.editFlow()
     },
     methods: {
       init() {
@@ -266,18 +301,26 @@
 
           // 单点连接线（编辑label）,
           _this.jsPlumb.bind('click', function (conn, originalEvent) {
+            if (_this.readonly) {
+              // 只读模式禁止切换
+              return
+            }
             //clearTimeout(this.timer);
             //this.timer = setTimeout(function () { // 这里采用执行自定义事件的方式
             //    console.log("click", conn);
             //    _this.editLine(conn);
             //}, 300); // 延迟300ms执行单击事件,区分双击事件
-            console.log("click", conn);
+            // console.log("click", conn);
             _this.editLine(conn);
-            console.log(conn.getOverlay("label-1"));
+            // console.log(conn.getOverlay("label-1"));
             //conn.getOverlay("label-1").setLabel('大肥肚'); //初始化label
           })
           // 双击连接线（删除）,
           _this.jsPlumb.bind('dblclick', function (conn, originalEvent) {
+            if (_this.readonly) {
+              // 只读模式禁止删除
+              return
+            }
             clearTimeout(this.timer);
             console.log("dblclick", conn)
             _this.jsPlumb.deleteConnection(conn)
@@ -356,7 +399,7 @@
             console.log('beforeDetach', evt)
           })
         })
-
+        this.initPanZoom();
       },
       // 加载流程图
       loadEasyFlow() {
@@ -376,11 +419,6 @@
           this.jsPlumb.draggable(node.id, {
             containment: 'parent'
           })
-
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "TopCenter" }, this.hollowCircle);
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "RightMiddle" }, this.hollowCircle);
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "BottomCenter" }, this.hollowCircle);
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "LeftMiddle" }, this.hollowCircle);
           // jsPlumb.draggable(node.id)
         }
 
@@ -392,8 +430,9 @@
             target: line.to,
             endpoint: 'Dot' // 线的类型
           }, this.jsplumbConnectOptions);
-
-          connection.getOverlay("label-1").setLabel(line.type + '-' +line.label); //初始化label
+          if (connection && connection.getOverlay("label-1")) {
+            connection.getOverlay("label-1").setLabel(line.type + '-' +line.label); //初始化label
+          }
         }
         this.$nextTick(function () {
           this.loadEasyFlowFinish = true
@@ -409,12 +448,6 @@
           this.jsPlumb.draggable(temp.id, {
             containment: 'parent'
           })
-
-
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "TopCenter" }, this.hollowCircle);
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "RightMiddle" }, this.hollowCircle);
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "BottomCenter" }, this.hollowCircle);
-          // this.jsPlumb.addEndpoint(node.id, { anchors: "LeftMiddle" }, this.hollowCircle);
         })
       },
       // 删除线
@@ -459,14 +492,21 @@
       },
       //编辑节点
       editNode(node) {
+        if (this.readonly) {
+          // 只读模式、禁止切换节点
+          return
+        }
         //console.log('编辑节点', nodeId)
         this.editType = 'node';
+        this.currentNodeId = node.id
+        this.changeLineState("");
         this.$nextTick(function () {
           this.$refs.nodeForm.init(this.data, node)
         })
       },
       editLine(conn, add = false) {
         const _this = this;
+        this.currentNodeId = ''
         _this.currentConnect = conn;
         _this.data.lineList.forEach(function (item, index) {
           if (item.from == conn.sourceId && item.to == conn.targetId) {
@@ -477,11 +517,6 @@
             if (!lineTypeList.includes(item.type) ) {
               // 1 - 删除画布连线 | 2 - 清空line的操作属性
               // _this.jsPlumb.deleteConnection(conn)
-
-              // 从 lineList 数组移除
-              // _this.data.lineList.splice(index,1);
-              // 不渲染表单
-              // return
 
               // 默认修改类型为第一个
               if (!preNode.id.includes('start-')) {
@@ -497,6 +532,7 @@
             }
             _this.currentLine = item;
             _this.editType = 'line';
+		        _this.changeLineState("line", item);
             _this.$nextTick(function () {
               _this.$refs.lineForm.init(item, lineTypeList)
             })
@@ -504,9 +540,26 @@
           }
         });
       },
+      //更改连线状态
+      changeLineState(nodeId, val) {
+        let lines = this.jsPlumb.getAllConnections();
+        if (!nodeId) {
+          lines.forEach((line) => {
+            line.canvas.classList.remove("active");
+          });
+          return;
+        } else if (nodeId === "line") {
+          lines.forEach((line) => {
+            if (line.targetId === val.to && line.sourceId === val.from) {
+              line.canvas.classList.add("active");
+            } else {
+              line.canvas.classList.remove("active");
+            }
+          });
+        }
+      },
       //删除线
       delLine(conn) {
-
         this.jsPlumb.deleteConnection(conn)
       },
       // 是否具有该线
@@ -533,6 +586,8 @@
           top: event.offsetY + 'px',
           left: event.offsetX + 'px',
           type: this.currentItem.type,
+          assignType: 'person',
+          assignValue: ['<$ ctx.userInfo.userId $>'],
           lineTypeList: this.currentItem.type === 'start' ?  '同意' : this.currentItem.type === 'end' ? '' : '同意,拒绝',
         }
         this.addNode(temp);
@@ -559,11 +614,59 @@
         console.log(this.data);
         this.$emit('change-structure', this.data)
       },
-      editFlow() {
-        this.editType = 'flow';
-        // this.$nextTick(function () {
-        //   this.$refs.flowEdit.init(this.data.flowInfo);
-        // })
+      initPanZoom() {
+        const mainContainer = this.jsPlumb.getContainer();
+        const mainContainerWrap = mainContainer.parentNode;
+        const pan = panzoom(mainContainer, {
+          smoothScroll: false,
+          bounds: true,
+          // autocenter: true,
+          zoomDoubleClickSpeed: 1,
+          minZoom: 0.5,
+          maxZoom: 2,
+          //设置滚动缩放的组合键，默认不需要组合键
+          beforeWheel: (e) => {
+            // console.log(e);
+            // let shouldIgnore = !e.ctrlKey
+            // return shouldIgnore
+          },
+          beforeMouseDown: function (e) {
+            // allow mouse-down panning only if altKey is down. Otherwise - ignore
+            var shouldIgnore = e.ctrlKey;
+            return shouldIgnore;
+          }
+        });
+        this.jsPlumb.mainContainerWrap = mainContainerWrap;
+        this.jsPlumb.pan = pan;
+        // 缩放时设置jsPlumb的缩放比率
+        pan.on("zoom", (e) => {
+          const { x, y, scale } = e.getTransform();
+          this.jsPlumb.setZoom(scale);
+          //根据缩放比例，缩放对齐辅助线长度和位置
+          this.auxiliaryLinePos.width = (1 / scale) * 100 + "%";
+          this.auxiliaryLinePos.height = (1 / scale) * 100 + "%";
+          this.auxiliaryLinePos.offsetX = -(x / scale);
+          this.auxiliaryLinePos.offsetY = -(y / scale);
+        });
+        pan.on("panend", (e) => {
+          const { x, y, scale } = e.getTransform();
+          this.auxiliaryLinePos.width = (1 / scale) * 100 + "%";
+          this.auxiliaryLinePos.height = (1 / scale) * 100 + "%";
+          this.auxiliaryLinePos.offsetX = -(x / scale);
+          this.auxiliaryLinePos.offsetY = -(y / scale);
+        });
+
+        // 平移时设置鼠标样式
+        mainContainerWrap.style.cursor = "grab";
+        mainContainerWrap.addEventListener("mousedown", function wrapMousedown() {
+          this.style.cursor = "grabbing";
+          mainContainerWrap.addEventListener("mouseout", function wrapMouseout() {
+            this.style.cursor = "grab";
+          });
+        });
+        mainContainerWrap.addEventListener("mouseup", function wrapMouseup() {
+          this.style.cursor = "grab";
+        });
       }
     }
   })
@@ -591,6 +694,25 @@
     width: 100%;
     height: 100%;
     position: relative;
+		background-image: url("/<$ ctx.app.config.appId $>/public/images/point.png");
+    background-repeat: repeat;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #flowContent #flow {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  #flowContent #flow .auxiliary-line-x {
+    position: absolute;
+    border: 0.5px dashed #2ab1e8;
+    z-index: 9999;
+  }
+  #flowContent #flow .auxiliary-line-y {
+    position: absolute;
+    border: 0.5px dashed #2ab1e8;
+    z-index: 9999;
   }
 
   .item {
@@ -657,5 +779,19 @@
 
   .csslabel .label-text {
     background-color: white;
+  }
+  
+  .jtk-connector.active {
+    z-index: 9999;
+    
+  }
+  .jtk-connector.active path {
+    stroke: #150042;
+    stroke-width: 1.5;
+    animation: ring;
+    animation-duration: 3s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    stroke-dasharray: 5;
   }
 </style>

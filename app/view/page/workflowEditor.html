@@ -2,51 +2,50 @@
 
 {% block vue_template %}
 <jh-layout-v3>
-<template slot="serverSearch">
-  <div class="mt-4" style="text-align: right;">
-    <v-btn color="success" @click="doUiAction(dialogSaveInfoAction)" style="height: 40px">
-      保存
-    </v-btn>
-  </div>
-</template>
 
-<template slot-scope="props">
-    <v-card class="mt-3 mb-12" :class="{'pa-8': !props.ismobile, 'pa-4': props.ismobile}">
-      <v-row>
-        <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-          <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="流程名:" v-model="editItem['workflowName']" :rules="requireRules">
-          </v-text-field>
-        </v-col>
+  <template slot="serverSearch">
+    <div class="mt-4" style="text-align: right;">
+      <v-btn color="success" @click="doUiAction(dialogSaveInfoAction)" style="height: 40px">
+        保存
+      </v-btn>
+    </div>
+  </template>
 
-        <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-          <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="分类:" v-model="editItem['workflowCategory']" :rules="requireRules">
-          </v-text-field>
-        </v-col>
+  <template slot-scope="props">
+      <v-card class="mt-3 mb-12" :class="{'pa-8': !props.ismobile, 'pa-4': props.ismobile}">
+        <v-row>
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="流程名:" v-model="editItem['workflowName']" :rules="requireRules">
+            </v-text-field>
+          </v-col>
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="分类:" v-model="editItem['workflowCategory']" :rules="requireRules">
+            </v-text-field>
+          </v-col>
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="备注:"
+                          v-model="editItem['workflowRemark']">
+            </v-text-field>
+          </v-col>
+        </v-row>
+      </v-card>
 
-        <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-          <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="备注:"
-                        v-model="editItem['workflowRemark']">
-          </v-text-field>
-        </v-col>
-      </v-row>
-      
-    </v-card>
-
-  <div class=" pb-4" style="font-size: 18px; font-weight: bold">模板设置</div>
+      <div class=" pb-4" style="font-size: 18px; font-weight: bold">模板设置</div>
       <tpl-form-design :form="editItem.workflowForm" v-if="!loading">
       </tpl-form-design>
+
       <div class="pt-8 pb-4" style="font-size: 18px; font-weight: bold">流程设置</div>
       <process-flow v-if="!loading" :data="editItem.workflowConfig" :user="constantCollection.userList"
                     :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
       </process-flow>
       
-    <v-overlay :value="loading" absolute>
-      <v-progress-circular
-        indeterminate
-        size="64"
-      ></v-progress-circular>
-    </v-overlay>
-</template>
+      <v-overlay :value="loading" absolute>
+        <v-progress-circular
+          indeterminate
+          size="64"
+        ></v-progress-circular>
+      </v-overlay>
+  </template>
 </jh-layout-v3>
 
 {% endblock %}
@@ -67,8 +66,6 @@ new Vue({
   template: '#app-template',
   vuetify: new Vuetify(),
   data: () => ({
-    isMobile: window.innerWidth < 600,
-    // 表格相关数据
     requireRules: [
       v => !!v || 'This is required',
     ],
@@ -77,10 +74,8 @@ new Vue({
       groupList: [],
       workflowFormList: []
     },
-
     editItem: {},
     dialogSaveInfoAction: 'createItem',
-    dialog: false,
     loading: false,
   }),
   watch: {
@@ -127,17 +122,19 @@ new Vue({
             break;
         }
     },
+
     buildEditItem() {
-      const item = {
-        workflowId: this.editItem.workflowId || null,
-        workflowName: this.editItem.workflowName,
-        workflowRemark: this.editItem.workflowRemark,
-        workflowCategory: this.editItem.workflowCategory,
-        workflowConfig: this.editItem.workflowConfig ? JSON.stringify(this.editItem.workflowConfig) : null,
-        workflowForm: this.editItem.workflowForm ? JSON.stringify(this.editItem.workflowForm) : null,
+      const { id, workflowId, workflowName, workflowRemark, workflowCategory, workflowConfig, workflowForm } = this.editItem;
+      let item = {
+        workflowName,
+        workflowRemark,
+        workflowCategory,
+        workflowId: workflowId || null,
+        workflowConfig: workflowConfig ? JSON.stringify(workflowConfig) : null,
+        workflowForm: workflowForm ? JSON.stringify(workflowForm) : null,
       }
-      if (this.editItem.id) {
-        item.id = this.editItem.id;
+      if (id) {
+        item.id = id;
       }
       return item;
     },
@@ -167,10 +164,10 @@ new Vue({
     },
 
     /**
-     * 获取表格数据
+     * 获取user数据
      */
     async getUserList() {
-      const { rows } = (await window.jianghuAxios({
+      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -179,16 +176,16 @@ new Vue({
             where: {},
           }
         }
-      })).data.appData.resultData;
+      });
       this.constantCollection.userList = rows.map(e => {
         return {text: e.username, value: e.userId}
       })
     },
     /**
-     * 获取表格数据
+     * 获取group数据
      */
     async getGroupList() {
-      const { rows } = (await window.jianghuAxios({
+      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -197,23 +194,21 @@ new Vue({
             where: {},
           }
         }
-      })).data.appData.resultData;
+      });
       this.constantCollection.groupList = rows.map(e => {
         return {text: e.groupName, value: e.groupId}
       });
     },
 
-
-    // startCreateItem
     async clearItemData() {
       this.dialogSaveInfoAction = 'createItem';
       this.editItem = {workflowForm: [], workflowConfig: {lineList: [], nodeList: []}};
     },
+
     async syncEditItem() {
-      const _this = this;
       this.loading = true;
       this.dialogSaveInfoAction = 'updateItem';
-      const { rows } = (await window.jianghuAxios({
+      const {data: {appData: {rows}}} = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -221,7 +216,7 @@ new Vue({
             where: {id: this.editItem.id},
           }
         }
-      })).data.appData.resultData;
+      });
       if (!rows.length) {
         this.clearItemData();
       } else {
@@ -230,12 +225,11 @@ new Vue({
         item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
         this.editItem = item;
       }
-      setTimeout(function() {
-        _this.loading = false;
+      setTimeout(() => {
+        this.loading = false;
       }, 500)
     },
 
-    // createItem
     async confirmCreateItemDialog() {
       if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
           throw new Error("[confirmCreateFormDialog] 否");
@@ -249,7 +243,7 @@ new Vue({
       delete this.editItem.id;
       const item = this.buildEditItem();
       await window.vtoast.loading("新增数据");
-      const { rows } = (await window.jianghuAxios({
+      const { data: { appData: { resultData: { rows } } } } = await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
@@ -257,13 +251,12 @@ new Vue({
             actionData: item
           }
         }
-      })).data.appData.resultData;
+      })
       this.editItem.id = rows[0];
       history.pushState({}, '', `?id=${rows[0]}`);
       await window.vtoast.success("新增数据成功");
     },
 
-    // updateItem
     async confirmUpdateItemDialog() {
       if (await window.confirmDialog({title: "修改", content: "确定修改吗？"}) === false) {
           throw new Error("[confirmUpdateItemDialog] 否");
@@ -271,7 +264,7 @@ new Vue({
     },
 
     /**
-     * 保存数据
+     * 修改数据
      */
     async doUpdateItem() {
       const {id, ...item} = this.buildEditItem();
@@ -293,11 +286,6 @@ new Vue({
 </script>
 
 <style scoped>
-.v-dialog--fullscreen .v-sheet {
-  height: unset;
-  top: unset;
-  position: unset;
-  background: white;
-}
+
 </style>
 {% endblock %}

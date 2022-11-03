@@ -1,13 +1,19 @@
 <template id="flow-node">
-  <div class="node-item" ref="node" :style="flowNodeContainer" @mouseenter="showDelete" @mouseleave="hideDelete"
-    @mouseup="changeNodeSite" @click.stop="editNode">
+  <div class="node-item" 
+    :class="{'node-item-active': current === node.id}" 
+    ref="node" 
+    :style="flowNodeContainer" 
+    @mouseenter="showDelete"      
+    @mouseleave="hideDelete"
+    @mouseup="changeNodeSite" 
+    @click.stop="editNode">
     <!-- <div class="node-titel">
      <div class="node-icon" v-show="mouseEnter">
          <i class="el-icon-delete" @@click.stop="deleteNode"></i>
      </div>
  </div> -->
     <div class="node-con"><i :class="iconClass" class="type-icon"></i><span>{{node.label}}</span></div>
-    <div class="node-del" v-show="mouseEnter" @click.stop="deleteNode">
+    <div class="node-del" v-show="mouseEnter && !readonly" @click.stop="deleteNode">
       ×
     </div>
 
@@ -24,6 +30,8 @@
     props: {
       node: Object,
       isconnect: Boolean,
+      current: String,
+      readonly: Boolean
     },
     data() {
       return {
@@ -59,6 +67,7 @@
         }
       }
     },
+    created() {},
     methods: {
       // 删除节点
       deleteNode() {
@@ -142,5 +151,9 @@
     height: 100%;
     opacity: 0;
     cursor: crosshair;
+  }
+  .node-item-active {
+    background-color: #4caf50;
+    color: white;
   }
 </style>

@@ -3,7 +3,6 @@
 {% block vue_template %}
 
 <jh-layout-v3>
-
   <template slot="serverSearch">
     <v-row class="ma-0 align-center" :class="{'pa-0': isMobile, 'pa-2': !isMobile}" style="justify-content: end">
       <v-col cols="12" sm="12" xs="5" md="3" xl="2" class="pb-3" :class="{'pl-0': isMobile, 'pt-0': isMobile}">
@@ -20,29 +19,29 @@
         </v-btn>
       </v-col>
     </v-row>
-
   </template>
 
   <!-- 页面主要内容 -->
-    <v-card :class="{'px-2': isMobile}">
-      <v-data-table :headers="headers"
-                    :items="tableDataFromBackend"
-                    :search="searchInput"
-                    :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
-                    :items-per-page="20"
-                    mobile-breakpoint="0"
-                    :loading="isTableLoading"
-                    checkbox-color="success"
-                    :class="{'mx-2': isMobile}"
-                    color="success"
-                    class="elevation-0 mt-0 flex-fill d-flex flex-column">
-        <template v-slot:item.action="{ item }">
-          <v-btn small color="success" class="mr-2" @click="doUiAction('startCreateItem', {item: item})">
-            申请
-          </v-btn>
-        </template>
-      </v-data-table>
-    </v-card>
+  <v-card :class="{'px-2': isMobile}">
+    <v-data-table 
+        :headers="headers"
+        :items="tableDataFromBackend"
+        :search="searchInput"
+        :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
+        :items-per-page="20"
+        mobile-breakpoint="0"
+        :loading="isTableLoading"
+        checkbox-color="success"
+        :class="{'mx-2': isMobile}"
+        color="success"
+        class="elevation-0 mt-0 flex-fill d-flex flex-column">
+      <template v-slot:item.action="{ item }">
+        <v-btn small color="success" class="mr-2" @click="doUiAction('startCreateItem', {item: item})">
+          申请
+        </v-btn>
+      </template>
+    </v-data-table>
+  </v-card>
 
   <!-- 编辑抽屉 -->
   <v-navigation-drawer v-model="isEditDrawerShow" :permanent="isEditDrawerShow" fixed temporary right width="40%"
@@ -58,8 +57,8 @@
       <v-row  :class="{'px-10': !isMobile, 'px-3': isMobile, 'pb-7': isMobile}">
 
         <v-col cols="12" sm="12" md="12" :class="{'pa-0': isMobile, 'px-3': isMobile, 'pt-6': isMobile}">
-          <span class="inputLabel">任务标题</span>
-          <v-text-field class="cus-v-input mr-2" dense filled single-line label="任务标题" v-model="editItem['taskTitle']">
+          <span class="inputLabel">课程标题</span>
+          <v-text-field class="cus-v-input mr-2" dense filled single-line label="课程标题" v-model="editItem['taskTitle']">
           </v-text-field>
         </v-col>
 
@@ -95,7 +94,6 @@
       </v-row>
     </v-form>
   </v-navigation-drawer>
-
 </jh-layout-v3>
 
 {% endblock %}
@@ -114,10 +112,6 @@
       requireRules: [
         v => !!v || 'This is required',
       ],
-      constantCollection: {
-        categoryList: [],
-      },
-
       serverSearchInput: {
         workflowName: null
       },
@@ -126,24 +120,17 @@
       isTableLoading: true,
       tableDataFromBackend: [],
       headers: [
-        { text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed' },
-        { text: "任务ID", value: "workflowId", width: 120 },
-        { text: "任务名称", value: "workflowName", width: 120 },
-        { text: "任务分类ID", value: "workflowCategory", width: 120 },
-        { text: "任务节点", value: "workflowConfig", width: 120 },
+        { text: "ID", value: "id", width: 100, class: 'fixed', cellClass: 'fixed' },
+        { text: "课程ID", value: "workflowId", width: 120 },
+        { text: "课程名称", value: "workflowName", width: 150 },
+        { text: "课程分类ID", value: "workflowCategory", width: 120 },
         { text: "备注", value: "workflowRemark", width: 120 },
         { text: "操作者", value: "operationByUser", width: 120 },
         { text: "操作时间", value: "operationAt", width: 250 },
         { text: '操作', value: 'action', align: 'center', sortable: false, width: 200, class: 'fixed', cellClass: 'fixed' },
       ],
-
       currentClickButton: { title: '新增', action: 'add' },
       editItem: {},
-      tplItem: {},
-      tableButtonList: [
-        { text: '修改', buttonType: 'edit', color: 'success', action: 'startUpdateItem' },
-        { text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem' },
-      ],
       dialogSaveInfoAction: ''
     }),
     async created() {
@@ -157,7 +144,7 @@
             await this.refreshTableData(uiActionData);
             break;
           case 'startCreateItem':
-            await this.clearItemData(uiActionData);
+            await this.preprocessItemData(uiActionData);
             await this.openCreateItemDialog(uiActionData);
             break;
           case 'createItem':
@@ -177,7 +164,7 @@
       async refreshTableData() {
         this.isTableLoading = true;
         const serverSearchInput = _.pickBy(this.serverSearchInput, value => !!value);
-        const { rows } = (await window.jianghuAxios({
+        const { data: { appData: { resultData: {rows} } } } = await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'taskCreateManagement',
@@ -188,19 +175,19 @@
               orderBy: [{ column: 'operationAt', order: 'desc' }]
             }
           }
-        })).data.appData.resultData;
+        });
         rows.forEach(row => {
           if(row.workflowConfig) {
             row.workflowConfig = JSON.parse(row.workflowConfig).nodeList.map(item => [item.label, item.lineTypeList]);
             row.workflowForm = JSON.parse(row.workflowForm || '[]');
           }
+          row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
         })
         this.tableDataFromBackend = rows;
         this.isTableLoading = false;
       },
 
-      // startCreateItem
-      clearItemData({item: { workflowForm, workflowConfig, workflowId }}) {
+      preprocessItemData({item: { workflowForm, workflowConfig, workflowId }}) {
         const workflowFormData = {};
         workflowForm.forEach(e => {
           workflowFormData[e.id] = '';
@@ -217,7 +204,6 @@
         this.dialogSaveInfoAction = 'createItem';
       },
 
-      // createItem
       async confirmCreateItemDialog() {
         if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
           throw new Error("[confirmCreateFormDialog] 否");
