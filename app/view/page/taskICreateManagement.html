@@ -96,7 +96,7 @@ new Vue({
      */
     async refreshTableData() {
       this.isTableLoading = true;
-      const {data: {appData: {resultData: {rows}}}} = await window.jianghuAxios({
+      const {rows} = (await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'taskICreateManagement',
@@ -106,7 +106,7 @@ new Vue({
             orderBy: [{column: 'operationAt', order: 'desc'}]
           }
         }
-      });
+      })).data.appData.resultData;
 
       rows.forEach(row => {
         row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
