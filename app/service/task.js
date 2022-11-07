@@ -229,14 +229,18 @@ class TaskService extends Service {
   // 根据当前节点id 寻找共同并行节点
   getNodeBrotherList(currentNodeId, nodeList, lineList) {
     const prevLine = lineList.filter(e => e.to === currentNodeId);
-    const nextNodeIdList = lineList.filter(e => e.from === currentNodeId).map(e => {return e.to});
+    const nextLineList = lineList.filter(e => e.from === currentNodeId);
     const node = [nodeList.find(e => e.id === currentNodeId)];
     prevLine.forEach(line => {
       // 查找和当前节点相同的上个节点和下个节点来判断是否是并行处理
-      let otherNodeIdList = lineList.filter(e => e.from === line.from && e.to !== currentNodeId).map(e => {return e.to});
+      let otherNodeIdList = lineList.filter(e => 
+        // 来处节点相同
+        e.from === line.from && e.to !== currentNodeId && 
+        // 去处类型相同
+        e.type === line.type).map(e => {return e.to});
       let otherNodeNextLine = lineList.filter(e => otherNodeIdList.includes(e.from));
       // 筛选其他兄弟和自己终点一样的节点  
-      otherNodeNextLine = otherNodeNextLine.filter(e => nextNodeIdList.includes(e.to));
+      otherNodeNextLine = otherNodeNextLine.filter(e => nextLineList.some(s => e.to === s.to && e.type === s.type));
       otherNodeNextLine.forEach(element => {
         node.push(nodeList.find(e => e.id === element.from))
       });
@@ -326,6 +330,7 @@ class TaskService extends Service {
       let otherNodeList = this.getNodeBrotherList(taskInfo.taskConfigId, nodeList, lineList);
       otherNodeList = otherNodeList.filter(e => e.id !== taskInfo.taskConfigId);
       
+
       if (otherNodeList.length && !otherNodeList.some(e => taskHistory.some(s => s.taskConfigId === e.id))) {
         console.log('其他并行未结束、暂停任务')
         return
