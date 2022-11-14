@@ -16,6 +16,7 @@ const errorInfoEnum = {
   task_not_found: { errorCode: 'task_not_found', errorReason: '任务不存在' },
   node_not_found: { errorCode: 'node_not_found', errorReason: '节点不存在' },
   line_not_found: { errorCode: 'line_not_found', errorReason: '线路不存在' },
+  line_hook_error: { errorCode: 'line_hook_error', errorReason: '线路Hook异常' }
 };
 
 module.exports = {
