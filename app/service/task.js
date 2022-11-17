@@ -344,8 +344,18 @@ class TaskService extends Service {
         taskConfigId: nextNode.id,
         taskStatus: (nextLineList.length === 0 || currentNode.id.includes('end-')) ? 'end' : type === 'deny' ? 'deny' : 'running'
       });
+      await this.executeLineHook(line);
     }
-    
+  }
+  async executeLineHook(line) {
+    try {
+      const { service, serviceFunction } = JSON.parse(line.hook || '{}');
+      if (service && serviceFunction) {
+        await this.ctx.service[service][serviceFunction](this.ctx.request.body.appData.actionData, this.ctx)
+      }
+    } catch (error) {
+      throw new BizError(errorInfoEnum.line_hook_error);
+    }
   }
 }
 
