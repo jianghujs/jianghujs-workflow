@@ -431,7 +431,7 @@
             endpoint: 'Dot' // 线的类型
           }, this.jsplumbConnectOptions);
           if (connection && connection.getOverlay("label-1")) {
-            connection.getOverlay("label-1").setLabel(line.type + '-' +line.label); //初始化label
+            connection.getOverlay("label-1").setLabel((line.operationByUser? `${line.operationByUser}-`: '') + line.type + '-' +line.label); //初始化label
           }
         }
         this.$nextTick(function () {

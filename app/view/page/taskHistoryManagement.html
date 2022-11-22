@@ -236,6 +236,10 @@ new Vue({
       this.currentNode = currentNode;
       this.isAccess = isAccess;
       this.nextLineList = _.uniqBy(nextLineList, 'type') ;
+      // 更新操作人到连线
+      taskHistoryConfigList.lineList.map(line => {
+        line.operationByUser = (taskHistoryList.find(taskHistory => taskHistory.taskConfigId == line.from && taskHistory.taskLineTo == line.to) || {}).operationByUser;
+      });
       this.taskHistoryConfigList = taskHistoryConfigList;
       this.isTableLoading = false;
     },
