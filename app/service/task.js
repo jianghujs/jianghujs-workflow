@@ -87,6 +87,7 @@ class TaskService extends Service {
     }
     const [id] = await jianghuKnex(tableEnum.task, this.ctx).insert(startData);
     await this.buildNext({ type: '同意', id,  taskTpl: {input: workflowFormData}, taskComment: '' })
+    return startData;
   }
 
   async getGroupUserList(groupId) {

@@ -159,7 +159,7 @@ new Vue({
     headers: [
       {text: "节点", value: "taskExplain", width: 120},
       {text: "流转", value: "taskHandleDesc", width: 120},
-      {text: "课程名称", value: "operationByUser", width: 120},
+      {text: "操作人", value: "operationByUser", width: 120},
       {text: "备注", value: "taskComment", width: 120},
       {text: "处理时长/秒", value: "taskCostDuration", width: 120},
       {text: "表单明细", value: "action", width: 120},
@@ -167,6 +167,7 @@ new Vue({
 
     editItem: {},
     dialogSaveInfoAction: '',
+    id: '',
     taskId: '',
     isAccess: [],
     nextLineList: [],
@@ -178,8 +179,9 @@ new Vue({
   }),
   watch: {},
   async created() {
-    const searchParams = new URLSearchParams(location.search.substring(1));
-    this.taskId = searchParams.get('id');
+    const searchParams = new URLSearchParams(location.search.substring(1)); 
+    this.id = searchParams.get('id');
+    this.taskId = searchParams.get('taskId');
     await this.getTaskHistoryList()
   },
   mounted() {
@@ -221,7 +223,7 @@ new Vue({
           appData: {
             pageId: 'taskHistoryManagement',
             actionId: 'getTaskHistoryInfo',
-            actionData: {id: this.taskId},
+            actionData: {id: this.id},
           }
         }
       });
@@ -248,7 +250,7 @@ new Vue({
           appData: {
             pageId: 'taskHistoryManagement',
             actionId: 'submitNode',
-            actionData: {type, id: this.taskId, taskComment: this.editItem.taskComment, taskTpl: this.taskTpl}
+            actionData: {type, id: this.id, taskId: this.taskId, taskComment: this.editItem.taskComment, taskTpl: this.taskTpl}
           }
         }
       })

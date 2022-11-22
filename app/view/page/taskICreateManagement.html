@@ -116,7 +116,7 @@ new Vue({
     },
 
     toTaskHistory({item}) {
-      location.href = `/${window.appInfo.appId}/page/taskHistoryManagement?id=${item.id}`;
+      location.href = `/${window.appInfo.appId}/page/taskHistoryManagement?id=${item.id}&taskId=${item.taskId}`;
     }
   }
 })
