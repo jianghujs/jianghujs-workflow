@@ -117,6 +117,10 @@
     vuetify: new Vuetify(),
     name: 'editNode',
     props: {
+      lf: {
+        type: Object,
+        default: null
+      },
       user: {
         type: Array,
         default: () => {
@@ -152,6 +156,13 @@
       }
     },
     watch: {
+      node: {
+        handler: function (node) {
+          this.lf.updateText(node.id, node.label);
+          this.lf.setProperties(node.id, node);
+        },
+        deep: true
+      }
     },
     computed: {
       isMobile() {
@@ -177,8 +188,8 @@
       }
     },
     methods: {
-      init(data, node) {
-        this.node = node;
+      init(node) {
+        this.node = node.properties;
       },
       getOptionList() {
         if (!this.node.assignType) {

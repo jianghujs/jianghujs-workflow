@@ -143,7 +143,6 @@
 {% block vue_body %}
 
 {% include 'component/flow/processFlow.html' %}
-{% include 'component/flow/flowNode.html' %}
 {% include 'component/flow/editFlow.html' %}
 {% include 'component/flow/editLine.html' %}
 {% include 'component/flow/editNode.html' %}
@@ -238,7 +237,8 @@ new Vue({
       this.nextLineList = _.uniqBy(nextLineList, 'type') ;
       // 更新操作人到连线
       taskHistoryConfigList.lineList.map(line => {
-        line.operationByUser = (taskHistoryList.find(taskHistory => taskHistory.taskConfigId == line.from && taskHistory.taskLineTo == line.to) || {}).operationByUser;
+        let operationByUser = (taskHistoryList.find(taskHistory => taskHistory.taskConfigId == line.from && taskHistory.taskLineTo == line.to) || {}).operationByUser;
+        line.origin.text.value = `${operationByUser}-${line.label}`;
       });
       this.taskHistoryConfigList = taskHistoryConfigList;
       this.isTableLoading = false;

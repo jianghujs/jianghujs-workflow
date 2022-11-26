@@ -35,7 +35,7 @@
       </tpl-form-design>
 
       <div class="pt-8 pb-4" style="font-size: 18px; font-weight: bold">流程设置</div>
-      <process-flow v-if="!loading" :data="editItem.workflowConfig" :user="constantCollection.userList"
+      <process-flow v-if="!loading" ref="processFlow" :data="editItem.workflowConfig" :user="constantCollection.userList"
                     :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
       </process-flow>
       
@@ -55,7 +55,6 @@
 {% include 'component/flow/editFlow.html' %}
 {% include 'component/flow/editLine.html' %}
 {% include 'component/flow/editNode.html' %}
-{% include 'component/flow/flowNode.html' %}
 {% include 'component/tpl/tplFormDesign.html' %}
 {% include 'component/tpl/formItemListGenerator.html' %}
 {% include 'component/tpl/formItemListRender.html' %}
@@ -124,7 +123,8 @@ new Vue({
     },
 
     buildEditItem() {
-      const { id, workflowId, workflowName, workflowRemark, workflowCategory, workflowConfig, workflowForm } = this.editItem;
+      const { id, workflowId, workflowName, workflowRemark, workflowCategory, workflowForm } = this.editItem;
+      const workflowConfig = this.$refs.processFlow.getData();
       let item = {
         workflowName,
         workflowRemark,
