@@ -382,4 +382,25 @@ export declare type VirtualRectSize = {
     virtualRectCenterPositionX: number;
     virtualRectCenterPositionY: number;
 };
+export declare type ArrowPath = {
+    d: string;
+    stroke?: string;
+    fill?: string;
+    transform?: string;
+    [key: string]: any;
+};
+export declare type ArrowMarker = {
+    id: string;
+    refX?: string | number;
+    refY?: string | number;
+    overflow?: string;
+    orient?: string;
+    markerUnits?: string;
+    viewBox?: string;
+    markerWidth?: number;
+    markerHeight?: number;
+    path: ArrowPath;
+    [key: string]: any;
+};
+export declare type ArrowMarkerList = ArrowMarker[];
 export {};

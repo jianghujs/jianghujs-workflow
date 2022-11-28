@@ -29,3 +29,4 @@ __exportStar(require("./tools/flow-path"), exports);
 __exportStar(require("./tools/auto-layout"), exports);
 __exportStar(require("./bpmn-adapter/xml2json"), exports);
 __exportStar(require("./bpmn-adapter/json2xml"), exports);
+__exportStar(require("./components/highlight"), exports);

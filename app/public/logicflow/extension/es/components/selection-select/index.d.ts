@@ -12,7 +12,7 @@ declare class SelectionSelect {
         y: number;
     };
     __disabled: boolean;
-    isDefalutStopMoveGraph: boolean;
+    isDefaultStopMoveGraph: boolean;
     isWholeNode: boolean;
     isWholeEdge: boolean;
     static pluginName: string;

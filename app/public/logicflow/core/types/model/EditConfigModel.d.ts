@@ -89,6 +89,7 @@ export default class EditConfigModel {
     edgeTextEdit: boolean;
     nodeTextDraggable: boolean;
     edgeTextDraggable: boolean;
+    autoExpand: boolean;
     multipleSelectKey: string;
     defaultConfig: {};
     constructor(config: EditConfigInterface);

@@ -38,7 +38,7 @@ declare class Anchor extends Component<IProps, IState> {
         event: any;
     }) => void;
     onDragEnd: (event: any) => void;
-    checkEnd: () => void;
+    checkEnd: (event: any) => void;
     moveAnchorEnd(endX: number, endY: number): void;
     isShowLine(): boolean;
     render(): h.JSX.Element;

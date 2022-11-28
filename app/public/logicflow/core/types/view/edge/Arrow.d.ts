@@ -5,6 +5,8 @@ export declare type ArrowStyle = {
     fill?: string;
     strokeWidth?: number;
     offset: number;
+    refX?: number;
+    refY?: number;
     verticalLength: number;
 };
 declare type ArrowAttributesType = {

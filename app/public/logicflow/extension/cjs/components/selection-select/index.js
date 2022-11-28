@@ -6,7 +6,7 @@ var SelectionSelect = /** @class */ (function () {
         var _this = this;
         var lf = _a.lf;
         this.__disabled = false;
-        this.isDefalutStopMoveGraph = false;
+        this.isDefaultStopMoveGraph = false;
         this.isWholeNode = true;
         this.isWholeEdge = true;
         this.__draw = function (ev) {
@@ -34,6 +34,7 @@ var SelectionSelect = /** @class */ (function () {
         this.__drawOff = function () {
             document.removeEventListener('mousemove', _this.__draw);
             document.removeEventListener('mouseup', _this.__drawOff);
+            _this.wrapper.oncontextmenu = null;
             _this.__domContainer.removeChild(_this.wrapper);
             var _a = _this.startPoint, x = _a.x, y = _a.y;
             var _b = _this.endPoint, x1 = _b.x, y1 = _b.y;
@@ -43,16 +44,20 @@ var SelectionSelect = /** @class */ (function () {
             }
             var lt = [Math.min(x, x1), Math.min(y, y1)];
             var rt = [Math.max(x, x1), Math.max(y, y1)];
-            var elements = _this.lf.getAreaElement(lt, rt, _this.isWholeEdge, _this.isWholeNode);
+            var elements = _this.lf.graphModel.getAreaElement(lt, rt, _this.isWholeEdge, _this.isWholeNode, true);
+            var group = _this.lf.graphModel.group;
             elements.forEach(function (element) {
-                _this.lf.selectElementById(element.id, true);
+                // 如果节点属于分组，则不不选中节点
+                if (!group || !group.getNodeGroup(element.id)) {
+                    _this.lf.selectElementById(element.id, true);
+                }
             });
             _this.lf.emit('selection:selected', elements);
         };
         this.lf = lf;
-        // 初始化isDefalutStopMoveGraph取值
+        // 初始化isDefaultStopMoveGraph取值
         var stopMoveGraph = lf.getEditConfig().stopMoveGraph;
-        this.isDefalutStopMoveGraph = stopMoveGraph;
+        this.isDefaultStopMoveGraph = stopMoveGraph;
         lf.openSelectionSelect = function () {
             _this.openSelectionSelect();
         };
@@ -75,6 +80,9 @@ var SelectionSelect = /** @class */ (function () {
             _this.endPoint = { x: x, y: y };
             var wrapper = document.createElement('div');
             wrapper.className = 'lf-selection-select';
+            wrapper.oncontextmenu = function prevent(ev) {
+                ev.preventDefault();
+            };
             wrapper.style.top = _this.startPoint.y + "px";
             wrapper.style.left = _this.startPoint.x + "px";
             domContainer.appendChild(wrapper);
@@ -100,7 +108,7 @@ var SelectionSelect = /** @class */ (function () {
     SelectionSelect.prototype.openSelectionSelect = function () {
         var stopMoveGraph = this.lf.getEditConfig().stopMoveGraph;
         if (!stopMoveGraph) {
-            this.isDefalutStopMoveGraph = false;
+            this.isDefaultStopMoveGraph = false;
             this.lf.updateEditConfig({
                 stopMoveGraph: true,
             });
@@ -111,7 +119,7 @@ var SelectionSelect = /** @class */ (function () {
      * 关闭选区
      */
     SelectionSelect.prototype.closeSelectionSelect = function () {
-        if (!this.isDefalutStopMoveGraph) {
+        if (!this.isDefaultStopMoveGraph) {
             this.lf.updateEditConfig({
                 stopMoveGraph: false,
             });

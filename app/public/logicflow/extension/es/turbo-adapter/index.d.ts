@@ -5,11 +5,11 @@ export declare function toLogicflowData(data: any): {
     nodes: any[];
     edges: any[];
 };
-declare const TurboAdapter: {
-    pluginName: string;
-    install(lf: any): void;
-    shapeConfigMap: Map<any, any>;
-    setCustomShape(key: any, val: any): void;
+declare class TurboAdapter {
+    static pluginName: string;
+    constructor({ lf }: {
+        lf: any;
+    });
     adapterOut(logicflowData: any): {
         flowElementList: any[];
     };
@@ -17,6 +17,5 @@ declare const TurboAdapter: {
         nodes: any[];
         edges: any[];
     };
-};
-export { TurboAdapter };
+}
 export default TurboAdapter;

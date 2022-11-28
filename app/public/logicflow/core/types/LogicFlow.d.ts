@@ -106,13 +106,19 @@ export default class LogicFlow {
      */
     register(type: string | RegisterConfig, fn?: RegisterElementFn, isObserverView?: boolean): void;
     private registerElement;
+    /**
+     * 批量注册
+     * @param elements 注册的元素
+     */
+    batchRegister(elements?: any[]): void;
     private defaultRegister;
     /**
      * 将图形选中
      * @param id 选择元素ID
      * @param multiple 是否允许多选，如果为true，不会将上一个选中的元素重置
+     * @param toFront 是否将选中的元素置顶，默认为true
      */
-    selectElementById(id: string, multiple?: boolean): void;
+    selectElementById(id: string, multiple?: boolean, toFront?: boolean): void;
     /**
      * 定位到画布视口中心
      * 支持用户传入图形当前的坐标或id，可以通过type来区分是节点还是边的id，也可以不传（兜底）
@@ -128,8 +134,9 @@ export default class LogicFlow {
     setTheme(style: Theme): void;
     /**
      * 重新设置画布的宽高
+     * 不传会自动计算画布宽高
      */
-    resize(width: number, height: number): void;
+    resize(width?: number, height?: number): void;
     /**
      * 设置默认的边类型。
      * 也就是设置在节点直接有用户手动绘制的连线类型。
@@ -299,6 +306,7 @@ export default class LogicFlow {
      * @param properties 自定义属性
      */
     setProperties(id: string, properties: Object): void;
+    deleteProperty(id: string, key: string): void;
     /**
      * 获取元素的自定义属性
      * @param id 元素的id
@@ -332,7 +340,7 @@ export default class LogicFlow {
      * @param leftTopPoint 区域左上角坐标, dom层坐标
      * @param rightBottomPoint 区域右下角坐标，dom层坐标
      */
-    getAreaElement(leftTopPoint: PointTuple, rightBottomPoint: PointTuple, wholeEdge?: boolean, wholeNode?: boolean): any[];
+    getAreaElement(leftTopPoint: PointTuple, rightBottomPoint: PointTuple, wholeEdge?: boolean, wholeNode?: boolean, ignoreHideElement?: boolean): any[];
     /**
      * 获取选中的元素数据
      * @param isIgnoreCheck 是否包括sourceNode和targetNode没有被选中的边,默认包括。
@@ -382,6 +390,12 @@ export default class LogicFlow {
     getPointByClient(x: number, y: number): {
         domOverlayPosition: {
             x: number;
+            /**
+             * 将图形选中
+             * @param id 选择元素ID
+             * @param multiple 是否允许多选，如果为true，不会将上一个选中的元素重置
+             * @param toFront 是否将选中的元素置顶，默认为true
+             */
             y: number;
         };
         canvasOverlayPosition: {
@@ -445,9 +459,20 @@ export default class LogicFlow {
     translateCenter(): void;
     /**
      * 图形适应屏幕大小
-     * @param offset number 距离盒子四周的距离， 默认为20
+     * @param verticalOffset number 距离盒子上下的距离， 默认为20
+     * @param horizontalOffset number 距离盒子左右的距离， 默认为20
      */
-    fitView(offset: number): void;
+    fitView(verticalOffset?: number, horizontalOffset?: number): void;
+    /**
+     * 开启边的动画
+     * @param edgeId any
+     */
+    openEdgeAnimation(edgeId: any): void;
+    /**
+     * 关闭边的动画
+     * @param edgeId any
+     */
+    closeEdgeAnimation(edgeId: any): void;
     /**
      * 监听事件
      * 事件详情见 @see todo

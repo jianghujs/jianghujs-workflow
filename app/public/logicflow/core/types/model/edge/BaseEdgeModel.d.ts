@@ -1,6 +1,6 @@
 import { IBaseModel } from '../BaseModel';
 import GraphModel from '../GraphModel';
-import { Point, AdditionData, EdgeData, MenuConfig, EdgeConfig } from '../../type/index';
+import { Point, AdditionData, EdgeData, MenuConfig, EdgeConfig, ShapeStyleAttribute } from '../../type/index';
 import { ModelType, ElementType } from '../../constant/constant';
 import { OutlineTheme } from '../../constant/DefaultTheme';
 declare class BaseEdgeModel implements IBaseModel {
@@ -25,6 +25,8 @@ declare class BaseEdgeModel implements IBaseModel {
     isHitable: boolean;
     draggable: boolean;
     visible: boolean;
+    virtual: boolean;
+    isAnimation: boolean;
     graphModel: GraphModel;
     zIndex: number;
     readonly BaseType = ElementType.EDGE;
@@ -36,6 +38,11 @@ declare class BaseEdgeModel implements IBaseModel {
     menu?: MenuConfig[];
     customTextPosition: boolean;
     animationData: import("../../constant/DefaultAnimation").Animation;
+    style: ShapeStyleAttribute;
+    arrowConfig: {
+        markerEnd: string;
+        markerStart: string;
+    };
     [propName: string]: any;
     constructor(data: EdgeConfig, graphModel: GraphModel);
     /**
@@ -61,7 +68,12 @@ declare class BaseEdgeModel implements IBaseModel {
      * 获取当前节点样式
      * @returns 自定义边样式
      */
-    getEdgeStyle(): import("../../constant/DefaultTheme").CommonTheme;
+    getEdgeStyle(): {
+        [x: string]: any;
+        fill?: string;
+        stroke?: string;
+        strokeWidth?: number;
+    };
     /**
      * @overridable 支持重写
      * 获取当前节点文本样式
@@ -73,6 +85,12 @@ declare class BaseEdgeModel implements IBaseModel {
      * @returns 自定义边动画样式
      */
     getAnimation(): import("../../constant/DefaultAnimation").Animation;
+    /**
+     * @overridable 支持重写
+     * 获取当前边的动画样式
+     * @returns 自定义边动画样式
+     */
+    getEdgeAnimationStyle(): import("../../constant/DefaultTheme").EdgeAnimation;
     /**
      * @overridable 支持重写
      * 获取outline样式，重写可以定义此类型边outline样式， 默认使用主题样式
@@ -110,7 +128,12 @@ declare class BaseEdgeModel implements IBaseModel {
      */
     getHistoryData(): EdgeData;
     setProperty(key: any, val: any): void;
+    deleteProperty(key: string): void;
     setProperties(properties: any): void;
+    changeEdgeId(id: string): void;
+    setStyle(key: any, val: any): void;
+    setStyles(styles: any): void;
+    updateStyles(styles: any): void;
     /**
      * 内部方法，处理初始化文本格式
      */
@@ -138,6 +161,8 @@ declare class BaseEdgeModel implements IBaseModel {
     setSelected(flag?: boolean): void;
     setHovered(flag?: boolean): void;
     setHitable(flag?: boolean): void;
+    openEdgeAnimation(): void;
+    closeEdgeAnimation(): void;
     setElementState(state: number, additionStateData?: AdditionData): void;
     updateStartPoint(anchor: any): void;
     moveStartPoint(deltaX: any, deltaY: any): void;

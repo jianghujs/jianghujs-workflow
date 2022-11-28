@@ -98,10 +98,18 @@ declare class GroupNodeModel extends RectResize.model {
     };
     getData(): import("@logicflow/core").NodeData;
     getHistoryData(): import("@logicflow/core").NodeData;
+    /**
+     * 是否允许此节点添加到此分组中
+     */
+    isAllowAppendIn(nodeData: any): boolean;
+    /**
+     * 当groupA被添加到groupB中时，将groupB及groupB所属的group的zIndex减1
+     */
+    toBack(): void;
 }
 declare class GroupNode extends RectResize.view {
     getControlGroup(): h.JSX.Element;
-    getAddedableShape(): import("preact").VNode<any>;
+    getAddableShape(): import("preact").VNode<any>;
     getFoldIcon(): import("preact").VNode<any>;
     getResizeShape(): import("preact").VNode<any>;
 }

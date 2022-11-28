@@ -2,7 +2,7 @@ import { h } from 'preact';
 import BaseNode from './BaseNode';
 export default class HtmlNode extends BaseNode {
     ref: HTMLElement;
-    currrentProperties: string;
+    currentProperties: string;
     preProperties: string;
     setRef: (dom: any) => void;
     get rootEl(): HTMLElement;

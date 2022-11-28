@@ -1,5 +1,6 @@
 import { h, RectNode, RectNodeModel } from '@logicflow/core';
 declare class RectResizeModel extends RectNodeModel {
+    private PCTResizeInfo;
     constructor(data: any, graphModel: any);
     initNodeData(data: any): void;
     getOutlineStyle(): import("@logicflow/core/types/constant/DefaultTheme").OutlineTheme;
@@ -16,6 +17,7 @@ declare class RectResizeModel extends RectNodeModel {
         stroke: string;
     };
     resize(deltaX: any, deltaY: any): void;
+    enableProportionResize(turnOn?: boolean): void;
 }
 declare class RectResizeView extends RectNode {
     getControlGroup(): h.JSX.Element;

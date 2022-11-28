@@ -1,5 +1,6 @@
 import { h, HtmlNode, HtmlNodeModel } from '@logicflow/core';
 declare class HtmlResizeModel extends HtmlNodeModel {
+    private PCTResizeInfo;
     constructor(data: any, graphModel: any);
     initNodeData(data: any): void;
     getOutlineStyle(): import("@logicflow/core/types/constant/DefaultTheme").OutlineTheme;
@@ -14,6 +15,7 @@ declare class HtmlResizeModel extends HtmlNodeModel {
         fill: string;
         stroke: string;
     };
+    enableProportionResize(turnOn?: boolean): void;
 }
 declare class HtmlResizeView extends HtmlNode {
     getControlGroup(): h.JSX.Element;

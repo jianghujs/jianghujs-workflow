@@ -28,6 +28,7 @@ export default class TextEdit extends Component<IProps, IState> {
     componentDidUpdate(): void;
     keyupHandler: (ev: any) => void;
     inputHandler: (ev: any) => void;
+    keydownHandler: (ev: any) => void;
     placeCaretAtEnd(el: any): void;
     render(): h.JSX.Element;
 }

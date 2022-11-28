@@ -21,7 +21,7 @@ export default class PolylineEdge extends BaseEdge {
     }) => void;
     onDragEnd: () => void;
     beforeDragStart: (e: any, appendInfo: any) => void;
-    getIsDraging: () => boolean;
+    getIsDragging: () => boolean;
     getEdge(): h.JSX.Element;
     getShape(): h.JSX.Element;
     getAnimation(): h.JSX.Element;

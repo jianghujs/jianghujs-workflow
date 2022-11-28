@@ -10,17 +10,39 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TurboAdapter = exports.toLogicflowData = exports.toTurboData = void 0;
-var TurboType;
-(function (TurboType) {
-    TurboType[TurboType["SEQUENCE_FLOW"] = 1] = "SEQUENCE_FLOW";
-    TurboType[TurboType["START_EVENT"] = 2] = "START_EVENT";
-    TurboType[TurboType["END_EVENT"] = 3] = "END_EVENT";
-    TurboType[TurboType["USER_TASK"] = 4] = "USER_TASK";
+exports.toLogicflowData = exports.toTurboData = void 0;
+var TurboType = {
+    SEQUENCE_FLOW: 1,
+    START_EVENT: 2,
+    END_EVENT: 3,
+    USER_TASK: 4,
     // SERVICE_TASK = 5, 暂不支持
-    TurboType[TurboType["EXCLUSIVE_GATEWAY"] = 6] = "EXCLUSIVE_GATEWAY";
-})(TurboType || (TurboType = {}));
+    EXCLUSIVE_GATEWAY: 6,
+};
+var TurboTypeMap = {
+    1: 'bpmn:sequenceFlow',
+    2: 'bpmn:startEvent',
+    3: 'bpmn:endEvent',
+    4: 'bpmn:userTask',
+    6: 'bpmn:exclusiveGateway',
+};
 // 转换Turbo识别的类型
 function getTurboType(type) {
     switch (type) {
@@ -50,11 +72,11 @@ function convertNodeToTurboElement(node) {
         type: getTurboType(node.type),
         properties: __assign(__assign({}, properties), { name: (text && text.value) || '', x: x,
             y: y,
-            text: text, logicFlowType: type }),
+            text: text }),
         key: id,
     };
 }
-// 将LogicFlow中的Eedg数据转换为Turbo元素数据
+// 将LogicFlow中的Edge数据转换为Turbo元素数据
 function convertEdgeToTurboElement(edge) {
     var id = edge.id, type = edge.type, sourceNodeId = edge.sourceNodeId, targetNodeId = edge.targetNodeId, startPoint = edge.startPoint, endPoint = edge.endPoint, pointsList = edge.pointsList, _a = edge.text, text = _a === void 0 ? '' : _a, properties = edge.properties;
     return {
@@ -62,10 +84,7 @@ function convertEdgeToTurboElement(edge) {
         outgoing: [targetNodeId],
         type: getTurboType(type),
         dockers: [],
-        properties: __assign(__assign({}, properties), { name: (text && text.value) || '', text: text,
-            startPoint: startPoint,
-            endPoint: endPoint,
-            pointsList: pointsList, logicFlowType: type }),
+        properties: __assign(__assign({}, properties), { name: (text && text.value) || '', text: text, startPoint: JSON.stringify(startPoint), endPoint: JSON.stringify(endPoint), pointsList: JSON.stringify(pointsList) }),
         key: id,
     };
 }
@@ -91,23 +110,29 @@ function toTurboData(data) {
     return turboData;
 }
 exports.toTurboData = toTurboData;
-// 将Turbo元素数据转换为LogicFlow中的Eedg数据
+// 将Turbo元素数据转换为LogicFlow中的Edge数据
 function convertFlowElementToEdge(element) {
-    var incoming = element.incoming, outgoing = element.outgoing, properties = element.properties, key = element.key;
-    var text = properties.text, startPoint = properties.startPoint, endPoint = properties.endPoint, pointsList = properties.pointsList, logicFlowType = properties.logicFlowType;
+    var incoming = element.incoming, outgoing = element.outgoing, properties = element.properties, key = element.key, type = element.type;
+    var text = properties.text, name = properties.name, startPoint = properties.startPoint, endPoint = properties.endPoint, pointsList = properties.pointsList;
     var edge = {
         id: key,
-        type: logicFlowType,
+        type: TurboTypeMap[type],
         sourceNodeId: incoming[0],
         targetNodeId: outgoing[0],
-        text: text,
-        startPoint: startPoint,
-        endPoint: endPoint,
-        pointsList: pointsList,
+        text: text || name,
         properties: {},
     };
+    if (startPoint) {
+        edge.startPoint = JSON.parse(startPoint);
+    }
+    if (endPoint) {
+        edge.endPoint = JSON.parse(endPoint);
+    }
+    if (pointsList) {
+        edge.pointsList = JSON.parse(pointsList);
+    }
     // 这种转换方式，在自定义属性中不能与excludeProperties中的属性重名，否则将在转换过程中丢失
-    var excludeProperties = ['startPoint', 'endPoint', 'pointsList', 'text', 'logicFlowType'];
+    var excludeProperties = ['startPoint', 'endPoint', 'pointsList', 'text'];
     Object.keys(element.properties).forEach(function (property) {
         if (excludeProperties.indexOf(property) === -1) {
             edge.properties[property] = element.properties[property];
@@ -117,18 +142,24 @@ function convertFlowElementToEdge(element) {
 }
 // 将Turbo元素数据转换为LogicFlow中的Node数据
 function convertFlowElementToNode(element) {
-    var properties = element.properties, key = element.key;
-    var x = properties.x, y = properties.y, text = properties.text, logicFlowType = properties.logicFlowType;
+    var properties = element.properties, key = element.key, type = element.type, bounds = element.bounds;
+    var x = properties.x, y = properties.y;
+    var text = properties.text;
+    if (x === undefined) {
+        var _a = __read(bounds, 2), _b = _a[0], x1 = _b.x, y1 = _b.y, _c = _a[1], x2 = _c.x, y2 = _c.y;
+        x = (x1 + x2) / 2;
+        y = (y1 + y2) / 2;
+    }
     var node = {
         id: key,
-        type: logicFlowType,
+        type: TurboTypeMap[type],
         x: x,
         y: y,
         text: text,
         properties: {},
     };
     // 这种转换方式，在自定义属性中不能与excludeProperties中的属性重名，否则将在转换过程中丢失
-    var excludeProperties = ['x', 'y', 'text', 'logicFlowType'];
+    var excludeProperties = ['x', 'y', 'text'];
     Object.keys(element.properties).forEach(function (property) {
         if (excludeProperties.indexOf(property) === -1) {
             node.properties[property] = element.properties[property];
@@ -156,26 +187,23 @@ function toLogicflowData(data) {
     return lfData;
 }
 exports.toLogicflowData = toLogicflowData;
-var TurboAdapter = {
-    pluginName: 'turboAdapter',
-    install: function (lf) {
+var TurboAdapter = /** @class */ (function () {
+    function TurboAdapter(_a) {
+        var lf = _a.lf;
         lf.adapterIn = this.adapterIn;
         lf.adapterOut = this.adapterOut;
-    },
-    shapeConfigMap: new Map(),
-    setCustomShape: function (key, val) {
-        this.shapeConfigMap.set(key, val);
-    },
-    adapterOut: function (logicflowData) {
+    }
+    TurboAdapter.prototype.adapterOut = function (logicflowData) {
         if (logicflowData) {
             return toTurboData(logicflowData);
         }
-    },
-    adapterIn: function (turboData) {
+    };
+    TurboAdapter.prototype.adapterIn = function (turboData) {
         if (turboData) {
             return toLogicflowData(turboData);
         }
-    },
-};
-exports.TurboAdapter = TurboAdapter;
+    };
+    TurboAdapter.pluginName = 'turboAdapter';
+    return TurboAdapter;
+}());
 exports.default = TurboAdapter;

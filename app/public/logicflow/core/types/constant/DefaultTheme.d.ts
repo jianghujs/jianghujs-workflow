@@ -139,6 +139,10 @@ export declare type EdgeTextTheme = {
      * 文本背景样式
      */
     background?: {
+        /**
+         * 背景区域padding
+         * wrapPadding: '5px,10px'
+         */
         wrapPadding?: string;
     } & RectTheme;
     /**
@@ -179,6 +183,19 @@ export declare type OutlineTheme = {
      */
     hover?: CommonTheme;
 } & CommonTheme;
+/**
+ * 边动画主题
+ */
+export declare type EdgeAnimation = {
+    stroke?: string;
+    strokeDasharray?: string;
+    strokeDashoffset?: string;
+    animationName?: string;
+    animationDuration?: string;
+    animationIterationCount?: string;
+    animationTimingFunction?: string;
+    animationDirection?: string;
+};
 export declare type Theme = {
     /**
      * 所有节点的通用主题设置
@@ -258,5 +275,9 @@ export declare type Theme = {
      * 节点选择状态下外侧的选框样式
      */
     outline?: OutlineTheme;
+    /**
+     * 边动画样式
+     */
+    edgeAnimation?: EdgeAnimation;
 };
 export declare const defaultTheme: Theme;

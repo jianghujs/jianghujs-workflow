@@ -1,37 +1,27 @@
 /**
  * 快照插件，生成视图
  */
-var Snapshot = {
-    pluginName: 'snapshot',
-    install: function (lf) {
+var Snapshot = /** @class */ (function () {
+    function Snapshot(_a) {
         var _this = this;
+        var lf = _a.lf;
         this.lf = lf;
+        this.customCssRules = '';
+        this.useGlobalRules = true;
         /* 下载快照 */
         lf.getSnapshot = function (fileName, backgroundColor) {
-            _this.offsetX = Number.MAX_SAFE_INTEGER;
-            _this.offsetY = Number.MAX_SAFE_INTEGER;
-            _this.fileName = fileName || "logic-flow." + Date.now() + ".png";
-            var svgRootElement = _this.getSvgRootElement(lf);
-            _this.downloadSvg(svgRootElement, _this.fileName, backgroundColor);
+            _this.getSnapshot(fileName, backgroundColor);
         };
         /* 获取Blob对象，用户图片上传 */
-        lf.getSnapshotBlob = function (backgroundColor) {
-            _this.offsetX = Number.MAX_SAFE_INTEGER;
-            _this.offsetY = Number.MAX_SAFE_INTEGER;
-            var svgRootElement = _this.getSvgRootElement(lf);
-            return _this.getBlob(svgRootElement, backgroundColor);
-        };
+        lf.getSnapshotBlob = function (backgroundColor) { return _this.getSnapshotBlob(backgroundColor); };
         /* 获取Base64对象，用户图片上传 */
-        lf.getSnapshotBase64 = function (backgroundColor) {
-            _this.offsetX = Number.MAX_SAFE_INTEGER;
-            _this.offsetY = Number.MAX_SAFE_INTEGER;
-            var svgRootElement = _this.getSvgRootElement(lf);
-            return _this.getBase64(svgRootElement, backgroundColor);
-        };
-    },
+        lf.getSnapshotBase64 = function (backgroundColor) { return _this.getSnapshotBase64(backgroundColor); };
+    }
     /* 获取svgRoot对象 */
-    getSvgRootElement: function (lf) {
+    Snapshot.prototype.getSvgRootElement = function (lf) {
         var _this = this;
+        this.offsetX = Number.MAX_SAFE_INTEGER;
+        this.offsetY = Number.MAX_SAFE_INTEGER;
         lf.graphModel.nodes.forEach(function (item) {
             var x = item.x, width = item.width, y = item.y, height = item.height;
             var offsetX = x - width / 2;
@@ -58,8 +48,8 @@ var Snapshot = {
         });
         var svgRootElement = lf.container.querySelector('.lf-canvas-overlay');
         return svgRootElement;
-    },
-    triggerDownload: function (imgURI) {
+    };
+    Snapshot.prototype.triggerDownload = function (imgURI) {
         var evt = new MouseEvent('click', {
             view: window,
             bubbles: false,
@@ -70,8 +60,8 @@ var Snapshot = {
         a.setAttribute('href', imgURI);
         a.setAttribute('target', '_blank');
         a.dispatchEvent(evt);
-    },
-    removeAnchor: function (element) {
+    };
+    Snapshot.prototype.removeAnchor = function (element) {
         var childNodes = element.childNodes;
         var childLength = element.childNodes && element.childNodes.length;
         for (var i = 0; i < childLength; i++) {
@@ -83,20 +73,22 @@ var Snapshot = {
                 i--;
             }
         }
-    },
+    };
     /* 下载图片 */
-    downloadSvg: function (svg, fileName, backgroundColor) {
+    Snapshot.prototype.getSnapshot = function (fileName, backgroundColor) {
         var _this = this;
+        this.fileName = fileName || "logic-flow." + Date.now() + ".png";
+        var svg = this.getSvgRootElement(this.lf);
         this.getCanvasData(svg, backgroundColor).then(function (canvas) {
-            var imgURI = canvas
-                .toDataURL('image/png')
+            var imgURI = canvas.toDataURL('image/png')
                 .replace('image/png', 'image/octet-stream');
-            _this.triggerDownload(imgURI, fileName);
+            _this.triggerDownload(imgURI);
         });
-    },
+    };
     /* 获取base64对象 */
-    getBase64: function (svg, backgroundColor) {
+    Snapshot.prototype.getSnapshotBase64 = function (backgroundColor) {
         var _this = this;
+        var svg = this.getSvgRootElement(this.lf);
         return new Promise(function (resolve) {
             _this.getCanvasData(svg, backgroundColor).then(function (canvas) {
                 var base64 = canvas.toDataURL('image/png');
@@ -104,10 +96,11 @@ var Snapshot = {
                 resolve({ data: base64, width: canvas.width, height: canvas.height });
             });
         });
-    },
+    };
     /* 获取Blob对象 */
-    getBlob: function (svg, backgroundColor) {
+    Snapshot.prototype.getSnapshotBlob = function (backgroundColor) {
         var _this = this;
+        var svg = this.getSvgRootElement(this.lf);
         return new Promise(function (resolve) {
             _this.getCanvasData(svg, backgroundColor).then(function (canvas) {
                 canvas.toBlob(function (blob) {
@@ -116,20 +109,25 @@ var Snapshot = {
                 }, 'image/png');
             });
         });
-    },
-    getClassRules: function () {
+    };
+    Snapshot.prototype.getClassRules = function () {
         var rules = '';
-        var styleSheets = document.styleSheets;
-        for (var i = 0; i < styleSheets.length; i++) {
-            var sheet = styleSheets[i];
-            for (var j = 0; j < sheet.cssRules.length; j++) {
-                rules += sheet.cssRules[j].cssText;
+        if (this.useGlobalRules) {
+            var styleSheets = document.styleSheets;
+            for (var i = 0; i < styleSheets.length; i++) {
+                var sheet = styleSheets[i];
+                for (var j = 0; j < sheet.cssRules.length; j++) {
+                    rules += sheet.cssRules[j].cssText;
+                }
             }
         }
+        if (this.customCssRules) {
+            rules += this.customCssRules;
+        }
         return rules;
-    },
+    };
     // 获取图片生成中中间产物canvas对象，用户转换为其他需要的格式
-    getCanvasData: function (svg, backgroundColor) {
+    Snapshot.prototype.getCanvasData = function (svg, backgroundColor) {
         var _this = this;
         var copy = svg.cloneNode(true);
         var graph = copy.lastChild;
@@ -163,7 +161,7 @@ var Snapshot = {
         真实dom存在缩放影响其宽高数值
         在得到真实宽高后除以缩放比例即可得到正常宽高
         */
-        var base = document.getElementsByClassName('lf-base')[0];
+        var base = this.lf.graphModel.rootEl.querySelector('.lf-base');
         var bbox = base.getBoundingClientRect();
         var graphModel = this.lf.graphModel;
         var transformModel = graphModel.transformModel;
@@ -201,12 +199,15 @@ var Snapshot = {
             因为svg中存在dom存放在foreignObject元素中
             SVG图形转成img对象
             todo: 会导致一些清晰度问题这个需要再解决
+            fixme: XMLSerializer的中的css background url不会下载图片
             */
             var svg2Img = "data:image/svg+xml;charset=utf-8," + new XMLSerializer().serializeToString(copy);
             var imgSrc = svg2Img.replace(/\n/g, '').replace(/\t/g, '').replace(/#/g, '%23');
             img.src = imgSrc;
         });
-    },
-};
+    };
+    Snapshot.pluginName = 'snapshot';
+    return Snapshot;
+}());
 export default Snapshot;
 export { Snapshot, };

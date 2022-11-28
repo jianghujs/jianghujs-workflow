@@ -1,5 +1,6 @@
 import { h, DiamondNode, DiamondNodeModel } from '@logicflow/core';
 declare class DiamondResizeModel extends DiamondNodeModel {
+    private PCTResizeInfo;
     constructor(data: any, graphModel: any);
     initNodeData(data: any): void;
     getOutlineStyle(): import("@logicflow/core/types/constant/DefaultTheme").OutlineTheme;
@@ -14,6 +15,7 @@ declare class DiamondResizeModel extends DiamondNodeModel {
         fill: string;
         stroke: string;
     };
+    enableProportionResize(turnOn?: boolean): void;
 }
 declare class DiamondResizeView extends DiamondNode {
     getControlGroup(): h.JSX.Element;

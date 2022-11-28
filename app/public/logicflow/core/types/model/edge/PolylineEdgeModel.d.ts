@@ -50,7 +50,7 @@ export default class PolylineEdgeModel extends BaseEdgeModel {
         direction: any;
     };
     dragAppendEnd(): void;
-    updatePointsAfterDrage(pointsList: any): void;
+    updatePointsAfterDrag(pointsList: any): void;
     getAdjustStart(): any;
     getAdjustEnd(): any;
     updateAfterAdjustStartAndEnd({ startPoint, endPoint, sourceNode, targetNode }: {

@@ -22,6 +22,22 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 import { h, Component } from 'preact';
 import { LogicFlowUtil } from '@logicflow/core';
 import Rect from '../BasicShape/Rect';
@@ -41,8 +57,64 @@ var Control = /** @class */ (function (_super) {
         };
         // 计算control拖动后，节点的宽高
         _this.getResize = function (_a) {
-            var index = _a.index, deltaX = _a.deltaX, deltaY = _a.deltaY, width = _a.width, height = _a.height, _b = _a.pct, pct = _b === void 0 ? 1 : _b;
-            var resize = { width: width, height: height };
+            var index = _a.index, deltaX = _a.deltaX, deltaY = _a.deltaY, width = _a.width, height = _a.height, PCTResizeInfo = _a.PCTResizeInfo, _b = _a.pct, pct = _b === void 0 ? 1 : _b;
+            var resize = { width: width, height: height, deltaX: deltaX, deltaY: deltaY };
+            if (PCTResizeInfo) {
+                var sensitivity = 4; // 越低越灵敏
+                var deltaScale = 0;
+                var combineDleta = 0;
+                switch (index) {
+                    case 0:
+                        combineDleta = (deltaX * -1 - deltaY) / sensitivity;
+                        break;
+                    case 1:
+                        combineDleta = (deltaX - deltaY) / sensitivity;
+                        break;
+                    case 2:
+                        combineDleta = (deltaX + deltaY) / sensitivity;
+                        break;
+                    case 3:
+                        combineDleta = (deltaX * -1 + deltaY) / sensitivity;
+                        break;
+                    default:
+                        break;
+                }
+                if (combineDleta !== 0) {
+                    deltaScale = Math.round((combineDleta / PCTResizeInfo.ResizeBasis.basisHeight)
+                        * 100000) / 1000;
+                }
+                PCTResizeInfo.ResizePCT.widthPCT = Math.max(Math.min(PCTResizeInfo.ResizePCT.widthPCT + deltaScale, PCTResizeInfo.ScaleLimit.maxScaleLimit), PCTResizeInfo.ScaleLimit.minScaleLimit);
+                PCTResizeInfo.ResizePCT.hightPCT = Math.max(Math.min(PCTResizeInfo.ResizePCT.hightPCT + deltaScale, PCTResizeInfo.ScaleLimit.maxScaleLimit), PCTResizeInfo.ScaleLimit.minScaleLimit);
+                var spcWidth = Math.round((PCTResizeInfo.ResizePCT.widthPCT
+                    * PCTResizeInfo.ResizeBasis.basisWidth) / 100);
+                var spcHeight = Math.round((PCTResizeInfo.ResizePCT.hightPCT
+                    * PCTResizeInfo.ResizeBasis.basisHeight) / 100);
+                switch (index) {
+                    case 0:
+                        deltaX = width - spcWidth;
+                        deltaY = height - spcHeight;
+                        break;
+                    case 1:
+                        deltaX = spcWidth - width;
+                        deltaY = height - spcHeight;
+                        break;
+                    case 2:
+                        deltaX = spcWidth - width;
+                        deltaY = spcHeight - height;
+                        break;
+                    case 3:
+                        deltaX = width - spcWidth;
+                        deltaY = spcHeight - height;
+                        break;
+                    default:
+                        break;
+                }
+                resize.width = spcWidth;
+                resize.height = spcHeight;
+                resize.deltaX = deltaX / pct;
+                resize.deltaY = deltaY / pct;
+                return resize;
+            }
             switch (index) {
                 case 0:
                     resize.width = width - deltaX * pct;
@@ -53,7 +125,7 @@ var Control = /** @class */ (function (_super) {
                     resize.height = height - deltaY * pct;
                     break;
                 case 2:
-                    resize.width = width + deltaX;
+                    resize.width = width + deltaX * pct;
                     resize.height = height + deltaY * pct;
                     break;
                 case 3:
@@ -68,7 +140,7 @@ var Control = /** @class */ (function (_super) {
         // 矩形更新
         _this.updateRect = function (_a) {
             var deltaX = _a.deltaX, deltaY = _a.deltaY;
-            var _b = _this.nodeModel, id = _b.id, x = _b.x, y = _b.y, width = _b.width, height = _b.height, radius = _b.radius;
+            var _b = _this.nodeModel, id = _b.id, x = _b.x, y = _b.y, width = _b.width, height = _b.height, radius = _b.radius, PCTResizeInfo = _b.PCTResizeInfo;
             // 更新中心点位置，更新文案位置
             var index = _this.index;
             var size = _this.getResize({
@@ -77,6 +149,7 @@ var Control = /** @class */ (function (_super) {
                 deltaY: deltaY,
                 width: width,
                 height: height,
+                PCTResizeInfo: PCTResizeInfo,
                 pct: 1,
             });
             // 限制放大缩小的最大最小范围
@@ -89,7 +162,7 @@ var Control = /** @class */ (function (_super) {
                 _this.dragHandler.cancelDrag();
                 return;
             }
-            _this.updatePosition({ deltaX: deltaX, deltaY: deltaY });
+            _this.updatePosition({ deltaX: size.deltaX, deltaY: size.deltaY });
             // 更新宽高
             _this.nodeModel.width = size.width;
             _this.nodeModel.height = size.height;
@@ -136,7 +209,7 @@ var Control = /** @class */ (function (_super) {
         // 椭圆更新
         _this.updateEllipse = function (_a) {
             var deltaX = _a.deltaX, deltaY = _a.deltaY;
-            var _b = _this.nodeModel, id = _b.id, rx = _b.rx, ry = _b.ry, x = _b.x, y = _b.y;
+            var _b = _this.nodeModel, id = _b.id, rx = _b.rx, ry = _b.ry, x = _b.x, y = _b.y, PCTResizeInfo = _b.PCTResizeInfo;
             var index = _this.index;
             var width = rx;
             var height = ry;
@@ -146,6 +219,7 @@ var Control = /** @class */ (function (_super) {
                 deltaY: deltaY,
                 width: width,
                 height: height,
+                PCTResizeInfo: PCTResizeInfo,
                 pct: 1 / 2,
             });
             // 限制放大缩小的最大最小范围
@@ -158,12 +232,12 @@ var Control = /** @class */ (function (_super) {
                 return;
             }
             // 更新中心点位置，更新文案位置
-            _this.updatePosition({ deltaX: deltaX, deltaY: deltaY });
+            _this.updatePosition({ deltaX: size.deltaX, deltaY: size.deltaY });
             // 更新rx ry,宽高为计算属性自动更新
             // @ts-ignore
-            _this.nodeModel.rx = _this.nodeModel.rx + deltaX / 2;
+            _this.nodeModel.rx = size.width;
             // @ts-ignore
-            _this.nodeModel.ry = _this.nodeModel.ry + deltaY / 2;
+            _this.nodeModel.ry = size.height;
             _this.nodeModel.setProperties({
                 nodeSize: {
                     rx: size.width,
@@ -200,7 +274,7 @@ var Control = /** @class */ (function (_super) {
         // 菱形更新
         _this.updateDiamond = function (_a) {
             var deltaX = _a.deltaX, deltaY = _a.deltaY;
-            var _b = _this.nodeModel, id = _b.id, rx = _b.rx, ry = _b.ry, x = _b.x, y = _b.y;
+            var _b = _this.nodeModel, id = _b.id, rx = _b.rx, ry = _b.ry, x = _b.x, y = _b.y, PCTResizeInfo = _b.PCTResizeInfo;
             var index = _this.index;
             var width = rx;
             var height = ry;
@@ -210,6 +284,7 @@ var Control = /** @class */ (function (_super) {
                 deltaY: deltaY,
                 width: width,
                 height: height,
+                PCTResizeInfo: PCTResizeInfo,
                 pct: 1 / 2,
             });
             // 限制放大缩小的最大最小范围
@@ -222,12 +297,12 @@ var Control = /** @class */ (function (_super) {
                 return;
             }
             // 更新中心点位置，更新文案位置
-            _this.updatePosition({ deltaX: deltaX, deltaY: deltaY });
+            _this.updatePosition({ deltaX: size.deltaX, deltaY: size.deltaY });
             // 更新rx ry,宽高为计算属性自动更新
             // @ts-ignore
-            _this.nodeModel.rx = _this.nodeModel.rx + deltaX / 2;
+            _this.nodeModel.rx = size.width;
             // @ts-ignore
-            _this.nodeModel.ry = _this.nodeModel.ry + deltaY / 2;
+            _this.nodeModel.ry = size.height;
             _this.nodeModel.setProperties({
                 nodeSize: {
                     rx: size.width,
@@ -269,8 +344,11 @@ var Control = /** @class */ (function (_super) {
             _this.graphModel.eventCenter.emit('node:resize', { oldNodeSize: oldNodeSize, newNodeSize: newNodeSize });
         };
         _this.onDraging = function (_a) {
+            var _b;
             var deltaX = _a.deltaX, deltaY = _a.deltaY;
+            var transformModel = _this.graphModel.transformModel;
             var modelType = _this.nodeModel.modelType;
+            _b = __read(transformModel.fixDeltaXY(deltaX, deltaY), 2), deltaX = _b[0], deltaY = _b[1];
             // html和矩形的计算方式是一样的，共用一个方法
             if (modelType === ModelType.RECT_NODE || modelType === ModelType.HTML_NODE) {
                 _this.updateRect({ deltaX: deltaX, deltaY: deltaY });
@@ -283,23 +361,32 @@ var Control = /** @class */ (function (_super) {
                 _this.updateDiamond({ deltaX: deltaX, deltaY: deltaY });
             }
         };
+        /**
+         * 由于将拖拽放大缩小改成丝滑模式，这个时候需要在拖拽结束的时候，将节点的位置更新到grid上.
+         */
+        _this.onDragEnd = function () {
+            var _a = _this.graphModel.gridSize, gridSize = _a === void 0 ? 1 : _a;
+            var x = gridSize * Math.round(_this.nodeModel.x / gridSize);
+            var y = gridSize * Math.round(_this.nodeModel.y / gridSize);
+            _this.nodeModel.moveTo(x, y);
+        };
         _this.index = props.index;
         _this.nodeModel = props.model;
         _this.graphModel = props.graphModel;
-        var gridSize = _this.graphModel.gridSize;
         // 为保证对齐线功能正常使用，step默认是网格grid的两倍，
         // 没有网格设置，默认为2，保证坐标是整数
-        var step = 2;
-        if (gridSize > 1) {
-            step = 2 * gridSize;
-        }
-        if (_this.nodeModel.gridSize) {
-            step = 2 * _this.nodeModel.gridSize;
-        }
+        // let step = 2;
+        // if (gridSize > 1) {
+        //   step = 2 * gridSize;
+        // }
+        // if (this.nodeModel.gridSize) {
+        //   step = 2 * this.nodeModel.gridSize;
+        // }
         _this.state = {};
         _this.dragHandler = new StepDrag({
             onDraging: _this.onDraging,
-            step: step,
+            onDragEnd: _this.onDragEnd,
+            step: 1,
         });
         return _this;
     }

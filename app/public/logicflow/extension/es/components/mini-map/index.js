@@ -61,12 +61,17 @@ var MiniMap = /** @class */ (function () {
                 y: e.y,
             };
         };
-        this.__drag = function (e) {
+        this.moveViewport = function (top, left) {
             var viewStyle = _this.__viewport.style;
-            _this.__viewPortTop += e.y - _this.__startPosition.y;
-            _this.__viewPortLeft += e.x - _this.__startPosition.x;
+            _this.__viewPortTop = top;
+            _this.__viewPortLeft = left;
             viewStyle.top = _this.__viewPortTop + "px";
             viewStyle.left = _this.__viewPortLeft + "px";
+        };
+        this.__drag = function (e) {
+            var top = _this.__viewPortTop + e.y - _this.__startPosition.y;
+            var left = _this.__viewPortLeft + e.x - _this.__startPosition.x;
+            _this.moveViewport(top, left);
             _this.__startPosition = {
                 x: e.x,
                 y: e.y,
@@ -85,6 +90,21 @@ var MiniMap = /** @class */ (function () {
         this.__drop = function () {
             document.removeEventListener('mousemove', _this.__drag);
             document.removeEventListener('mouseup', _this.__drop);
+            var top = _this.__viewPortTop;
+            var left = _this.__viewPortLeft;
+            if (_this.__viewPortLeft > _this.__width) {
+                left = _this.__width - _this.__viewPortWidth;
+            }
+            if (_this.__viewPortTop > _this.__height) {
+                top = _this.__height - _this.__viewPortHeight;
+            }
+            if (_this.__viewPortLeft < -_this.__width) {
+                left = 0;
+            }
+            if (_this.__viewPortTop < -_this.__height) {
+                top = 0;
+            }
+            _this.moveViewport(top, left);
         };
         this.__lf = lf;
         this.__miniMapWidth = lf.graphModel.width;
@@ -96,6 +116,11 @@ var MiniMap = /** @class */ (function () {
         var _this = this;
         this.__container = container;
         this.__lf.on('history:change', function () {
+            if (_this.__isShow) {
+                _this.__setView();
+            }
+        });
+        this.__lf.on('blank:drop', function () {
             if (_this.__isShow) {
                 _this.__setView();
             }
@@ -303,7 +328,7 @@ var MiniMap = /** @class */ (function () {
         var graphRatio = (this.__lf.graphModel.width / this.__lf.graphModel.height);
         var realViewPortHeight = realViewPortWidth / graphRatio;
         this.__viewPortTop = TRANSLATE_Y > 0 ? 0 : -TRANSLATE_Y * scale;
-        this.__viewPortLeft = -TRANSLATE_X * scale;
+        this.__viewPortLeft = TRANSLATE_X > 0 ? 0 : -TRANSLATE_X * scale;
         this.__viewPortWidth = realViewPortWidth;
         this.__viewPortHeight = realViewPortHeight;
         viewStyle.top = this.__viewPortTop + "px";

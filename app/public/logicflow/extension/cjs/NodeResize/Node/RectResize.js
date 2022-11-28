@@ -35,6 +35,9 @@ var RectResizeModel = /** @class */ (function (_super) {
     };
     RectResizeModel.prototype.getOutlineStyle = function () {
         var style = _super.prototype.getOutlineStyle.call(this);
+        var isSilentMode = this.graphModel.editConfigModel.isSilentMode;
+        if (isSilentMode)
+            return style;
         style.stroke = 'none';
         if (style.hover) {
             style.hover.stroke = 'none';
@@ -60,6 +63,22 @@ var RectResizeModel = /** @class */ (function (_super) {
     RectResizeModel.prototype.resize = function (deltaX, deltaY) {
         console.log(deltaX, deltaY);
     };
+    // 该方法需要在重设宽高和最大、最小限制后被调用，不建议在 initNodeData() 方法中使用
+    RectResizeModel.prototype.enableProportionResize = function (turnOn) {
+        if (turnOn === void 0) { turnOn = true; }
+        if (turnOn) {
+            var ResizePCT = { widthPCT: 100, hightPCT: 100 };
+            var ResizeBasis = { basisWidth: this.width, basisHeight: this.height };
+            var ScaleLimit = {
+                maxScaleLimit: Math.min((this.maxWidth / this.width) * 100, (this.maxHeight / this.height) * 100),
+                minScaleLimit: Math.max((this.minWidth / this.width) * 100, (this.minHeight / this.height) * 100),
+            };
+            this.PCTResizeInfo = { ResizePCT: ResizePCT, ResizeBasis: ResizeBasis, ScaleLimit: ScaleLimit };
+        }
+        else {
+            delete this.PCTResizeInfo;
+        }
+    };
     return RectResizeModel;
 }(core_1.RectNodeModel));
 var RectResizeView = /** @class */ (function (_super) {
@@ -76,10 +95,10 @@ var RectResizeView = /** @class */ (function (_super) {
         return _super.prototype.getShape.call(this);
     };
     RectResizeView.prototype.getShape = function () {
-        var isSelected = this.props.model.isSelected;
+        var _a = this.props, isSelected = _a.model.isSelected, isSilentMode = _a.graphModel.editConfigModel.isSilentMode;
         return (core_1.h("g", null,
             this.getResizeShape(),
-            isSelected ? this.getControlGroup() : ''));
+            isSelected && !isSilentMode ? this.getControlGroup() : ''));
     };
     return RectResizeView;
 }(core_1.RectNode));

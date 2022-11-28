@@ -33,6 +33,9 @@ var EllipseResizeModel = /** @class */ (function (_super) {
     };
     EllipseResizeModel.prototype.getOutlineStyle = function () {
         var style = _super.prototype.getOutlineStyle.call(this);
+        var isSilentMode = this.graphModel.editConfigModel.isSilentMode;
+        if (isSilentMode)
+            return style;
         style.stroke = 'none';
         if (style.hover) {
             style.hover.stroke = 'none';
@@ -54,6 +57,22 @@ var EllipseResizeModel = /** @class */ (function (_super) {
             stroke: '#000000',
         };
     };
+    // 该方法需要在重设宽高和最大、最小限制后被调用，不建议在 initNodeData() 方法中使用
+    EllipseResizeModel.prototype.enableProportionResize = function (turnOn) {
+        if (turnOn === void 0) { turnOn = true; }
+        if (turnOn) {
+            var ResizePCT = { widthPCT: 100, hightPCT: 100 };
+            var ResizeBasis = { basisWidth: this.rx, basisHeight: this.ry };
+            var ScaleLimit = {
+                maxScaleLimit: Math.min((this.maxWidth / (this.rx * 2)) * 100, (this.maxHeight / (this.ry * 2)) * 100),
+                minScaleLimit: Math.max((this.minWidth / (this.rx * 2)) * 100, (this.minHeight / (this.ry * 2)) * 100),
+            };
+            this.PCTResizeInfo = { ResizePCT: ResizePCT, ResizeBasis: ResizeBasis, ScaleLimit: ScaleLimit };
+        }
+        else {
+            delete this.PCTResizeInfo;
+        }
+    };
     return EllipseResizeModel;
 }(EllipseNodeModel));
 var EllipseResizeView = /** @class */ (function (_super) {
@@ -70,10 +89,10 @@ var EllipseResizeView = /** @class */ (function (_super) {
         return _super.prototype.getShape.call(this);
     };
     EllipseResizeView.prototype.getShape = function () {
-        var model = this.props.model;
+        var _a = this.props, model = _a.model, isSilentMode = _a.graphModel.editConfigModel.isSilentMode;
         return (h("g", null,
             this.getResizeShape(),
-            model.isSelected ? this.getControlGroup() : ''));
+            model.isSelected && !isSilentMode ? this.getControlGroup() : ''));
     };
     return EllipseResizeView;
 }(EllipseNode));

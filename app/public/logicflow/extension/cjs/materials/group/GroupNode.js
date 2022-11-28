@@ -48,6 +48,7 @@ var core_1 = require("@logicflow/core");
 var NodeResize_1 = require("../../NodeResize");
 var defaultWidth = 500;
 var defaultHeight = 300;
+var DEFAULT_BOTTOM_Z_INDEX = -10000;
 var GroupNodeModel = /** @class */ (function (_super) {
     __extends(GroupNodeModel, _super);
     function GroupNodeModel() {
@@ -70,8 +71,7 @@ var GroupNodeModel = /** @class */ (function (_super) {
         this.height = defaultHeight;
         this.foldedWidth = 80;
         this.foldedHeight = 60;
-        // todo: 参考bpmn.js, 分组和未加入分组的节点重合时，未加入分组的节点在分组之下。方便标识。
-        this.zIndex = -1;
+        this.zIndex = DEFAULT_BOTTOM_Z_INDEX;
         this.radius = 0;
         this.text.editable = false;
         this.text.draggable = false;
@@ -222,7 +222,7 @@ var GroupNodeModel = /** @class */ (function (_super) {
         var model = this.graphModel.addEdge(edgeData);
         model.virtual = true;
         // 强制不保存group连线数据
-        model.getData = function () { return null; };
+        // model.getData = () => null;
         model.text.editable = false;
         model.isFoldedEdge = true;
     };
@@ -276,6 +276,7 @@ var GroupNodeModel = /** @class */ (function (_super) {
     GroupNodeModel.prototype.getHistoryData = function () {
         var data = _super.prototype.getData.call(this);
         data.children = __spread(this.children);
+        data.isGroup = true;
         var properties = data.properties;
         delete properties.groupAddable;
         if (properties.isFolded) { // 如果分组被折叠
@@ -283,6 +284,18 @@ var GroupNodeModel = /** @class */ (function (_super) {
             data.y = data.y + this.unfoldedHight / 2 - this.foldedHeight / 2;
         }
         return data;
+    };
+    /**
+     * 是否允许此节点添加到此分组中
+     */
+    GroupNodeModel.prototype.isAllowAppendIn = function (nodeData) {
+        return true;
+    };
+    /**
+     * 当groupA被添加到groupB中时，将groupB及groupB所属的group的zIndex减1
+     */
+    GroupNodeModel.prototype.toBack = function () {
+        this.zIndex--;
     };
     return GroupNodeModel;
 }(NodeResize_1.RectResize.model));
@@ -295,7 +308,7 @@ var GroupNode = /** @class */ (function (_super) {
         var _a = this.props.model, resizable = _a.resizable, properties = _a.properties;
         return resizable && !properties.isFolded ? _super.prototype.getControlGroup.call(this) : null;
     };
-    GroupNode.prototype.getAddedableShape = function () {
+    GroupNode.prototype.getAddableShape = function () {
         var _a = this.props.model, width = _a.width, height = _a.height, x = _a.x, y = _a.y, radius = _a.radius, properties = _a.properties;
         if (!properties.groupAddable)
             return null;
@@ -341,7 +354,7 @@ var GroupNode = /** @class */ (function (_super) {
     };
     GroupNode.prototype.getResizeShape = function () {
         return core_1.h('g', {}, [
-            this.getAddedableShape(),
+            this.getAddableShape(),
             _super.prototype.getResizeShape.call(this),
             this.getFoldIcon(),
         ]);

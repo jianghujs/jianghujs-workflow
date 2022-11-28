@@ -16,7 +16,9 @@ export default class BaseEdge extends Component<IProps> {
     getText(): "" | h.JSX.Element;
     getArrowInfo(): ArrowInfo;
     getArrowStyle(): ArrowStyle;
-    getArrow(): h.JSX.Element;
+    getArrow(): h.JSX.Element | null;
+    getStartArrow(): h.JSX.Element | null;
+    getEndArrow(): h.JSX.Element | null;
     getAdjustPoints(): h.JSX.Element;
     getAnimation(): void;
     getAppendWidth(): h.JSX.Element;
@@ -27,7 +29,7 @@ export default class BaseEdge extends Component<IProps> {
     handleContextMenu: (ev: MouseEvent) => void;
     handleMouseDown: (e: any) => void;
     handleMouseUp: (e: MouseEvent) => void;
-    getIsDraging: () => boolean;
+    getIsDragging: () => boolean;
     toFront(): void;
     render(): h.JSX.Element;
 }

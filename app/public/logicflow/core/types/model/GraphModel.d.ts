@@ -54,6 +54,10 @@ declare class GraphModel {
      */
     idGenerator: (type?: string) => string;
     /**
+     * 节点间连线、连线变更时的边的生成规则
+     */
+    edgeGenerator: Definition['edgeGenerator'];
+    /**
      * 节点移动规则判断
      * 在节点移动的时候，会出发此数组中的所有规则判断
      */
@@ -142,8 +146,9 @@ declare class GraphModel {
      * @param rightBottomPoint 表示区域右下角的点
      * @param wholeEdge 是否要整个边都在区域内部
      * @param wholeNode 是否要整个节点都在区域内部
+     * @param ignoreHideElement 是否忽略隐藏的节点
      */
-    getAreaElement(leftTopPoint: PointTuple, rightBottomPoint: PointTuple, wholeEdge?: boolean, wholeNode?: boolean): any[];
+    getAreaElement(leftTopPoint: PointTuple, rightBottomPoint: PointTuple, wholeEdge?: boolean, wholeNode?: boolean, ignoreHideElement?: boolean): any[];
     /**
      * 获取指定类型元素对应的Model
      */
@@ -417,7 +422,7 @@ declare class GraphModel {
     /**
      * 重新设置画布的宽高
      */
-    resize(width: number, height: number): void;
+    resize(width?: number, height?: number): void;
     /**
      * 清空画布
      */
@@ -433,9 +438,20 @@ declare class GraphModel {
     translateCenter(): void;
     /**
      * 画布图形适应屏幕大小
-     * @param offset number 距离盒子四周的距离， 默认为20
+     * @param verticalOffset number 距离盒子上下的距离， 默认为20
+     * @param horizontalOffset number 距离盒子左右的距离， 默认为20
      */
-    fitView(offset?: number): void;
+    fitView(verticalOffset?: number, horizontalOffset?: number): void;
+    /**
+     * 开启边的动画
+     * @param edgeId any
+     */
+    openEdgeAnimation(edgeId: any): void;
+    /**
+     * 关闭边的动画
+     * @param edgeId any
+     */
+    closeEdgeAnimation(edgeId: any): void;
 }
 export { GraphModel };
 export default GraphModel;

@@ -68,6 +68,7 @@ declare class MiniMap {
     }): void;
     __createViewPort(): void;
     __startDrag: (e: any) => void;
+    moveViewport: (top: any, left: any) => void;
     __drag: (e: any) => void;
     __drop: () => void;
 }

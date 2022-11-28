@@ -41,14 +41,17 @@ export default class BaseNodeModel implements IBaseNodeModel {
     anchorsOffset: AnchorsOffsetItem[];
     isSelected: boolean;
     isHovered: boolean;
+    isShowAnchor: boolean;
     isDragging: boolean;
     isHitable: boolean;
     draggable: boolean;
     visible: boolean;
+    virtual: boolean;
     graphModel: GraphModel;
     zIndex: number;
     state: number;
     autoToFront: boolean;
+    style: ShapeStyleAttribute;
     readonly BaseType = ElementType.NODE;
     modelType: ModelType;
     additionStateData: AdditionData;
@@ -137,7 +140,7 @@ export default class BaseNodeModel implements IBaseNodeModel {
      * 获取当前节点锚点拖出连线样式
      * @returns 自定义锚点拖出样式
      */
-    getAnchorLineStyle(): import("../../constant/DefaultTheme").CommonTheme;
+    getAnchorLineStyle(anchorInfo: any): import("../../constant/DefaultTheme").CommonTheme;
     /**
      * @overridable 支持重写
      * 获取outline样式，重写可以定义此类型节点outline样式， 默认使用主题样式
@@ -182,16 +185,22 @@ export default class BaseNodeModel implements IBaseNodeModel {
     get anchors(): PointAnchor[];
     getAnchorInfo(anchorId: string): PointAnchor;
     addNodeMoveRules(fn: NodeMoveRule): void;
-    move(deltaX: any, deltaY: any, isignoreRule?: boolean): boolean;
-    moveTo(x: any, y: any, isignoreRule?: boolean): boolean;
+    move(deltaX: any, deltaY: any, isIgnoreRule?: boolean): boolean;
+    getMoveDistance(deltaX: number, deltaY: number, isIgnoreRule?: boolean): [number, number];
+    moveTo(x: any, y: any, isIgnoreRule?: boolean): boolean;
     moveText(deltaX: any, deltaY: any): void;
     updateText(value: string): void;
     setSelected(flag?: boolean): void;
     setHovered(flag?: boolean): void;
+    setIsShowAnchor(flag?: boolean): void;
     setHitable(flag?: boolean): void;
     setElementState(state: number, additionStateData?: AdditionData): void;
     setProperty(key: any, val: any): void;
     setProperties(properties: any): void;
+    deleteProperty(key: string): void;
+    setStyle(key: any, val: any): void;
+    setStyles(styles: any): void;
+    updateStyles(styles: any): void;
     setZIndex(zindex?: number): void;
     updateAttributes(attributes: any): void;
 }

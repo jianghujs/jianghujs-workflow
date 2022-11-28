@@ -11,13 +11,18 @@ declare type Bounds = {
 declare class Group {
     static pluginName: string;
     lf: LogicFlow;
+    topGroupZIndex: number;
     activeGroup: any;
     nodeGroupMap: Map<BaseNodeId, GroupId>;
     constructor({ lf }: {
         lf: any;
     });
+    /**
+     * 获取一个节点内部所有的子节点，包裹分组的子节点
+     */
+    getNodeAllChild(model: any): any[];
     graphRendered: (data: any) => void;
-    appendNodeToGrop: ({ data }: {
+    appendNodeToGroup: ({ data }: {
         data: any;
     }) => void;
     deleteGroupChild: ({ data }: {
@@ -27,9 +32,20 @@ declare class Group {
         data: any;
     }) => void;
     /**
-     * 获取自定位置其所属分组
+     * 1. 分组节点默认在普通节点下面。
+     * 2. 分组节点被选中后，会将分组节点以及其内部的其他分组节点放到其余分组节点的上面。
+     * 3. 分组节点取消选中后，不会将分组节点重置为原来的高度。
+     * 4. 由于LogicFlow核心目标是支持用户手动绘制流程图，所以不考虑一张流程图超过1000个分组节点的情况。
      */
-    getGroup(bounds: Bounds): BaseNodeModel | undefined;
+    nodeSelected: ({ data }: {
+        data: any;
+    }) => void;
+    toFrontGroup: (model: any) => void;
+    /**
+     * 获取自定位置其所属分组
+     * 当分组重合时，优先返回最上层的分组
+     */
+    getGroup(bounds: Bounds, nodeData: BaseNodeModel): BaseNodeModel | undefined;
     /**
      * 获取某个节点所属的groupModel
      */

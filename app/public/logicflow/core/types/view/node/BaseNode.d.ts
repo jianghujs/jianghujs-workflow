@@ -7,7 +7,6 @@ declare type IProps = {
     graphModel: GraphModel;
 };
 declare type Istate = {
-    isHovered: boolean;
     isDraging?: boolean;
 };
 export default abstract class BaseNode extends Component<IProps, Istate> {

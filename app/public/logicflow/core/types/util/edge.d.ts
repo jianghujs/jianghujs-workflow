@@ -99,4 +99,10 @@ declare type Position = {
     y: number;
 };
 export declare const twoPointDistance: (source: Position, target: Position) => number;
+/**
+ * 包装边生成函数
+ * @param graphModel graph model
+ * @param generator 用户自定义的边生成函数
+ */
+export declare function createEdgeGenerator(graphModel: any, generator?: Function): (sourceNode: any, targetNode: any, currentEdge?: any) => any;
 export {};

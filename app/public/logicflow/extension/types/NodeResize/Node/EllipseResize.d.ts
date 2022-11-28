@@ -1,5 +1,6 @@
 import { h, EllipseNode, EllipseNodeModel } from '@logicflow/core';
 declare class EllipseResizeModel extends EllipseNodeModel {
+    private PCTResizeInfo;
     constructor(data: any, graphModel: any);
     initNodeData(data: any): void;
     getOutlineStyle(): import("@logicflow/core/types/constant/DefaultTheme").OutlineTheme;
@@ -14,6 +15,7 @@ declare class EllipseResizeModel extends EllipseNodeModel {
         fill: string;
         stroke: string;
     };
+    enableProportionResize(turnOn?: boolean): void;
 }
 declare class EllipseResizeView extends EllipseNode {
     getControlGroup(): h.JSX.Element;

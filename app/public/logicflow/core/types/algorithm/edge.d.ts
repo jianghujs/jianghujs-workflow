@@ -1,5 +1,5 @@
 import { Point } from '../type/index';
-export declare const getCorssPointOfLine: (a: Point, b: Point, c: Point, d: Point) => false | {
+export declare const getCrossPointOfLine: (a: Point, b: Point, c: Point, d: Point) => false | {
     x: number;
     y: number;
 };
