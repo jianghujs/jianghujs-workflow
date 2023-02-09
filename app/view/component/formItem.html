@@ -1,0 +1,79 @@
+<!-- formItem.html >>>>>>>>>>>>> -->
+<script type="text/html" id="form-item">
+  <div>
+    <span class="jh-input-label">{{ formItem.statement }}</span>
+
+    <!-- 文本 -->
+    <v-text-field v-if="formItem.type === 'input'" :rules="validationRules.requireRules" class="jh-v-input" dense single-line filled label="班级ID" v-model="formItem.answer"></v-text-field>
+
+    <!-- 单选 -->
+    <v-select
+      v-if="formItem.type === 'single'"
+      v-model="formItem.answer"
+      :items="formItem.optionList"
+      dense single-line filled
+      :rules="validationRules.requireRules" 
+    ></v-select>
+
+    <!-- 多选 -->
+    <v-select
+      v-if="formItem.type === 'multiple'"
+      v-model="formItem.answer"
+      :items="formItem.optionList"
+      multiple
+      dense single-line filled
+      :rules="validationRules.requireRules" 
+    ></v-select>
+
+    <!-- 文本框 -->
+    <v-textarea v-if="formItem.type === 'short'" :rules="validationRules.requireRules" class="jh-v-input" no-resize dense single-line filled label="备注"
+    v-model="formItem.answer"></v-textarea>
+
+    <!-- 时间选择 -->
+    <v-text-field v-if="formItem.type === 'date'" class="jh-v-input" dense single-line filled readonly @click="openDataPicker" label="出生日期" v-model="formItem.answer" :rules="validationRules.requireRules"></v-text-field>
+    <v-menu v-if="formItem.type === 'date'" class="jh-v-input" :close-on-content-click="false" v-model="isDataPickerShown" :position-x="dataPickerPosition.x" :position-y="dataPickerPosition.y" transition="scale-transition" offset-y min-width="auto">
+      <v-date-picker color="green lighten-1" elevation="20" @input="isDataPickerShown = false" v-model="formItem.answer"></v-date-picker>
+    </v-menu>
+  </div>
+</script>
+
+<script>
+  Vue.component('form-item', {
+    template: "#form-item",
+    vueComponent: 'form-item',
+    vuetify: new Vuetify(),
+    props: {
+      formItem: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    data() {
+      return {
+        isDataPickerShown: false,
+        dataPickerPosition: {x: null, y: null},
+        validationRules: {
+          requireRules: [
+            v => !!v || 'This is required',
+          ],
+        },
+      };
+    },
+    created() {
+      console.log(this.formItem)
+    },
+    methods: {
+      // ---------- 日期选择 >>>>>>>>>> --------
+      async openDataPicker(funObj) {
+        this.dataPickerPosition.x = funObj.x - funObj.offsetX;
+        this.dataPickerPosition.y = funObj.y - funObj.offsetY + 40;
+        this.isDataPickerShown = !this.isDataPickerShown;
+      },
+      // ---------- <<<<<<<<<< 日期选择 --------
+    },
+  });
+
+</script>
+<style>
+</style>
+<!-- <<<<<<<<<<<<< formItem.html -->

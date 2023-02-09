@@ -12,31 +12,36 @@
   </template>
 
   <template slot-scope="props">
-      <v-card class="mt-3 mb-12" :class="{'pa-8': !props.ismobile, 'pa-4': props.ismobile}">
+      <v-card class="mt-3 mb-3" :class="{'pa-8': !props.ismobile, 'pa-4': props.ismobile}">
         <v-row>
           <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
             <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="流程名:" v-model="editItem['workflowName']" :rules="requireRules">
             </v-text-field>
           </v-col>
-          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+          <!-- <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
             <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="分类:" v-model="editItem['workflowCategory']" :rules="requireRules">
             </v-text-field>
-          </v-col>
+          </v-col> -->
           <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
             <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="备注:"
                           v-model="editItem['workflowRemark']">
             </v-text-field>
           </v-col>
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-select class="cus-v-input mr-2" dense filled single-line color="success" prefix="审批模式:" 
+                          v-model="editItem['mode']" :items="constantCollection.modeList" /> 
+          </v-col>
         </v-row>
       </v-card>
 
-      <div class=" pb-4" style="font-size: 18px; font-weight: bold">模板设置</div>
+      <!-- <div class=" pb-4" style="font-size: 18px; font-weight: bold">模板设置</div>
       <tpl-form-design :form="editItem.workflowForm" v-if="!loading">
-      </tpl-form-design>
+      </tpl-form-design> -->
 
       <div class="pt-8 pb-4" style="font-size: 18px; font-weight: bold">流程设置</div>
       <process-flow v-if="!loading" ref="processFlow" :data="editItem.workflowConfig" :user="constantCollection.userList"
-                    :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList">
+                    :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList"
+                    :mode="editItem.mode">
       </process-flow>
       
       <v-overlay :value="loading" absolute>
@@ -66,12 +71,16 @@ new Vue({
   vuetify: new Vuetify(),
   data: () => ({
     requireRules: [
-      v => !!v || 'This is required',
+      v => !!v || '必填',
     ],
     constantCollection: {
       userList: [],
       groupList: [],
-      workflowFormList: []
+      workflowFormList: [],
+      modeList: [
+        { text: '串行', value: 'serial'},
+        { text: '并行', value: 'parallel'},
+      ]
     },
     editItem: {},
     dialogSaveInfoAction: 'createItem',
@@ -123,8 +132,17 @@ new Vue({
     },
 
     buildEditItem() {
-      const { id, workflowId, workflowName, workflowRemark, workflowCategory, workflowForm } = this.editItem;
+      const { id, workflowId, workflowName, workflowRemark, workflowCategory, mode, workflowForm } = this.editItem;
       const workflowConfig = this.$refs.processFlow.getData();
+      workflowConfig.mode = mode
+      // TODO: 清除不存在的用户
+      workflowConfig.nodeList.forEach(node => {
+        if (node.type === 'userTask') {
+          node.assignValue = node.assignValue || [];
+          node.assignValue = node.assignValue.filter(userId => this.constantCollection.userList.findIndex(u => u.userId === userId) > -1);
+          node.origin.properties.assignValue = node.assignValue;
+        }
+      });
       let item = {
         workflowName,
         workflowRemark,
@@ -159,7 +177,6 @@ new Vue({
           }
         }
         config.formId = formId
-        console.log(config.outline, config.formId)
       }
     },
 
@@ -178,7 +195,7 @@ new Vue({
         }
       })).data.appData.resultData;
       this.constantCollection.userList = rows.map(e => {
-        return {text: e.username, value: e.userId}
+        return {text: e.username, value: e.userId, userId: e.userId }
       })
     },
     /**
@@ -202,7 +219,7 @@ new Vue({
 
     async clearItemData() {
       this.dialogSaveInfoAction = 'createItem';
-      this.editItem = {workflowForm: [], workflowConfig: {lineList: [], nodeList: []}};
+      this.editItem = {workflowForm: [], workflowConfig: {lineList: [], nodeList: []}, mode: 'serial'};
     },
 
     async syncEditItem() {
@@ -223,6 +240,7 @@ new Vue({
         const item = rows[0];
         item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
         item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
+        item.mode = item.workflowConfig.mode || 'serial';
         this.editItem = item;
       }
       setTimeout(() => {
@@ -285,7 +303,16 @@ new Vue({
 })
 </script>
 
-<style scoped>
+<style>
+.theme--light.v-data-table > .v-data-table__wrapper > table > tbody > tr > td:not(.v-data-table__mobile-row) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
 
+.theme--light.v-data-table > .v-data-table__wrapper > table > tbody > tr {
+  cursor: pointer;
+}
 </style>
 {% endblock %}

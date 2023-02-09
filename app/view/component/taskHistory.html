@@ -1,0 +1,104 @@
+<!-- formItem.html >>>>>>>>>>>>> -->
+<script type="text/html" id="task-history">
+  <div>
+    <v-data-table
+      :headers="headers"
+      :items="tableData"
+      :items-per-page="-1"
+      mobile-breakpoint="0"
+      :loading="isTableLoading"
+      checkbox-color="success"
+      fixed-header
+      hide-default-footer
+      class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
+      <template v-slot:item.taskHandleDesc="{ item }">
+        <span v-if="item.taskConfigId.includes('userTask-')">
+
+          <v-icon
+            large
+          >
+          mdi-arrow-right-thin
+          </v-icon>
+          <v-chip
+            v-if="item.taskHandleDesc === '拒绝'"
+            color="red"
+            small outlined label
+          >
+            {{item.taskHandleDesc}}
+          </v-chip>
+          <v-chip
+            v-else
+            color="green"
+            small outlined label
+          >
+            {{item.taskHandleDesc}}
+          </v-chip>
+        </span>
+        <span v-else>{{item.taskHandleDesc}}</span>
+      </template>
+    </v-data-table>
+  </div>
+</script>
+
+<script>
+  Vue.component('task-history', {
+    template: "#task-history",
+    vueComponent: 'task-history',
+    vuetify: new Vuetify(),
+    props: {
+      taskId: {
+        type: String,
+        default: '',
+      },
+    },
+    data() {
+      return {
+        isTableLoading: false,
+        headers: [
+          {text: "名称", value: "taskTitle", width: 230, class: 'fixed', cellClass: 'fixed'},
+          {text: "节点说明", value: "taskExplain", width: 200}, 
+          {text: "操作人", value: "operationByUser", width: 80}, 
+          {text: "操作描述", value: "taskHandleDesc", width: 120}, 
+          {text: "操作时间", value: "operationAt", width: 250},
+        ],
+        tableData: [],
+      };
+    },
+    watch: {
+      taskId: {
+        handler(val, oldVal) {
+          if (!val) return;
+          this.getTableData();
+        },
+        immediate: true,
+      },
+    },
+    methods: {
+      // ---------- 获取列表 >>>>>>>>>> --------
+      async getTableData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'getTaskHistory',
+              actionData: {taskId: this.taskId},
+            }
+          }
+        })
+        const {taskHistoryList, lineTypeList} = result.data.appData.resultData;
+        taskHistoryList.forEach(task => {
+          task.operationAt = task.taskStatus != 'end' ? dayjs(task.operationAt).format('YYYY-MM-DD HH:mm:ss') : ''
+        })
+        this.tableData = taskHistoryList;
+        this.$emit('line-type-list', lineTypeList);
+        this.isTableLoading = false;
+      },
+      // ---------- <<<<<<<<<< 获取列表 --------
+    },
+  });
+
+</script>
+<style>
+</style>
+<!-- <<<<<<<<<<<<< formItem.html -->

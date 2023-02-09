@@ -1,173 +1,444 @@
-{% extends 'template/jhTemplateV3.html'%}
+{% extends 'template/jhTemplateV4.html'%}
 
-{% block vue_template %}
+{% block vueTemplate %}
 
-<jh-layout-v3>
-  <!-- 页面主要内容 -->
-  <v-card :class="{'px-2': isMobile}">
-    <v-row class="ma-0 align-center flex-none pt-0 " :class="{'pa-4': !isMobile, 'pb-0': !isMobile, 'pa-2': isMobile}">
-      <v-col cols="12" xs="12" sm="4" md="4" xl="4" class="pl-0">
-        <v-btn color="success" dark class="elevation-0 mr-2" @click="doUiAction('createItem')">新增</v-btn>
-        <span class="body-2">共{{ tableDataFromBackend.length }}条记录</span>
-      </v-col>
-      <v-spacer></v-spacer>
-      <v-col cols="12" xs="12" sm="4" md="3" xl="3" class="px-0">
-        <v-text-field v-model="searchInput" prefix="表格过滤:" color="success" class="cus-v-input" dense filled
-                      single-line></v-text-field>
-      </v-col>
-    </v-row>
+<script type="text/html" id="app-template">
+  <div>
+    <v-app mobile-breakpoint="sm">
+      <jh-menu />
+      <v-main class="mt-15">
+        <!-- 头部内容 >>>>>>>>>>>>> -->
+        <div class="jh-page-second-bar px-8">
+          <div class="pt-3 text-h7 font-weight-bold">新申请审批
+            <!-- 帮助页按钮 -->
+            <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline</v-icon>
+          </div>
+          <v-breadcrumbs class="pb-3 pt-0 px-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
+        </div>
+        <!-- <<<<<<<<<<<<< 头部内容 -->
 
-    <v-data-table 
-        fixed-header
-        :headers="headers"
-        :items="tableDataFromBackend"
-        :search="searchInput"
-        :footer-props="{ itemsPerPageOptions: [20, 40, 60, 100, -1] }"
-        :items-per-page="20"
-        mobile-breakpoint="0"
-        :loading="isTableLoading"
-        checkbox-color="success"
-        :class="{'mx-2': isMobile}"
-        color="success"
-        class="elevation-0 mt-0 flex-fill d-flex flex-column">
-        <template v-slot:item.action="{ item }">
-          <v-btn small class="mr-2" :class="tableButton.color" v-for="tableButton of tableButtonList"
-                @click="doUiAction(tableButton.action, {item})">
-            {{ tableButton.text }}
+        <div class="jh-page-body-container px-8">
+          <!-- 页面内容 >>>>>>>>>>>>> -->
+          <v-card class="rounded-lg mb-4">
+            <v-row class="ma-0 py-0 px-4">
+              <!--新增按钮-->
+              <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
+                <v-btn color="success" small class="elevation-0 mr-2"
+                  @click="doUiAction('jumpToCreateWorkflow')">新增</v-btn>
+              </v-col>
+              <v-spacer></v-spacer>
+              <!--搜索-->
+              <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="px-0">
+                <v-text-field v-model="searchInput" color="success" prefix="搜索：" class="jh-v-input" dense filled single-line hide-details></v-text-field>
+              </v-col>
+            </v-row>
+            <!--表格-->
+            <v-data-table
+              :headers="headers"
+              :items="tableData"
+              :search="searchInput"
+              :footer-props="{ itemsPerPageOptions: [20, 50, -1], itemsPerPageText: '每页行数', itemsPerPageAllText: '所有'}"
+              :items-per-page="-1"
+              mobile-breakpoint="0"
+              :loading="isTableLoading"
+              :class="{'zebraLine': isTableZebraLineShown }"
+              checkbox-color="success"
+              fixed-header
+              class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
+              <!--表格行操作按钮-->
+              <template v-slot:item.action="{ item }">
+                <span role="button" class="success--text jh-font-size-3 pr-2"
+                  @click="doUiAction('startCreateWorkflow', {formItemList: item.formItemList, group: item.name})">
+                  <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>申请
+                </span>
+              </template>
+              <!--表格底部右侧功能按钮-->
+              <template v-slot:footer.prepend>
+                <v-btn icon @click="doUiAction('openTableZebraLineMenu', $event)">
+                  <v-icon>mdi-menu</v-icon>
+                </v-btn>
+                <v-menu top offset-y :close-on-content-click="false" v-model="isTableZebraLineMenuShown" :position-x="tableZebraLineMenuPosition.x" :position-y="tableZebraLineMenuPosition.y">
+                  <v-list>
+                    <v-list-item>
+                      <v-switch v-model="isTableZebraLineShown" hide-details class="ma-0" label="显示斑马纹" dense flat></v-switch>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
+              <!--表格底部右侧分页-->
+              <template v-slot:footer.page-text="pagination">
+                <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
+                <span class="ml-1">共{{pagination.itemsLength}}条</span>
+              </template>
+            </v-data-table>
+          </v-card>
+          <!-- <<<<<<<<<<<<< 页面内容 -->
+        </div>
+        <!-- <<<<<<<<<<<<< 创建审批抽屉 -->
+        <v-navigation-drawer v-model="isCreateDrawerShown" :permanent="isCreateDrawerShown" fixed temporary right width="80%"
+          class="elevation-24">
+          <v-form v-if="isCreateDrawerShown" ref="createForm" lazy-validation>
+            <!--抽屉标题-->
+            <v-row>
+              <span class="title pa-6 pl-8">创建审批</span>
+            </v-row>
+            <!--抽屉表单主体-->
+            <v-row class="mt-0 px-6">
+              <v-col cols="12" sm="12" md="4" v-for="(item, index) in createFormList" :key="index">
+                <form-item :form-item="item"></form-item>
+              </v-col>
+              <v-col cols="12" sm="12" md="4">
+                <span class="jh-input-label">附件</span>
+                xxx
+              </v-col>
+              <v-col cols="12" sm="12" md="12">
+                <span class="jh-input-label">审批流程 - 添加审批人</span>
+                <v-row v-for="item in workflowPersonList">
+                  <v-col cols="2">
+                    <v-text-field class="cus-v-input " dense filled single-line v-model="item.label" disabled></v-text-field>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-autocomplete 
+                      class="cus-v-input mr-2" 
+                      dense filled single-line clearable
+                      :items="userList" 
+                      item-text="username" 
+                      item-value="userId"
+                      multiple
+                      :rules="validationRules.requireRules"
+                      v-model="item.assignValue">
+                    </v-autocomplete>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-checkbox dense filled v-model="item.isNeedAllApproval" label="是否需要所有人审批" hide-details ></v-checkbox>
+                  </v-col>
+                  
+                </v-row>
+              </v-col>
+            </v-row>
+            <!--抽屉操作按钮-->
+            <v-row class="justify-end mx-0 mt-8 px-6">
+              <v-btn color="success" @click="doUiAction('createWorkflow')" small>保存</v-btn>
+              <v-btn class="ml-2" @click="isCreateDrawerShown = false" small>取消</v-btn>
+            </v-row>
+          </v-form>
+          <!--抽屉关闭按钮-->
+          <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+            @click="isCreateDrawerShown = false">
+            <v-icon>mdi-close</v-icon>
           </v-btn>
-        </template>
-    </v-data-table>
-  </v-card>
-</jh-layout-v3>
+        </v-navigation-drawer>
+        <!-- 创建审批抽屉 >>>>>>>>>>>>> -->
+
+        <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
+        <v-navigation-drawer v-model="isHelpPageDrawerShown" fixed temporary right width="80%" hide-overlay
+          class="elevation-24">
+          <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%"
+            height="100%"></iframe>
+
+          <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+            @click="isHelpPageDrawerShown = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-navigation-drawer>
+        <!-- <<<<<<<<<<<<< 帮助页抽屉 -->
+
+      </v-main>
+    </v-app>
+
+    <jh-toast />
+    <jh-mask />
+    <jh-confirm-dialog />
+
+  </div>
+</script>
+
+<div id="app">
+</div>
 
 {% endblock %}
 
-{% block vue_body %}
+{% block vueScript %}
+
+<!-- 加载页面组件 >>>>>>>>>>>>> -->
+{% include 'component/formItem.html' %}
+<!-- <<<<<<<<<<<<< 加载页面组件 -->
 
 <script type="module">
-new Vue({
-  el: '#app',
-  template: '#app-template',
-  vuetify: new Vuetify(),
-  data: () => ({
-    isMobile: window.innerWidth < 600,
-    searchInput: null,
-    isTableLoading: true,
-    tableDataFromBackend: [],
-    headers: [
-      {text: "ID", value: "id", width: 120, class: 'fixed', cellClass: 'fixed'},
-      {text: "流程ID", value: "workflowId", width: 120},
-      {text: "流程名", value: "workflowName", width: 200},
-      {text: "分类ID", value: "workflowCategory", width: 120},
-      {text: "备注", value: "workFlowRemark", width: 120},
-      {text: "操作者", value: "operationByUser", width: 120},
-      {text: "操作时间", value: "operationAt", width: 250},
-      {text: '操作', value: 'action', align: 'center', sortable: false, width: 160, class: 'fixed', cellClass: 'fixed'},
-    ],
-    tableButtonList: [
-      {text: '编辑', buttonType: 'edit', color: 'success', action: 'updateItem'},
-      {text: '删除', buttonType: 'delete', color: 'error', action: 'deleteItem'},
-    ]
-  }),
-  async created() {
-    await this.doUiAction('refreshTableData');
-  },
-  mounted() {
-  },
-  methods: {
-    async doUiAction(uiActionId, uiActionData) {
+  new Vue({
+    el: '#app',
+    template: '#app-template',
+    vueComponent: 'page',
+    vuetify: new Vuetify(),
+    data: {
+      // 面包屑
+      breadcrumbs: [
+        {
+          text: '首页',
+          disabled: true,
+        },
+        {
+          text: '申请模板',
+          disabled: true,
+        }
+      ],
+      validationRules: {
+        requireRules: [
+          v => !!v || 'This is required',
+        ],
+      },
+      isTableLoading: false,
+      userList: [],
+      tableData: [
+        { name: '请假', desc: '正常工作日请假', id: 'leave', icon: 'mdi-calendar-range', color: 'orange darken-2', formItemList: [
+          {
+            type: 'single',
+            typeName: '单选',
+            statement: '请假类型',
+            answer: '',
+            optionList: ['年假', '事假', '病假', '婚假', '产假', '其他']
+          },
+          {
+            type: 'date',
+            typeName: '时间',
+            statement: '开始时间',
+            answer: '',
+          },
+          {
+            type: 'date',
+            typeName: '时间',
+            statement: '结束时间',
+            answer: '',
+          },
+          {
+            type: 'input',
+            typeName: '文本',
+            statement: '请假时长',
+            answer: '',
+          },
+          {
+            type: 'short',
+            typeName: '文本框',
+            statement: '请假事由',
+            answer: '',
+          },
+        ] },
+        { name: '加班', desc: '工作日早晚加班', id: 'overtime', icon: 'mdi-account-clock', color: 'blue darken-2', formItemList: [
+          {
+            type: 'date',
+            typeName: '时间',
+            statement: '开始时间',
+            answer: '',
+          },
+          {
+            type: 'date',
+            typeName: '时间',
+            statement: '结束时间',
+            answer: '',
+          },
+          {
+            type: 'input',
+            typeName: '文本',
+            statement: '加班时长',
+            answer: '',
+          },
+          {
+            type: 'short',
+            typeName: '文本框',
+            statement: '加班事由',
+            answer: '',
+          },
+        ] },
+        { name: '出差', desc: '外地往返公干', desc: '外出公干', id: 'businessTrip', icon: 'mdi-airplane-takeoff', color: 'blue darken-2' },
+        { name: '补卡', desc: '工作日忘记打卡', id: 'makeUpCard', icon: 'mdi-account-clock', color: 'blue darken-2' },
+        { name: '调休', desc: '某节假日紧急工作后调换休息日期', id: 'adjustRest', icon: 'mdi-account-clock', color: 'teal darken-2' },
+        { name: '调班', desc: '因个人事务和同事调换工作时间', id: 'adjustClass', icon: 'mdi-account-clock', color: 'blue darken-2' },
+      ],
+      headers: [
+        { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
+        { text: '审批名称', value: 'name' },
+        { text: '审批名称', value: 'desc' },
+      ],
+      searchInput: '',
+      isHelpPageDrawerShown: false,
+      isTableZebraLineShown: true,
+      isTableZebraLineMenuShown: false,
+      tableZebraLineMenuPosition: {x: null, y: null},
+
+      isCreateDrawerShown: false,
+      createFormList: [],
+      createItem: {
+        group: '',
+      },
+      workflowPersonList: [],
+      workflowId: '6D7HV6Twfer_xtmbqUsDO'
+    },
+    watch: {},
+    created() {
+      this.getUserList();
+      this.getWorkflow();
+    },
+    methods: {
+      async doUiAction(uiActionId, uiActionData) {
         switch (uiActionId) {
-          case 'refreshTableData':
-            await this.refreshTableData(uiActionData);
+          case 'getTableData':
+            await this.getTableData();
             break;
-          case 'createItem':
-            await this.prepareValidate(uiActionData);
-            await this.doCreateItem(uiActionData);
+          case 'openTableZebraLineMenu':
+            await this.openTableZebraLineMenu(uiActionData);
             break;
-          case 'updateItem':
-            await this.prepareValidate(uiActionData);
-            await this.doUpdateItem(uiActionData);
+          case 'startCreateWorkflow':
+            await this.prepareCreateFormData(uiActionData);
+            await this.openCreateDrawer();
             break;
-          case 'deleteItem':
-            await this.confirmDeleteItemDialog(uiActionData);
-            await this.doDeleteItem(uiActionData);
-            await this.refreshTableData(uiActionData);
+          case 'createWorkflow':
+            await this.prepareCreateValidate();
+            await this.confirmCreateWorkDialog();
+            await this.prepareDoWorkItem();
+            await this.doCreateWork();
+            await this.closeCreateDrawer();
+            break;
+          case 'jumpToCreateWorkflow':
+            await this.jumpToCreateWorkflow();
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
             break;
         }
-    },
-    /**
-     * 获取表格数据
-     */
-    async refreshTableData() {
-      this.isTableLoading = true;
-      const {rows} = (await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'workflowManagement',
-            actionId: 'selectItemList',
-            orderBy: [{column: 'operationAt', order: 'desc'}]
+      },
+
+      async getUserList() {
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectUserList',
+              actionData: {},
+              orderBy: [{ column: 'userId', order: 'asc' }]
+            }
           }
-        }
-      })).data.appData.resultData;
-      for (const item of rows) {
-        item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
-        item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
-        item.operationAt = dayjs(item.operationAt).format('YYYY-MM-DD HH:mm:ss');
-      }
-      this.tableDataFromBackend = rows;
-      this.isTableLoading = false;
-    },
+        });
 
-    async prepareValidate() {
-        if(this.isMobile) {
-          window.vtoast.fail({message: '该功能只能在电脑使用'})
-          return false;
-        }
-    },
-
-    // CreateItem
-    async doCreateItem() {
-      window.location.href = `/${window.appInfo.appId}/page/workflowEditor`;
-    },
-
-    // UpdateItem
-    async doUpdateItem({item}) {
-      sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
-      window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
-    },
-
-    async confirmDeleteItemDialog() {
-      if (await window.confirmDialog({title: "删除", content: "确定删除吗？"}) === false) {
-          throw new Error("[confirmDeleteItemDialog] 否");
-      }
-    },
-
-    /**
-     * 删除数据
-     */
-    async doDeleteItem({item}) {
-      const {id} = item;
-      await window.vtoast.loading("删除数据");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'workflowManagement',
-            actionId: 'deleteItem',
-            actionData: {},
-            where: {id: id}
+        const userList = result.data.appData.resultData.rows;
+        this.userList = userList;
+      },
+      async getWorkflow() {
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectItemList',
+              where: {workflowId: this.workflowId}
+            }
           }
+        });
+
+        const workflowList = result.data.appData.resultData.rows;
+        if (!workflowList.length) {
+          throw new Error('缺少默认流程');
         }
-      });
-      await window.vtoast.success("删除数据成功");
-    },
-  }
-})
+        const workflowNodeList = JSON.parse(workflowList[0].workflowConfig).nodeList;
+        workflowNodeList.forEach(node => {
+          node.isNeedAllApproval = true;
+        });
+        this.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
+      },
+      
+      // ---------- <<<<<<<<<< 斑马纹开关 uiAction --------
+      async openTableZebraLineMenu(funObj) {
+        this.tableZebraLineMenuPosition.x = funObj.x -funObj.offsetX + 10;
+        this.tableZebraLineMenuPosition.y = window.innerHeight - 50;
+        this.isTableZebraLineMenuShown = !this.isTableZebraLineMenuShown;
+      },
+      // ---------- 斑马纹开关 uiAction >>>>>>>>>> --------
+
+      // ---------- <<<<<<<<<< 申请项目审核 --------
+      async prepareCreateFormData({formItemList, group}) {
+        if (!formItemList) {
+          await window.confirmDialog({title: "温馨提示", content: "该项目尚未开放"});
+          throw new Error("formItemList is null");
+        }
+        this.createFormList = formItemList;
+        this.createItem.group = group;
+      },
+
+      async openCreateDrawer() {
+        this.isCreateDrawerShown = true;
+      },
+      async prepareCreateValidate() {
+        if(!await this.$refs.createForm.validate()) {
+          throw new Error("请完善表单信息")
+        }
+
+        this.workflowPersonList.forEach(workflowPerson => {
+          workflowPerson.assignValue = workflowPerson.assignValue || [];
+          workflowPerson.assignValue = workflowPerson.assignValue.filter(userId => this.userList.find(u => u.userId === userId));
+          workflowPerson.origin.properties.assignValue = workflowPerson.assignValue;
+          if (workflowPerson.assignValue.length === 0) {
+            window.vtoast.fail({ message: `${workflowPerson.label}必填!` });
+            throw new Error("[prepareValidate] 审批人 false");
+          }
+        });
+      },
+      async confirmCreateWorkDialog() {
+        if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
+          throw new Error("[confirmCreateFormDialog] 否");
+        }
+      },
+      prepareDoWorkItem() {
+        console.log('create', this.createFormList);
+      },
+
+      async doCreateWork() {
+        await window.jhMask.show();
+        
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'insertItem',
+              actionData: {
+                formItemList: this.createFormList,
+                group: this.createItem.group,
+                workflowId: this.workflowId,
+                workflowConfigCustom: JSON.stringify({ nodeListOfUserTaskNode: this.workflowPersonList })
+              }
+            }
+          }
+        })
+        await window.jhMask.hide();
+        await window.vtoast.success("申请成功");
+      },
+      async closeCreateDrawer() {
+        this.isCreateDrawerShown = false;
+      },
+      // ---------- 申请项目审核 >>>>>>>>>> --------
+
+      jumpToCreateWorkflow() {
+        window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
+      }
+    }
+  })
 </script>
 
 <style scoped>
+  .work-item-box {
+    padding: 50% 0;
+    position: relative;
+  }
+  .work-item-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
 
+  }
+  @media (max-width: 500px) {
+    body [xs='4'] {
+      flex: auto;
+    }
+  }
+  
 </style>
 {% endblock %}

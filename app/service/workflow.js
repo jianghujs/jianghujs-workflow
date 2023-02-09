@@ -80,6 +80,47 @@ class WorkflowService extends Service {
     console.log(actionData);
   }
 
+  /**
+   * 创建流程审批
+   */
+  async createWorkflowTask() {
+    const { actionData } = this.ctx.request.body.appData;
+    const { jianghuKnex } = this.app;
+    const { group, formItemList, taskUserList, workflowConfigCustom, workflowId } = actionData;
+    const { userId, username } = this.ctx.userInfo;
+    
+    let workflow = await jianghuKnex(tableEnum.workflow, this.ctx).where({workflowId}).first();
+    if(!workflow) {
+      throw new BizError(errorInfoEnum.workflow_not_found);
+    }
+    
+    actionData.workflowConfigCustom = JSON.stringify(workflowConfigCustom);
+    actionData.workflowId = workflow.workflowId;
+    actionData.taskTitle = `[${group}]${username}`;
+    actionData.workflowForm = formItemList;
+    const formData = {};
+    formItemList.forEach(item => {
+      formData[item.statement] = item.answer;
+    })
+    actionData.workflowFormData = formData;
+    await this.ctx.service.task.createTask()
+  }
+  /**
+   * 获取节点审批历史
+   * @returns 
+   */
+  async getTaskHistory() {
+    const { taskId } = this.ctx.request.body.appData.actionData;
+    const { jianghuKnex } = this.app;
+
+    const taskInfo = await jianghuKnex(tableEnum.task, this.ctx).where({taskId}).first();
+    const taskHistoryList = await jianghuKnex(tableEnum.task_history).where({taskId: taskInfo.taskId}).orderBy('id', 'asc').select();
+    // const userList = await jianghuKnex(tableEnum._view01_user).whereIn('userId', taskInfo.taskViewUserList.split(',')).select();
+    // taskInfo.workflowConfig = JSON.parse(taskInfo.workflowConfig);
+    // return this.ctx.service.task.getTaskHistoryConfigList(taskInfo.workflowConfig, taskHistoryList, userList);
+    const lineTypeList = taskInfo.taskLineTypeList;
+    return {taskHistoryList, lineTypeList};
+  }
 }
 
 module.exports = WorkflowService;

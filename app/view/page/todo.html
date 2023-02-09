@@ -1,0 +1,412 @@
+{% extends 'template/jhTemplateV4.html'%}
+
+{% block vueTemplate %}
+
+<script type="text/html" id="app-template">
+  <div>
+    <v-app mobile-breakpoint="sm">
+      <jh-menu />
+      <v-main class="mt-15">
+        <!-- 头部内容 >>>>>>>>>>>>> -->
+        <div class="jh-page-second-bar px-8">
+          <div class="pt-3 text-h7 font-weight-bold">待办审批
+            <!-- 帮助页按钮 -->
+            <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline</v-icon>
+          </div>
+          <v-breadcrumbs class="pb-3 pt-0 px-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
+        </div>
+        <!-- <<<<<<<<<<<<< 头部内容 -->
+
+        <div class="jh-page-body-container px-8">
+          <!-- 页面内容 >>>>>>>>>>>>> -->
+          <v-card class="rounded-lg">
+            <v-row class="ma-0 py-0 px-4">
+              <v-spacer></v-spacer>
+              <!--切换状态-->
+              <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0 d-flex justify-end">
+                <v-btn-toggle
+                  v-model="workflowType"
+                  borderless
+                  color="success"
+                >
+                  <v-btn value="todo" small>
+                    <v-badge
+                      v-if="tableData.length"
+                      inline
+                      :content="tableData.length"
+                      color="warning"
+                    >
+                      <span class="">待处理</span>
+                    </v-badge>
+                    <span v-else class="">待处理</span>
+                  </v-btn>
+                  <v-btn value="history" small>
+                    <v-badge
+                      v-if="historyData.length"
+                      inline
+                      :content="historyData.length"
+                      color="grey darken-3"
+                    >
+                      <span class="">已处理</span>
+                    </v-badge>
+                    <span v-else class="">已处理</span>
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+              <!--搜索-->
+              <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="px-0">
+                <v-text-field v-model="searchInput" color="success" prefix="搜索：" class="jh-v-input" dense filled hide-details
+                  single-line></v-text-field>
+              </v-col>
+            </v-row>
+            <!--表格-->
+            <v-data-table
+              :headers="headers"
+              :items="tableDataList"
+              :search="searchInput"
+              :footer-props="{ itemsPerPageOptions: [20, 50, -1], itemsPerPageText: '每页行数', itemsPerPageAllText: '所有'}"
+              :items-per-page="-1"
+              mobile-breakpoint="0"
+              :loading="isTableLoading"
+              :class="{'zebraLine': isTableZebraLineShown }"
+              checkbox-color="success"
+              fixed-header
+              class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
+
+              <template v-slot:item.taskTitle="{ item }">
+                <span>{{item.taskTitle}}</span>
+                <span v-if="workflowType != 'todo'">
+                  <v-chip
+                    v-if="item.taskHandleDesc === '拒绝'" label outlined
+                    color="red"
+                    small
+                  >
+                    已{{item.taskHandleDesc}}
+                  </v-chip>
+                  <v-chip
+                    v-else label outlined
+                    color="green"
+                    small
+                  >
+                    已{{item.taskHandleDesc}}
+                  </v-chip>
+                </span>
+              </template>
+              <!--表格行操作按钮-->
+              <template v-slot:item.action="{ item }">
+                <span v-if="workflowType === 'todo'" role="button" class="success--text jh-font-size-3 pr-2"
+                  @click="doUiAction('startUpdateItem', item)">
+                  <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>
+                  审核
+                </span>
+                <span v-else role="button" class="success--text jh-font-size-3 pr-2"
+                  @click="doUiAction('startUpdateItem', item)">
+                  查看
+                </span>
+              </template>
+              <!--表格底部右侧功能按钮-->
+              <template v-slot:footer.prepend>
+                <v-btn icon @click="doUiAction('openTableZebraLineMenu', $event)">
+                  <v-icon>mdi-menu</v-icon>
+                </v-btn>
+                <v-menu top offset-y :close-on-content-click="false" v-model="isTableZebraLineMenuShown" :position-x="tableZebraLineMenuPosition.x" :position-y="tableZebraLineMenuPosition.y">
+                  <v-list>
+                    <v-list-item>
+                      <v-switch v-model="isTableZebraLineShown" hide-details class="ma-0" label="显示斑马纹" dense flat></v-switch>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
+              <!--表格底部右侧分页-->
+              <template v-slot:footer.page-text="pagination">
+                <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
+                <span class="ml-1">共{{pagination.itemsLength}}条</span>
+              </template>
+            </v-data-table>
+          </v-card>
+          <!-- <<<<<<<<<<<<< 页面内容 -->
+          <!--编辑抽屉-->
+          <v-navigation-drawer v-model="isSubmitDrawerShown" :permanent="isSubmitDrawerShown" fixed temporary right hide-overlay width="80%"
+            class="elevation-24">
+            <v-form v-if="isSubmitDrawerShown" ref="updateForm" lazy-validation>
+              <!--抽屉标题-->
+              <v-row>
+                <span class="title pa-6 pl-8">审核信息</span>
+              </v-row>
+              <!--抽屉表单-->
+              <v-row class="mt-0 px-6">
+                <v-col cols="12" sm="12" md="12">
+                  <span class="jh-input-label">审核申请信息</span>
+                  <v-card class="rounded-lg px-4" outlined>
+                    <v-row class="my-0">
+                      <v-col cols="12" sm="12" md="6" v-for="(item, key, index) in updateItem.taskFormInput.input">
+                        <span class="jh-input-label" style="color: gray">{{key}}:</span> 
+                        <span>{{item}}</span>
+                      </v-col>
+                    </v-row>
+                  </v-card>
+                </v-col>
+                <v-col cols="12" sm="12" md="12">
+                  <span class="jh-input-label">备注</span>
+                  <v-textarea class="jh-v-input" no-resize dense single-line filled label="备注"
+                    v-model="updateItem.taskComment" :readonly="workflowType != 'todo'"></v-textarea>
+                </v-col>
+              </v-row>
+              <!--抽屉操作按钮-->
+              <v-row class="justify-end mx-0 mt-8 px-6">
+                <v-btn color="success" class="mx-4" v-for="item in lineTypeList" v-if="item.type" @click="doUiAction('submitNode', item.type)">
+                  {{ item.type }}
+                </v-btn>
+              </v-row>
+              <v-row class="mt-0 px-6">
+                <v-col cols="12" sm="12" md="12">
+                  <span class="jh-input-label">审核历史</span>
+                  <task-history :task-id="updateItem.taskId" @line-type-list="setLineTypeList"></task-history>
+                </v-col>
+              </v-row>
+            </v-form>
+
+            <!--抽屉关闭按钮-->
+            <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+              @click="isSubmitDrawerShown = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-navigation-drawer>
+        </div>
+
+        <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
+        <v-navigation-drawer v-model="isHelpPageDrawerShown" fixed temporary right width="80%" hide-overlay
+          class="elevation-24">
+          <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#todo.md`" width="100%"
+            height="100%"></iframe>
+
+          <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+            @click="isHelpPageDrawerShown = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-navigation-drawer>
+        <!-- <<<<<<<<<<<<< 帮助页抽屉 -->
+
+      </v-main>
+    </v-app>
+
+    <jh-toast />
+    <jh-mask />
+    <jh-confirm-dialog />
+
+  </div>
+</script>
+
+<div id="app">
+</div>
+
+{% endblock %}
+
+{% block vueScript %}
+
+<!-- 加载页面组件 >>>>>>>>>>>>> -->
+{% include 'common/fixedTableHeightV4.html' %}
+{% include 'component/taskHistory.html' %}
+<!-- <<<<<<<<<<<<< 加载页面组件 -->
+
+<script type="module">
+  new Vue({
+    el: '#app',
+    template: '#app-template',
+    vueComponent: 'page',
+    vuetify: new Vuetify(),
+    data: {
+      // 面包屑
+      breadcrumbs: [
+        {
+          text: '首页',
+          disabled: true,
+        },
+        {
+          text: '我的相关、待办',
+          disabled: true,
+        }
+      ],
+      isHelpPageDrawerShown: false,
+
+      // 表格相关数据
+      isTableZebraLineMenuShown: false,
+      tableZebraLineMenuPosition: {x: null, y: null},
+      isTableZebraLineShown: true,
+      // 生日日期选择
+      validationRules: {
+        requireRules: [
+          v => !!v || 'This is required',
+        ],
+      },
+      searchInput: null,
+      isTableLoading: true,
+      tableData: [],
+      historyData: [],
+      headers: [
+        { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
+        { text: "审批项", value: "taskTitle" },
+        { text: "操作者", value: "operationByUser", width: 120 },
+        { text: "操作时间", value: "operationAt", width: 250 }
+      ],
+
+      isSubmitDrawerShown: false,
+      updateItem: {},
+      workflowType: 'todo', // todo, history
+      lineTypeList: [],
+      userId: '<$ ctx.userInfo.userId $>'
+    },
+    // 计算
+    computed: {
+      tableDataList() {
+        return this.workflowType === 'todo' ? this.tableData : this.historyData;
+      },
+    },
+    watch: {
+    },
+    mounted() {
+      this.doUiAction('getTableData');
+      this.doUiAction('getHistoryData');
+    },
+    methods: {
+      async doUiAction(uiActionId, uiActionData) {
+        switch (uiActionId) {
+          case 'getTableData':
+            await this.getTableData();
+            break;
+          case 'getHistoryData':
+            await this.getHistoryData();
+            break;
+          case 'openDataPicker':
+            await this.openDataPicker(uiActionData);
+            break;
+          case 'openTableZebraLineMenu':
+            await this.openTableZebraLineMenu(uiActionData);
+            break;
+          case 'startUpdateItem':
+            await this.prepareUpdateFormData(uiActionData);
+            await this.openUpdateDrawer();
+            break;
+          case 'submitNode':
+            await this.confirmSumitDialog();
+            await this.submitForReview(uiActionData);
+            await this.closeSubmitDrawer();
+            await this.clearSubmitData();
+            this.getTableData();
+            this.getHistoryData();
+            break;
+          default:
+            console.error("[doUiAction] uiActionId not find", { uiActionId });
+            break;
+        }
+      },
+
+      async getTableData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'selectItemList',
+              actionData: {},
+              where: {taskStatus: 'running'},
+              whereLike: {taskEditUserList: this.userId},
+              orderBy: [{ column: 'operationAt', order: 'desc' }]
+            }
+          }
+        });
+
+        const rows = result.data.appData.resultData.rows;
+        rows.forEach(row => {
+          row.taskFormInput = JSON.parse(row.taskFormInput);
+          row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
+        });
+        this.tableData = rows.filter(item => !item.taskEditedUserList || !item.taskEditedUserList.includes(this.userId));
+        this.isTableLoading = false;
+      },
+      async getHistoryData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'selectHistoryList',
+              actionData: {},
+              where: {taskStatus: 'running'},
+              whereLike: {taskEditUserList: '<$ ctx.userInfo.userId $>', taskConfigId: 'userTask-'},
+              orderBy: [{ column: 'id', order: 'desc' }]
+            }
+          }
+        });
+
+        const rows = result.data.appData.resultData.rows;
+        rows.forEach(row => {
+          row.taskFormInput = JSON.parse(row.taskFormInput);
+          row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
+        });
+        this.historyData = rows;
+      },
+      // ---------- 斑马纹开关 uiAction >>>>>>>>>> --------
+      async openTableZebraLineMenu(funObj) {
+        this.tableZebraLineMenuPosition.x = funObj.x -funObj.offsetX + 10;
+        this.tableZebraLineMenuPosition.y = window.innerHeight - 50;
+        this.isTableZebraLineMenuShown = !this.isTableZebraLineMenuShown;
+      },
+      // ---------- <<<<<<<<<< 斑马纹开关 uiAction --------
+      // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
+      async prepareUpdateFormData(funObj) {
+        this.updateItem = _.cloneDeep(funObj);
+        this.updateItem.taskHistoryList = []; // 审核历史
+        this.updateItem.taskComment = ''; // 备注
+        this.lineTypeList = []; // 所有操作按钮
+      },
+
+      async closeSubmitDrawer() {
+        this.isSubmitDrawerShown = false;
+      },
+
+      async openUpdateDrawer() {
+        this.isSubmitDrawerShown = true;
+      },
+
+      async confirmSumitDialog() {
+        if (await window.confirmDialog({title: "审核", content: "确定提交审核吗？"}) === false) {
+          throw new Error("[confirmSumitDialog] 否");
+        }
+      },
+
+      async clearSubmitData() {
+        this.updateItem = {};
+      },
+      async submitForReview(type) {
+        await window.vtoast.loading("提交审核");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'submitNode',
+              actionData: {type, id: this.updateItem.id, taskId: this.updateItem.taskId, taskComment: this.updateItem.taskComment}
+            }
+          }
+        })
+        await window.vtoast.success("提交审核成功");
+        setTimeout(()=> {
+          this.$emit('close-detail-drawer')
+          // if (document.referrer) {
+          //   location.href = document.referrer;
+          // } else {
+          //   history.back();
+          // }
+        }, 1000);
+      },
+      setLineTypeList(lineTypeList) {
+        this.lineTypeList = _.uniqBy((lineTypeList||'').split(",").map(lineType => ({type: lineType, label: lineType})), 'type');
+      },
+      // ---------- <<<<<<<<<<< 审核、查看 uiAction  --------
+    }
+  })
+</script>
+
+<style scoped>
+</style>
+{% endblock %}

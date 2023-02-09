@@ -16,8 +16,8 @@
           <span style="transform: translateY(2px); display: inline-block; ">{{editType == 'node' ? '节点' : '连线'}}属性</span>
         </div>
           <div class="flow-edit-content">
-            <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="lf" :user="user" :group="group" :tpl="tpl"></edit-node>
-            <edit-line ref="lineForm" v-if="editType == 'line'" :lf="lf"></edit-line>
+            <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="lf" :user="user" :group="group" :tpl="tpl" :mode="mode"></edit-node>
+            <edit-line ref="lineForm" v-if="editType == 'line'" :lf="lf" :mode="mode"></edit-line>
           </div>
       </template>
       <template v-else>
@@ -40,6 +40,8 @@
 <script src="/<$ ctx.app.config.appId $>/public/logicflow/extension/lib/MiniMap.js"></script>
 <script src="/<$ ctx.app.config.appId $>/public/logicflow/extension/lib/Menu.js"></script>
 <script src="/<$ ctx.app.config.appId $>/public/logicflow/extension/lib/SelectionSelect.js"></script>
+<script src="/<$ ctx.app.config.appId $>/public/logicflow/extension/lib/Control.js"></script>
+<script src="/<$ ctx.app.config.appId $>/public/logicflow/extension/lib/Popup.js"></script>
 
 <script type="module">
   Vue.component("process-flow", {
@@ -82,6 +84,10 @@
         type: Boolean,
         default: false
       },
+      mode: {
+        type: String,
+        default: 'serial'
+      }
     },
     data: () => {
       return {
@@ -102,6 +108,11 @@
         ]
       };
     },
+    watch: {
+      mode() {
+        this.lf.clearData();
+      }
+    },
     mounted() {
       this.init();
     },
@@ -109,6 +120,7 @@
       init() {
         this.initLFInstance();
         this.initLFCustomType();
+        this.initLFControl();
         this.initLFMenu();
         this.initLFEvent();
         this.initLFData();
@@ -143,7 +155,7 @@
           // edgeTextDraggable: true,
           stopScrollGraph: true,
           edgeType: 'polyline',
-          plugins: [MiniMap, Menu, SelectionSelect],
+          plugins: [MiniMap, Menu, SelectionSelect, Control, Popup],
           isSilentMode: this.readonly
 
         });
@@ -167,7 +179,12 @@
             const properties = this.properties;
             if (_this.currentNodeId === this.id) {
               style.fill = "#4caf50";
-            } 
+            } else {
+              const rawNode = _this.data.nodeList.find(o => o.id === this.id)
+              if (rawNode && rawNode.inPath) {
+                style.fill = "#d4ffd6";
+              }
+            }
             return style;
           }
           getTextStyle() {
@@ -187,6 +204,17 @@
         this.lf.register(CustomNode);
       },
       
+      /** 
+       * 初始化LogicFlow控制台
+       */
+       initLFControl() {
+        let lf = this.lf;
+        // 删除上一步
+        lf.extension.control.removeItem('undo');
+        // 删除下一步
+        lf.extension.control.removeItem('redo');
+      },
+
       /** 
        * 初始化LogicFlow菜单
        */
@@ -243,6 +271,21 @@
         lf.on("edge:add", (e) => {
           const { data } = e;
           const { id, sourceNodeId, targetNodeId, properties } = data;
+          // 并行模式不允许多条流程线
+          if(this.mode == 'parallel') {
+            const sourceNodeEdges = lf.getNodeEdges(sourceNodeId);
+            const targetNodeEdges = lf.getNodeEdges(targetNodeId);
+            if (
+              sourceNodeEdges.filter(edge => edge.sourceNodeId == sourceNodeId).length > 1 ||
+              sourceNodeEdges.filter(edge => edge.targetNodeId == sourceNodeId).length > 1 ||
+              targetNodeEdges.filter(edge => edge.sourceNodeId == targetNodeId).length > 1 ||
+              targetNodeEdges.filter(edge => edge.targetNodeId == targetNodeId).length > 1
+            ) {
+              window.vtoast.fail("并行模式不允许多条流程线");
+              lf.deleteEdge(id);
+              return;
+            }
+          }
           let line = {
             from: sourceNodeId,
             to: targetNodeId,
@@ -302,7 +345,6 @@
         // this.lf.render({"nodes":[{"id":"3","type":"CustomNode","x":380,"y":140,"properties":{},"text":{"x":380,"y":140,"value":"开始"}},{"id":"1","type":"CustomNode","x":380,"y":280,"properties":{},"text":{"x":380,"y":280,"value":"经理"}},{"id":"2","type":"CustomNode","x":380,"y":420,"properties":{},"text":{"x":380,"y":420,"value":"结束"}}],"edges":[{"id":"a2ed12a0-7548-4725-a8e6-290d565d66da","type":"polyline","sourceNodeId":"3","targetNodeId":"1","startPoint":{"x":380,"y":160},"endPoint":{"x":380,"y":260},"properties":{},"text":{"x":380,"y":190,"value":"开始"},"pointsList":[{"x":380,"y":160},{"x":380,"y":260}]},{"id":"135f3e3a-d8c5-4329-83d6-833512175ea4","type":"polyline","sourceNodeId":"2","targetNodeId":"1","startPoint":{"x":330,"y":420},"endPoint":{"x":330,"y":280},"properties":{},"text":{"x":265,"y":350,"value":"经理审核拒绝"},"pointsList":[{"x":330,"y":420},{"x":265,"y":420},{"x":265,"y":280},{"x":330,"y":280}]},{"id":"c4dbefa6-1ce0-4cef-babe-444329affea7","type":"polyline","sourceNodeId":"1","targetNodeId":"2","startPoint":{"x":430,"y":280},"endPoint":{"x":430,"y":420},"properties":{},"text":{"x":495,"y":350,"value":"经理审核通过"},"pointsList":[{"x":430,"y":280},{"x":495,"y":280},{"x":495,"y":420},{"x":430,"y":420}]},{"id":"6fb6a3b1-a8fc-4d22-b9f0-5692208118d5","type":"polyline","sourceNodeId":"1","targetNodeId":"2","startPoint":{"x":348,"y":300},"endPoint":{"x":348,"y":400},"properties":{},"text":{"x":348,"y":350,"value":"同意-连线文本"},"pointsList":[{"x":348,"y":300},{"x":348,"y":400}]}]})
         // this.lf.render({"nodes":[{"id":"start-c31f75a55c48","type":"CustomNode","x":100,"y":80,"properties":{"id":"start-c31f75a55c48","label":"起点","type":"start","assignType":"person","assignValue":["admin"],"lineTypeList":"同意"},"text":{"x":100,"y":80,"value":"起点"}},{"id":"end-72e945407d48","type":"CustomNode","x":540,"y":80,"properties":{"id":"end-72e945407d48","label":"终点","type":"end","assignType":"person","assignValue":["admin"],"lineTypeList":""},"text":{"x":540,"y":80,"value":"终点"}},{"id":"userTask-fa96d9f1f548","type":"CustomNode","x":320,"y":80,"properties":{"id":"userTask-fa96d9f1f548","label":"审批节点","type":"userTask","assignType":"person","assignValue":["admin"],"lineTypeList":"同意,拒绝"},"text":{"x":320,"y":80,"value":"审批节点"}}],"edges":[{"id":"line-8c746156fb48","type":"polyline","sourceNodeId":"start-c31f75a55c48","targetNodeId":"userTask-fa96d9f1f548","startPoint":{"x":150,"y":80},"endPoint":{"x":270,"y":80},"properties":{"from":"start-c31f75a55c48","to":"userTask-fa96d9f1f548","label":"同意-连线文本3","type":"同意","id":"line-8c746156fb48","Remark":"","endpoint":"Dot"},"text":{"x":210,"y":80,"value":"同意-连线文本3"},"pointsList":[{"x":150,"y":80},{"x":270,"y":80}]},{"id":"line-088a246e9248","type":"polyline","sourceNodeId":"userTask-fa96d9f1f548","targetNodeId":"end-72e945407d48","startPoint":{"x":370,"y":80},"endPoint":{"x":490,"y":80},"properties":{"from":"userTask-fa96d9f1f548","to":"end-72e945407d48","label":"同意-连线文本","type":"同意","id":"line-088a246e9248","Remark":"","endpoint":"Dot"},"text":{"x":430,"y":80,"value":"同意-连线文本"},"pointsList":[{"x":370,"y":80},{"x":490,"y":80}]}]});
         this.lf.render(this.parseBusinessDataToLfData(this.data));
-        
       },
 
       /**
@@ -396,7 +438,7 @@
        * 将流程设计器数据转换为业务数据
        */
       parseLFDataToBusinessData() {
-        const lfData = this.lf.getGraphData();
+        const lfData = this.getOrderedGraphData();
         return {
           nodeList: lfData.nodes.map(node => ({
             ...node.properties,
@@ -406,6 +448,31 @@
             ...line.properties,
             origin: line
           }))
+        }
+      },
+
+      /**
+       * 获取排序后的GraphData
+       * @param nodeList
+       */
+      getOrderedGraphData() {
+        const lfData = this.lf.getGraphData();
+        const orderedNodes = lfData.edges.reduce((acc, edge) => {
+          const sourceNode = lfData.nodes.find(node => node.id === edge.sourceNodeId);
+          const targetNode = lfData.nodes.find(node => node.id === edge.targetNodeId);
+          if (sourceNode && targetNode) {
+            const sourceIndex = acc.findIndex(node => node.id === sourceNode.id);
+            const targetIndex = acc.findIndex(node => node.id === targetNode.id);
+            if (sourceIndex > targetIndex) {
+              acc.splice(targetIndex, 0, sourceNode);
+              acc.splice(sourceIndex + 1, 1);
+            }
+          }
+          return acc;
+        }, lfData.nodes);
+        return {
+          nodes: orderedNodes,
+          edges: lfData.edges
         }
       },
 
@@ -506,6 +573,11 @@
     padding: 12px;
     word-break: break-all;
     border-radius: 4px;
+  }
+
+  .lf-control-item i{
+    width: 10px;
+    height: 10px;
   }
 
 </style>

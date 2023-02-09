@@ -8,14 +8,11 @@
     "framework": "@jianghujs/jianghu"
   },
   "dependencies": {
-    "@jianghujs/jianghu": "3.0.81",
-    "dayjs": "^1.11.4",
+    "@jianghujs/jianghu": "4.0.5",
     "egg": "^2.15.1",
     "egg-scripts": "^2.11.0"
   },
   "devDependencies": {
-    "autod": "^3.0.1",
-    "autod-egg": "^1.1.0",
     "egg-bin": "^4.11.0",
     "egg-mock": "^3.21.0",
     "eslint": "^7.32.0",

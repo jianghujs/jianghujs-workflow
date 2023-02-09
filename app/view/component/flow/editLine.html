@@ -35,7 +35,7 @@
         <span class="inputLabel">名称</span>
         <v-text-field class="cus-v-input mr-2" dense filled single-line label="名称" v-model="line.label"></v-text-field>
       </v-col>
-      <v-col cols="12" class=" pb-3">
+      <v-col cols="12" class=" pb-3" v-if="mode == 'serial'">
         <span class="inputLabel">操作类型</span>
         <v-select
           :items="lineTypeList"
@@ -68,6 +68,10 @@
       lf: {
         type: Object,
         default: null
+      },
+      mode: {
+        type: String,
+        default: 'serial'
       }
     },
     data() {
@@ -83,7 +87,6 @@
         handler: function (line) {
           this.lf.updateText(line.id, `${line.type}-${line.label}`);
           this.lf.setProperties(line.id, line);
-          console.log(this.lf.getEdgeModelById(line.id));
         },
         deep: true
       }
