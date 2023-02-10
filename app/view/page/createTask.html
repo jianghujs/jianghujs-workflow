@@ -9,7 +9,7 @@
       <v-main class="mt-15">
         <!-- 头部内容 >>>>>>>>>>>>> -->
         <div class="jh-page-second-bar px-8">
-          <div class="pt-3 text-h7 font-weight-bold">流程管理
+          <div class="pt-3 text-h7 font-weight-bold">申请审批
             <!-- 帮助页按钮 -->
             <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline</v-icon>
           </div>
@@ -23,8 +23,8 @@
             <v-row class="ma-0 py-0 px-4">
               <!--新增按钮-->
               <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
-                <v-btn color="success" small class="elevation-0 mr-2"
-                  @click="doUiAction('jumpToCreateWorkflow')">新增</v-btn>
+                <!-- <v-btn color="success" small class="elevation-0 mr-2"
+                  @click="doUiAction('jumpToCreateWorkflow')">新增</v-btn> -->
               </v-col>
               <v-spacer></v-spacer>
               <!--搜索-->
@@ -47,14 +47,14 @@
               class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
               <!--表格行操作按钮-->
               <template v-slot:item.action="{ item }">
-                <!-- <span role="button" class="success--text jh-font-size-3 pr-2"
+                <span role="button" class="success--text jh-font-size-3 pr-2"
                   @click="doUiAction('startCreateWorkflow', item)">
                   <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>申请
-                </span> -->
-                <span role="button" class="success--text jh-font-size-3 pr-2"
+                </span>
+                <!-- <span role="button" class="success--text jh-font-size-3 pr-2"
                   @click="doUiAction('jumpUpdateWorkflow', item)">
                   <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>编辑
-                </span>
+                </span> -->
               </template>
               <!--表格底部右侧功能按钮-->
               <template v-slot:footer.prepend>
