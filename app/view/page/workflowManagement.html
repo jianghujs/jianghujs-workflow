@@ -48,8 +48,12 @@
               <!--表格行操作按钮-->
               <template v-slot:item.action="{ item }">
                 <span role="button" class="success--text jh-font-size-3 pr-2"
-                  @click="doUiAction('startCreateWorkflow', {formItemList: item.formItemList, group: item.name})">
+                  @click="doUiAction('startCreateWorkflow', item)">
                   <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>申请
+                </span>
+                <span role="button" class="success--text jh-font-size-3 pr-2"
+                  @click="doUiAction('jumpUpdateWorkflow', item)">
+                  <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>编辑
                 </span>
               </template>
               <!--表格底部右侧功能按钮-->
@@ -93,9 +97,9 @@
               </v-col>
               <v-col cols="12" sm="12" md="12">
                 <span class="jh-input-label">审批流程 - 添加审批人</span>
-                <v-row v-for="item in workflowPersonList">
+                <v-row v-for="node in workflowPersonList">
                   <v-col cols="2">
-                    <v-text-field class="cus-v-input " dense filled single-line v-model="item.label" disabled></v-text-field>
+                    <v-text-field class="cus-v-input " dense filled single-line v-model="node.label" disabled></v-text-field>
                   </v-col>
                   <v-col cols="4">
                     <v-autocomplete 
@@ -106,11 +110,11 @@
                       item-value="userId"
                       multiple
                       :rules="validationRules.requireRules"
-                      v-model="item.assignValue">
+                      v-model="node.assignValue">
                     </v-autocomplete>
                   </v-col>
                   <v-col cols="4">
-                    <v-checkbox dense filled v-model="item.isNeedAllApproval" label="是否需要所有人审批" hide-details ></v-checkbox>
+                    <v-checkbox dense filled v-model="node.isNeedAllApproval" label="是否需要所有人审批" hide-details ></v-checkbox>
                   </v-col>
                   
                 </v-row>
@@ -189,75 +193,11 @@
       },
       isTableLoading: false,
       userList: [],
-      tableData: [
-        { name: '请假', desc: '正常工作日请假', id: 'leave', icon: 'mdi-calendar-range', color: 'orange darken-2', formItemList: [
-          {
-            type: 'single',
-            typeName: '单选',
-            statement: '请假类型',
-            answer: '',
-            optionList: ['年假', '事假', '病假', '婚假', '产假', '其他']
-          },
-          {
-            type: 'date',
-            typeName: '时间',
-            statement: '开始时间',
-            answer: '',
-          },
-          {
-            type: 'date',
-            typeName: '时间',
-            statement: '结束时间',
-            answer: '',
-          },
-          {
-            type: 'input',
-            typeName: '文本',
-            statement: '请假时长',
-            answer: '',
-          },
-          {
-            type: 'short',
-            typeName: '文本框',
-            statement: '请假事由',
-            answer: '',
-          },
-        ] },
-        { name: '加班', desc: '工作日早晚加班', id: 'overtime', icon: 'mdi-account-clock', color: 'blue darken-2', formItemList: [
-          {
-            type: 'date',
-            typeName: '时间',
-            statement: '开始时间',
-            answer: '',
-          },
-          {
-            type: 'date',
-            typeName: '时间',
-            statement: '结束时间',
-            answer: '',
-          },
-          {
-            type: 'input',
-            typeName: '文本',
-            statement: '加班时长',
-            answer: '',
-          },
-          {
-            type: 'short',
-            typeName: '文本框',
-            statement: '加班事由',
-            answer: '',
-          },
-        ] },
-        { name: '出差', desc: '外地往返公干', desc: '外出公干', id: 'businessTrip', icon: 'mdi-airplane-takeoff', color: 'blue darken-2' },
-        { name: '补卡', desc: '工作日忘记打卡', id: 'makeUpCard', icon: 'mdi-account-clock', color: 'blue darken-2' },
-        { name: '调休', desc: '某节假日紧急工作后调换休息日期', id: 'adjustRest', icon: 'mdi-account-clock', color: 'teal darken-2' },
-        { name: '调班', desc: '因个人事务和同事调换工作时间', id: 'adjustClass', icon: 'mdi-account-clock', color: 'blue darken-2' },
-      ],
+      tableData: [],
       headers: [
         { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
-        { text: '审批名称', value: 'name' },
-        { text: '审批名称', value: 'desc' },
+        { text: '流程ID', value: 'workflowId' },
+        { text: '流程名称', value: 'workflowName' },
       ],
       searchInput: '',
       isHelpPageDrawerShown: false,
@@ -275,8 +215,8 @@
     },
     watch: {},
     created() {
+      this.getTableData();
       this.getUserList();
-      this.getWorkflow();
     },
     methods: {
       async doUiAction(uiActionId, uiActionData) {
@@ -301,10 +241,39 @@
           case 'jumpToCreateWorkflow':
             await this.jumpToCreateWorkflow();
             break;
+          case 'jumpUpdateWorkflow':
+            await this.jumpUpdateWorkflow(uiActionData);
+            break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
             break;
         }
+      },
+
+      async getTableData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectItemList',
+              actionData: {}
+            }
+          }
+        });
+
+        const rows = result.data.appData.resultData.rows;
+        rows.forEach(row => {
+          const workflowNodeList = JSON.parse(row.workflowConfig).nodeList;
+          workflowNodeList.forEach(node => {
+            node.isNeedAllApproval = true;
+          });
+          row.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
+          row.workflowForm = JSON.parse(row.workflowConfig);
+        });
+        
+        this.tableData = rows;
+        this.isTableLoading = false;
       },
 
       async getUserList() {
@@ -322,27 +291,6 @@
         const userList = result.data.appData.resultData.rows;
         this.userList = userList;
       },
-      async getWorkflow() {
-        const result = await window.jianghuAxios({
-          data: {
-            appData: {
-              pageId: 'workflowManagement',
-              actionId: 'selectItemList',
-              where: {workflowId: this.workflowId}
-            }
-          }
-        });
-
-        const workflowList = result.data.appData.resultData.rows;
-        if (!workflowList.length) {
-          throw new Error('缺少默认流程');
-        }
-        const workflowNodeList = JSON.parse(workflowList[0].workflowConfig).nodeList;
-        workflowNodeList.forEach(node => {
-          node.isNeedAllApproval = true;
-        });
-        this.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
-      },
       
       // ---------- <<<<<<<<<< 斑马纹开关 uiAction --------
       async openTableZebraLineMenu(funObj) {
@@ -353,13 +301,9 @@
       // ---------- 斑马纹开关 uiAction >>>>>>>>>> --------
 
       // ---------- <<<<<<<<<< 申请项目审核 --------
-      async prepareCreateFormData({formItemList, group}) {
-        if (!formItemList) {
-          await window.confirmDialog({title: "温馨提示", content: "该项目尚未开放"});
-          throw new Error("formItemList is null");
-        }
-        this.createFormList = formItemList;
-        this.createItem.group = group;
+      async prepareCreateFormData({workflowForm, workflowPersonList}) {
+        this.createFormList = workflowForm;
+        this.workflowPersonList = workflowPersonList;
       },
 
       async openCreateDrawer() {
@@ -414,6 +358,12 @@
       },
       // ---------- 申请项目审核 >>>>>>>>>> --------
 
+      // UpdateItem
+      async jumpUpdateWorkflow(item) {
+        sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
+        window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
+      },
+      
       jumpToCreateWorkflow() {
         window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
       }
