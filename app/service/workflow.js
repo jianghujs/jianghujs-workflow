@@ -86,8 +86,7 @@ class WorkflowService extends Service {
   async createWorkflowTask() {
     const { actionData } = this.ctx.request.body.appData;
     const { jianghuKnex } = this.app;
-    const { group, formItemList, taskUserList, workflowConfigCustom, workflowId } = actionData;
-    const { userId, username } = this.ctx.userInfo;
+    const { formItemList, workflowConfigCustom, workflowId } = actionData;
     
     let workflow = await jianghuKnex(tableEnum.workflow, this.ctx).where({workflowId}).first();
     if(!workflow) {
@@ -120,6 +119,19 @@ class WorkflowService extends Service {
     // return this.ctx.service.task.getTaskHistoryConfigList(taskInfo.workflowConfig, taskHistoryList, userList);
     const lineTypeList = taskInfo.taskLineTypeList;
     return {taskHistoryList, lineTypeList};
+  }
+
+  /**
+   * 审核列表写入用户名
+   */
+  async appendUsername() {
+    const rows = this.ctx.body.appData.resultData.rows;
+    const { jianghuKnex } = this.app;
+    const userList = await jianghuKnex(tableEnum._view01_user).whereIn('userId', rows.map(item => item.taskInitUser)).select();
+    rows.forEach(item => {
+      const user = userList.find(it => it.userId === item.taskInitUser);
+      item.taskInitUsername = user.username;
+    });
   }
 }
 
