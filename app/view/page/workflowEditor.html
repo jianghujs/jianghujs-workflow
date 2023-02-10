@@ -62,12 +62,26 @@
             </process-flow>
         </div>
         
+        <!-- 页面loading 效果 -->
         <v-overlay :value="loading" absolute>
           <v-progress-circular
             indeterminate
             size="64"
           ></v-progress-circular>
         </v-overlay>
+
+        <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
+        <v-navigation-drawer v-model="isHelpPageDrawerShown" fixed temporary right width="80%" hide-overlay
+          class="elevation-24">
+          <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%"
+            height="100%"></iframe>
+
+          <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
+            @click="isHelpPageDrawerShown = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-navigation-drawer>
+        <!-- <<<<<<<<<<<<< 帮助页抽屉 -->
       </v-main>
     </v-app>
 
@@ -124,6 +138,7 @@
       editItem: {},
       dialogSaveInfoAction: 'createItem',
       loading: false,
+      isHelpPageDrawerShown: false,
     }),
     watch: {
       'editItem.workflowForm': {
