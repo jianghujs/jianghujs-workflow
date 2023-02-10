@@ -1,0 +1,318 @@
+{% extends 'template/jhTemplateV3.html'%}
+
+{% block vue_template %}
+<jh-layout-v3>
+
+  <template slot="serverSearch">
+    <div class="mt-4" style="text-align: right;">
+      <v-btn color="success" @click="doUiAction(dialogSaveInfoAction)" style="height: 40px">
+        保存
+      </v-btn>
+    </div>
+  </template>
+
+  <template slot-scope="props">
+      <v-card class="" :class="{'pa-8': !props.ismobile, 'pa-4': props.ismobile}">
+        <v-row>
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="流程名:" v-model="editItem['workflowName']" :rules="requireRules">
+            </v-text-field>
+          </v-col>
+          <!-- <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="分类:" v-model="editItem['workflowCategory']" :rules="requireRules">
+            </v-text-field>
+          </v-col> -->
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-text-field class="cus-v-input mr-2" dense filled single-line color="success" prefix="备注:"
+                          v-model="editItem['workflowRemark']">
+            </v-text-field>
+          </v-col>
+          <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+            <v-select class="cus-v-input mr-2" dense filled single-line color="success" prefix="审批模式:" 
+                          v-model="editItem['mode']" :items="constantCollection.modeList" /> 
+          </v-col>
+        </v-row>
+      </v-card>
+
+      <!-- <div class=" pb-4" style="font-size: 18px; font-weight: bold">模板设置</div>
+      <tpl-form-design :form="editItem.workflowForm" v-if="!loading">
+      </tpl-form-design> -->
+
+      <div class="pt-4 pb-4" style="font-size: 18px; font-weight: bold">流程设置</div>
+      <process-flow v-if="!loading" ref="processFlow" :data="editItem.workflowConfig" :user="constantCollection.userList"
+                    :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList"
+                    :mode="editItem.mode">
+      </process-flow>
+      
+      <v-overlay :value="loading" absolute>
+        <v-progress-circular
+          indeterminate
+          size="64"
+        ></v-progress-circular>
+      </v-overlay>
+  </template>
+</jh-layout-v3>
+
+{% endblock %}
+
+{% block vue_body %}
+{% include 'component/flow/processFlow.html' %}
+{% include 'component/flow/editFlow.html' %}
+{% include 'component/flow/editLine.html' %}
+{% include 'component/flow/editNode.html' %}
+{% include 'component/tpl/tplFormDesign.html' %}
+{% include 'component/tpl/formItemListGenerator.html' %}
+{% include 'component/tpl/formItemListRender.html' %}
+
+<script type="module">
+new Vue({
+  el: '#app',
+  template: '#app-template',
+  vuetify: new Vuetify(),
+  data: () => ({
+    requireRules: [
+      v => !!v || '必填',
+    ],
+    constantCollection: {
+      userList: [],
+      groupList: [],
+      workflowFormList: [],
+      modeList: [
+        { text: '串行', value: 'serial'},
+        { text: '并行', value: 'parallel'},
+      ]
+    },
+    editItem: {},
+    dialogSaveInfoAction: 'createItem',
+    loading: false,
+  }),
+  watch: {
+    'editItem.workflowForm': {
+      handler(val) {
+        if (!val) return
+        this.buildWorkflowFormList(val);
+        if (!this.editItem.workflowConfig) return;
+        this.buildWorkflowConfig()
+      },
+      deep: true,
+      immediate: true
+    }
+  },
+  async created() {
+    const searchParams = new URLSearchParams(location.search.substring(1));
+    const id = searchParams.get('id');
+    if(id) {
+      this.editItem = {id};
+      await this.syncEditItem()
+    } else {
+      this.clearItemData();
+    }
+    this.getUserList();
+    this.getGroupList();
+  },
+  mounted() {
+  },
+  methods: {
+    async doUiAction(uiActionId, uiActionData) {
+        switch (uiActionId) {
+          case 'createItem':
+            await this.confirmCreateItemDialog(uiActionData);
+            await this.doCreateItem(uiActionData);
+            await this.syncEditItem()
+            break;
+          case 'updateItem':
+            await this.confirmUpdateItemDialog(uiActionData);
+            await this.doUpdateItem(uiActionData);
+            await this.syncEditItem()
+            break;
+          default:
+            console.error("[doUiAction] uiActionId not find", { uiActionId });
+            break;
+        }
+    },
+
+    buildEditItem() {
+      const { id, workflowId, workflowName, workflowRemark, workflowCategory, mode, workflowForm } = this.editItem;
+      const workflowConfig = this.$refs.processFlow.getData();
+      workflowConfig.mode = mode
+      // TODO: 清除不存在的用户
+      workflowConfig.nodeList.forEach(node => {
+        if (node.type === 'userTask') {
+          node.assignValue = node.assignValue || [];
+          node.assignValue = node.assignValue.filter(userId => this.constantCollection.userList.findIndex(u => u.userId === userId) > -1);
+          node.origin.properties.assignValue = node.assignValue;
+        }
+      });
+      let item = {
+        workflowName,
+        workflowRemark,
+        workflowCategory,
+        workflowId: workflowId || null,
+        workflowConfig: workflowConfig ? JSON.stringify(workflowConfig) : null,
+        workflowForm: workflowForm ? JSON.stringify(workflowForm) : null,
+      }
+      if (id) {
+        item.id = id;
+      }
+      return item;
+    },
+
+    buildWorkflowFormList(val) {
+      this.constantCollection.workflowFormList = [];
+      for (const item of val) {
+        this.constantCollection.workflowFormList.push({
+          text: item.component.outline,
+          value: item.id
+        })
+      }
+    },
+
+    buildWorkflowConfig() {
+      for (const config of this.editItem.workflowConfig.nodeList) {
+        if (!config.formId) return;
+        const formId = []
+        for (const item of config.formId) {
+          if (!this.constantCollection.workflowFormList.find(e => e.value === item)) {
+            formId.push(item)
+          }
+        }
+        config.formId = formId
+      }
+    },
+
+    /**
+     * 获取user数据
+     */
+    async getUserList() {
+      const {rows} = (await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'selectUserList',
+            actionData: {},
+            where: {},
+          }
+        }
+      })).data.appData.resultData;
+      this.constantCollection.userList = rows.map(e => {
+        return {text: e.username, value: e.userId, userId: e.userId }
+      })
+    },
+    /**
+     * 获取group数据
+     */
+    async getGroupList() {
+      const {rows} = (await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'selectGroupList',
+            actionData: {},
+            where: {},
+          }
+        }
+      })).data.appData.resultData;
+      this.constantCollection.groupList = rows.map(e => {
+        return {text: e.groupName, value: e.groupId}
+      });
+    },
+
+    async clearItemData() {
+      this.dialogSaveInfoAction = 'createItem';
+      this.editItem = {workflowForm: [], workflowConfig: {lineList: [], nodeList: []}, mode: 'serial'};
+    },
+
+    async syncEditItem() {
+      this.loading = true;
+      this.dialogSaveInfoAction = 'updateItem';
+      const {rows} = (await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'selectItemList',
+            where: {id: this.editItem.id},
+          }
+        }
+      })).data.appData.resultData;
+      if (!rows.length) {
+        this.clearItemData();
+      } else {
+        const item = rows[0];
+        item.workflowConfig = item.workflowConfig ? JSON.parse(item.workflowConfig) : null;
+        item.workflowForm = item.workflowForm ? JSON.parse(item.workflowForm) : [];
+        item.mode = item.workflowConfig.mode || 'serial';
+        this.editItem = item;
+      }
+      setTimeout(() => {
+        this.loading = false;
+      }, 500)
+    },
+
+    async confirmCreateItemDialog() {
+      if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
+          throw new Error("[confirmCreateFormDialog] 否");
+      }
+    },
+
+    /**
+     * 新增数据
+     */
+    async doCreateItem() {
+      delete this.editItem.id;
+      const item = this.buildEditItem();
+      await window.vtoast.loading("新增数据");
+      const {rows} = (await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'insertItem',
+            actionData: item
+          }
+        }
+      })).data.appData.resultData;
+      this.editItem.id = rows[0];
+      history.pushState({}, '', `?id=${rows[0]}`);
+      await window.vtoast.success("新增数据成功");
+    },
+
+    async confirmUpdateItemDialog() {
+      if (await window.confirmDialog({title: "修改", content: "确定修改吗？"}) === false) {
+          throw new Error("[confirmUpdateItemDialog] 否");
+      }
+    },
+
+    /**
+     * 修改数据
+     */
+    async doUpdateItem() {
+      const {id, ...item} = this.buildEditItem();
+      await window.vtoast.loading("修改数据");
+      await window.jianghuAxios({
+        data: {
+          appData: {
+            pageId: 'workflowManagement',
+            actionId: 'updateItem',
+            actionData: item,
+            where: {id: id}
+          }
+        }
+      })
+      await window.vtoast.success("修改数据成功");
+    },
+  }
+})
+</script>
+
+<style>
+.theme--light.v-data-table > .v-data-table__wrapper > table > tbody > tr > td:not(.v-data-table__mobile-row) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
+
+.theme--light.v-data-table > .v-data-table__wrapper > table > tbody > tr {
+  cursor: pointer;
+}
+</style>
+{% endblock %}

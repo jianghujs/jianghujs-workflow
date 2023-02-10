@@ -96,7 +96,7 @@ class WorkflowService extends Service {
     
     actionData.workflowConfigCustom = JSON.stringify(workflowConfigCustom);
     actionData.workflowId = workflow.workflowId;
-    actionData.taskTitle = `[${group}]${username}`;
+    actionData.taskTitle = workflow.workflowName;
     actionData.workflowForm = formItemList;
     const formData = {};
     formItemList.forEach(item => {

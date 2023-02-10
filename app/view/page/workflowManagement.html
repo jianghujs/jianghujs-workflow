@@ -211,7 +211,6 @@
         group: '',
       },
       workflowPersonList: [],
-      workflowId: '6D7HV6Twfer_xtmbqUsDO'
     },
     watch: {},
     created() {
@@ -269,7 +268,7 @@
             node.isNeedAllApproval = true;
           });
           row.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
-          row.workflowForm = JSON.parse(row.workflowConfig);
+          row.workflowForm = JSON.parse(row.workflowForm);
         });
         
         this.tableData = rows;
@@ -301,9 +300,10 @@
       // ---------- 斑马纹开关 uiAction >>>>>>>>>> --------
 
       // ---------- <<<<<<<<<< 申请项目审核 --------
-      async prepareCreateFormData({workflowForm, workflowPersonList}) {
+      async prepareCreateFormData({workflowForm, workflowPersonList, workflowId}) {
         this.createFormList = workflowForm;
         this.workflowPersonList = workflowPersonList;
+        this.createItem.workflowId = workflowId;
       },
 
       async openCreateDrawer() {
@@ -340,11 +340,10 @@
           data: {
             appData: {
               pageId: 'workflowManagement',
-              actionId: 'insertItem',
+              actionId: 'insertTask',
               actionData: {
                 formItemList: this.createFormList,
-                group: this.createItem.group,
-                workflowId: this.workflowId,
+                workflowId: this.createItem.workflowId,
                 workflowConfigCustom: JSON.stringify({ nodeListOfUserTaskNode: this.workflowPersonList })
               }
             }

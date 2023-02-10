@@ -74,7 +74,9 @@
               class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
 
               <template v-slot:item.taskTitle="{ item }">
-                <span>{{item.taskTitle}}</span>
+                <span>{{item.taskTitle}}</span> - 
+                <span>{{item.taskExplain}}</span>
+
                 <span v-if="workflowType != 'todo'">
                   <v-chip
                     v-if="item.taskHandleDesc === '拒绝'" label outlined
