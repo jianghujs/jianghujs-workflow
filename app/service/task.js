@@ -364,7 +364,7 @@ class TaskService extends Service {
       taskFormInput,
       taskExplain: currentNode.label,
       taskConfigId: currentNode.id,
-      taskHandleDesc:  type,
+      taskHandleDesc: currentNode.id.includes('start-') ? '流程开始' : type,
       taskLineFrom: (lines.map(e => {return e.form})).join(','),
       taskLineTo: (lines.map(e => {return e.to})).join(','),
       taskLineLabel: (lines.map(e => {return e.type + '-' + e.label})).join(','),
