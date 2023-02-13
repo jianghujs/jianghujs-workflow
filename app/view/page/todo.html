@@ -9,7 +9,7 @@
       <v-main class="mt-15">
         <!-- 头部内容 >>>>>>>>>>>>> -->
         <div class="jh-page-second-bar px-8">
-          <div class="pt-3 text-h7 font-weight-bold">待办审批
+          <div class="pt-3 text-h7 font-weight-bold">我的任务
             <!-- 帮助页按钮 -->
             <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline</v-icon>
           </div>
@@ -20,16 +20,16 @@
         <div class="jh-page-body-container px-8">
           <!-- 页面内容 >>>>>>>>>>>>> -->
           <v-card class="rounded-lg">
-            <v-row class="ma-0 py-0 px-4">
+            <v-row class="ma-0 pa-4">
               <v-spacer></v-spacer>
               <!--切换状态-->
-              <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0 d-flex justify-end">
+              <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pa-0 pr-2 d-flex justify-end">
                 <v-btn-toggle
                   v-model="workflowType"
                   borderless
                   color="success"
                 >
-                  <v-btn value="todo" small>
+                  <v-btn value="todo" small class="jh-backend-search-btn">
                     <v-badge
                       v-if="tableData.length"
                       inline
@@ -40,7 +40,7 @@
                     </v-badge>
                     <span v-else class="">待处理</span>
                   </v-btn>
-                  <v-btn value="history" small>
+                  <v-btn value="history" small class="jh-backend-search-btn">
                     <v-badge
                       v-if="historyData.length"
                       inline
@@ -54,7 +54,7 @@
                 </v-btn-toggle>
               </v-col>
               <!--搜索-->
-              <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="px-0">
+              <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="pa-0">
                 <v-text-field v-model="searchInput" color="success" prefix="搜索：" class="jh-v-input" dense filled hide-details
                   single-line></v-text-field>
               </v-col>
@@ -74,21 +74,21 @@
               class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
 
               <template v-slot:item.taskTitle="{ item }">
-                <span>{{item.taskTitle}}</span> - 
-                <span>{{item.taskExplain}}</span>
-
+                <span>{{item.taskTitle}}</span>
                 <span v-if="workflowType != 'todo'">
                   <v-chip
-                    v-if="item.taskHandleDesc === '拒绝'" label outlined
+                    v-if="item.taskHandleDesc === '拒绝'"
                     color="red"
                     small
+                    dark
                   >
                     已{{item.taskHandleDesc}}
                   </v-chip>
                   <v-chip
-                    v-else label outlined
+                    v-else
                     color="green"
                     small
+                    dark
                   >
                     已{{item.taskHandleDesc}}
                   </v-chip>
@@ -103,6 +103,7 @@
                 </span>
                 <span v-else role="button" class="success--text jh-font-size-3 pr-2"
                   @click="doUiAction('startUpdateItem', item)">
+                  <v-icon size="14" class="success--text">mdi-text-box-outline</v-icon>
                   查看
                 </span>
               </template>
@@ -208,6 +209,7 @@
 
 <!-- 加载页面组件 >>>>>>>>>>>>> -->
 {% include 'component/taskHistory.html' %}
+{% include 'common/jianghuJs/fixedTableHeightV4.html' %}
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
 
 <script type="module">
@@ -224,7 +226,7 @@
           disabled: true,
         },
         {
-          text: '我的待办',
+          text: '待办、已处理的任务',
           disabled: true,
         }
       ],

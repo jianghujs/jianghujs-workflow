@@ -4,7 +4,7 @@
     <span class="jh-input-label">{{ formItem.statement }}</span>
 
     <!-- 文本 -->
-    <v-text-field v-if="formItem.type === 'input'" :rules="validationRules.requireRules" class="jh-v-input" dense single-line filled label="班级ID" v-model="formItem.answer"></v-text-field>
+    <v-text-field v-if="formItem.type === 'input'" :rules="validationRules.requireRules" class="jh-v-input" dense single-line filled label="班级ID" v-model="formItem.answer" :readonly="readonly"></v-text-field>
 
     <!-- 单选 -->
     <v-select
@@ -13,6 +13,7 @@
       :items="formItem.optionList"
       dense single-line filled
       :rules="validationRules.requireRules" 
+      :readonly="readonly"
     ></v-select>
 
     <!-- 多选 -->
@@ -23,14 +24,15 @@
       multiple
       dense single-line filled
       :rules="validationRules.requireRules" 
+      :readonly="readonly"
     ></v-select>
 
     <!-- 文本框 -->
-    <v-textarea v-if="formItem.type === 'short'" :rules="validationRules.requireRules" class="jh-v-input" no-resize dense single-line filled label="备注"
+    <v-textarea v-if="formItem.type === 'short'" :rules="validationRules.requireRules" class="jh-v-input" no-resize dense single-line filled label="备注" :readonly="readonly"
     v-model="formItem.answer"></v-textarea>
 
     <!-- 时间选择 -->
-    <v-text-field v-if="formItem.type === 'date'" class="jh-v-input" dense single-line filled readonly @click="openDataPicker" label="出生日期" v-model="formItem.answer" :rules="validationRules.requireRules"></v-text-field>
+    <v-text-field v-if="formItem.type === 'date'" class="jh-v-input" dense single-line filled readonly @click="openDataPicker" label="出生日期" v-model="formItem.answer" :rules="validationRules.requireRules" :readonly="readonly"></v-text-field>
     <v-menu v-if="formItem.type === 'date'" class="jh-v-input" :close-on-content-click="false" v-model="isDataPickerShown" :position-x="dataPickerPosition.x" :position-y="dataPickerPosition.y" transition="scale-transition" offset-y min-width="auto">
       <v-date-picker color="green lighten-1" elevation="20" @input="isDataPickerShown = false" v-model="formItem.answer"></v-date-picker>
     </v-menu>
@@ -44,9 +46,15 @@
     vuetify: new Vuetify(),
     props: {
       formItem: {
-        type: Boolean,
-        default: false,
+        type: Object,
+        default: () => {
+          return {}
+        },
       },
+      readonly: {
+        type: Boolean,
+        default: false
+      }
     },
     data() {
       return {

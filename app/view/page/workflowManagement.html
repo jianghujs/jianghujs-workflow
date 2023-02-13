@@ -19,16 +19,16 @@
 
         <div class="jh-page-body-container px-8">
           <!-- 页面内容 >>>>>>>>>>>>> -->
-          <v-card class="rounded-lg mb-4">
-            <v-row class="ma-0 py-0 px-4">
+          <v-card class="rounded-lg">
+            <v-row class="ma-0 pa-4">
               <!--新增按钮-->
-              <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pl-0">
+              <v-col cols="12" xs="4" sm="4" md="4" xl="4" class="pa-0">
                 <v-btn color="success" small class="elevation-0 mr-2"
                   @click="doUiAction('jumpToCreateWorkflow')">新增</v-btn>
               </v-col>
               <v-spacer></v-spacer>
               <!--搜索-->
-              <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="px-0">
+              <v-col cols="12" xs="8" sm="4" md="3" xl="2" class="pa-0">
                 <v-text-field v-model="searchInput" color="success" prefix="搜索：" class="jh-v-input" dense filled single-line hide-details></v-text-field>
               </v-col>
             </v-row>
@@ -47,10 +47,10 @@
               class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
               <!--表格行操作按钮-->
               <template v-slot:item.action="{ item }">
-                <!-- <span role="button" class="success--text jh-font-size-3 pr-2"
+                <span role="button" class="success--text jh-font-size-3 pr-2"
                   @click="doUiAction('startCreateWorkflow', item)">
                   <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>申请
-                </span> -->
+                </span>
                 <span role="button" class="success--text jh-font-size-3 pr-2"
                   @click="doUiAction('jumpUpdateWorkflow', item)">
                   <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>编辑
@@ -90,10 +90,6 @@
             <v-row class="mt-0 px-6">
               <v-col cols="12" sm="12" md="4" v-for="(item, index) in createFormList" :key="index">
                 <form-item :form-item="item"></form-item>
-              </v-col>
-              <v-col cols="12" sm="12" md="4">
-                <span class="jh-input-label">附件</span>
-                xxx
               </v-col>
               <v-col cols="12" sm="12" md="12">
                 <span class="jh-input-label">审批流程 - 添加审批人</span>
@@ -168,6 +164,7 @@
 
 <!-- 加载页面组件 >>>>>>>>>>>>> -->
 {% include 'component/formItem.html' %}
+{% include 'common/jianghuJs/fixedTableHeightV4.html' %}
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
 
 <script type="module">
