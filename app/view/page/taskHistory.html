@@ -100,6 +100,9 @@
               </v-row>
               <!--抽屉表单-->
               <v-row class="mt-0 px-6">
+                <v-col cols="12" sm="12" md="4" v-for="(item, index) in updateItem.taskFormInput.formList" :key="index">
+                  <form-item :form-item="item" readonly></form-item>
+                </v-col>
                 <v-col cols="12" sm="12" md="12">
                   <span class="jh-input-label">审核申请信息</span>
                   <task-history :task-id="updateItem.taskId"></task-history>
@@ -146,6 +149,7 @@
 {% block vueScript %}
 
 <!-- 加载页面组件 >>>>>>>>>>>>> -->
+{% include 'component/formItem.html' %}
 {% include 'component/taskHistory.html' %}
 {% include 'common/jianghuJs/fixedTableHeightV4.html' %}
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
@@ -264,6 +268,7 @@
       // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
       async prepareUpdateFormData(funObj) {
         this.updateItem = _.cloneDeep(funObj);
+        console.log(this.updateItem)
       },
 
       async closeSubmitDrawer() {
