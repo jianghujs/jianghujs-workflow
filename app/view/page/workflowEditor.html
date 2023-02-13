@@ -185,31 +185,6 @@
         }
       },
 
-      buildEditItem() {
-        const { id, workflowId, workflowName, workflowRemark, workflowCategory, mode, workflowForm } = this.editItem;
-        const workflowConfig = this.$refs.processFlow.getData();
-        workflowConfig.mode = mode
-        // TODO: 清除不存在的用户
-        workflowConfig.nodeList.forEach(node => {
-          if (node.type === 'userTask') {
-            node.assignValue = node.assignValue || [];
-            node.assignValue = node.assignValue.filter(userId => this.constantCollection.userList.findIndex(u => u.userId === userId) > -1);
-            node.origin.properties.assignValue = node.assignValue;
-          }
-        });
-        let item = {
-          workflowName,
-          workflowRemark,
-          workflowCategory,
-          workflowId: workflowId || null,
-          workflowConfig: workflowConfig ? JSON.stringify(workflowConfig) : null,
-          workflowForm: workflowForm ? JSON.stringify(workflowForm) : null,
-        }
-        if (id) {
-          item.id = id;
-        }
-        return item;
-      },
 
       buildWorkflowFormList(val) {
         this.constantCollection.workflowFormList = [];
@@ -275,7 +250,30 @@
         this.dialogSaveInfoAction = 'createItem';
         this.editItem = { workflowForm: [], workflowConfig: { lineList: [], nodeList: [] }, mode: 'serial' };
       },
-      // <!-- 提交流程修改 >>>>>>>>>>>>> -->
+
+      // ---------- 新建流程 createItem >>>>>>>>>> --------
+      async confirmCreateItemDialog() {
+        if (await window.confirmDialog({ title: "新增", content: "确定新增吗？" }) === false) {
+          throw new Error("[confirmCreateFormDialog] 否");
+        }
+      },
+      async doCreateItem() {
+        delete this.editItem.id;
+        const item = this.buildEditItem();
+        await window.vtoast.loading("新增数据");
+        const { rows } = (await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'insertItem',
+              actionData: item
+            }
+          }
+        })).data.appData.resultData;
+        this.editItem.id = rows[0];
+        history.pushState({}, '', `?id=${rows[0]}`);
+        await window.vtoast.success("新增数据成功");
+      },
       async syncEditItem() {
         this.loading = true;
         this.dialogSaveInfoAction = 'updateItem';
@@ -301,43 +299,39 @@
           this.loading = false;
         }, 500)
       },
-
-      async confirmCreateItemDialog() {
-        if (await window.confirmDialog({ title: "新增", content: "确定新增吗？" }) === false) {
-          throw new Error("[confirmCreateFormDialog] 否");
-        }
-      },
-
-      /**
-       * 新增数据
-       */
-      async doCreateItem() {
-        delete this.editItem.id;
-        const item = this.buildEditItem();
-        await window.vtoast.loading("新增数据");
-        const { rows } = (await window.jianghuAxios({
-          data: {
-            appData: {
-              pageId: 'workflowManagement',
-              actionId: 'insertItem',
-              actionData: item
-            }
+      buildEditItem() {
+        const { id, workflowId, workflowName, workflowRemark, workflowCategory, mode, workflowForm } = this.editItem;
+        const workflowConfig = this.$refs.processFlow.getData();
+        workflowConfig.mode = mode
+        // TODO: 清除不存在的用户
+        workflowConfig.nodeList.forEach(node => {
+          if (node.type === 'userTask') {
+            node.assignValue = node.assignValue || [];
+            node.assignValue = node.assignValue.filter(userId => this.constantCollection.userList.findIndex(u => u.userId === userId) > -1);
+            node.origin.properties.assignValue = node.assignValue;
           }
-        })).data.appData.resultData;
-        this.editItem.id = rows[0];
-        history.pushState({}, '', `?id=${rows[0]}`);
-        await window.vtoast.success("新增数据成功");
+        });
+        let item = {
+          workflowName,
+          workflowRemark,
+          workflowCategory,
+          workflowId: workflowId || null,
+          workflowConfig: workflowConfig ? JSON.stringify(workflowConfig) : null,
+          workflowForm: workflowForm ? JSON.stringify(workflowForm) : null,
+        }
+        if (id) {
+          item.id = id;
+        }
+        return item;
       },
+      // ---------- <<<<<<<<<< 新建流程 createItem --------
 
+      // ---------- 修改流程 updateItem >>>>>>>>>> --------
       async confirmUpdateItemDialog() {
         if (await window.confirmDialog({ title: "修改", content: "确定修改吗？" }) === false) {
           throw new Error("[confirmUpdateItemDialog] 否");
         }
       },
-
-      /**
-       * 修改数据
-       */
       async doUpdateItem() {
         const { id, ...item } = this.buildEditItem();
         await window.vtoast.loading("修改数据");
@@ -353,7 +347,7 @@
         })
         await window.vtoast.success("修改数据成功");
       },
-      // <!-- <<<<<<<<<<<<< 提交流程修改 -->
+      // ---------- <<<<<<<<<< 修改流程 updateItem --------
     }
   })
 </script>
