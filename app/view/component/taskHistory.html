@@ -13,7 +13,7 @@
       class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
       <template v-slot:item.taskHandleDesc="{ item }">
         <span v-if="item.taskConfigId.includes('userTask-')">
-
+          <span>{{item.taskExplain}}</span>
           <v-icon
             large
           >
@@ -56,9 +56,8 @@
         isTableLoading: false,
         headers: [
           {text: "名称", value: "taskTitle", width: 230, class: 'fixed', cellClass: 'fixed'},
-          {text: "节点说明", value: "taskExplain", width: 200}, 
+          {text: "节点说明", value: "taskHandleDesc", width: 120}, 
           {text: "操作人", value: "operationByUser", width: 120}, 
-          {text: "操作描述", value: "taskHandleDesc", width: 120}, 
           {text: "操作时间", value: "operationAt", width: 250},
         ],
         tableData: [],
