@@ -72,7 +72,7 @@ class TaskService extends Service {
     let {mode = 'serial', nodeList = [], lineList = []} = workflowConfig;
     const nodeListOfUserTaskNode = (JSON.parse(workflowConfigCustom || '{}')).nodeListOfUserTaskNode || []
     // 合并定制的审批人和workflow的审批人
-    // nodeList = _.merge(_.keyBy(nodeList, 'id'), _.keyBy((JSON.parse(workflowConfigCustom || '{}')).nodeListOfUserTaskNode || [], 'id'))
+    nodeList = _.merge(_.keyBy(nodeList, 'id'), _.keyBy(nodeListOfUserTaskNode, 'id'))
     for (let i = 0; i < nodeList.length; i++) {
       const node = nodeList[i];
       const tempNode = nodeListOfUserTaskNode.find(n => n.id === node.id);

@@ -93,7 +93,7 @@ class WorkflowService extends Service {
       throw new BizError(errorInfoEnum.workflow_not_found);
     }
     
-    actionData.workflowConfigCustom = JSON.stringify(workflowConfigCustom);
+    actionData.workflowConfigCustom = workflowConfigCustom;
     actionData.workflowId = workflow.workflowId;
     actionData.taskTitle = workflow.workflowName;
     actionData.workflowForm = formItemList;
