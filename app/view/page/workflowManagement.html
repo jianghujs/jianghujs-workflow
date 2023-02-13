@@ -206,9 +206,7 @@
 
       isCreateDrawerShown: false,
       createFormList: [],
-      createItem: {
-        group: '',
-      },
+      createItem: {},
       workflowPersonList: [],
     },
     watch: {},
@@ -356,8 +354,8 @@
       },
       // ---------- 申请项目审核 >>>>>>>>>> --------
 
-      // UpdateItem
-      async jumpUpdateWorkflow(item) {
+      // ---------- <<<<<<<<<< jump --------
+      jumpUpdateWorkflow(item) {
         sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
         window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
       },
@@ -365,6 +363,7 @@
       jumpToCreateWorkflow() {
         window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
       }
+      // ---------- jump >>>>>>>>>> --------
     }
   })
 </script>
