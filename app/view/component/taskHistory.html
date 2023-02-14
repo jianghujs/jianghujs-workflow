@@ -23,29 +23,17 @@
       </template>
       <!-- 节点说明 -->
       <template v-slot:item.taskHandleDesc="{ item }">
-        <span v-if="item.taskConfigId.includes('userTask-')">
-          <span>{{item.taskExplain}}</span>
-          <v-icon
-            large
-          >
-          mdi-arrow-right-thin
-          </v-icon>
-          <v-chip
-            v-if="item.taskHandleDesc === '拒绝'"
-            color="red"
-            small dark
-          >
+        <template v-if="item.taskConfigId.includes('userTask-')">
+          <v-chip :color="item.taskHandleDesc === '拒绝' ? 'red' : 'green'" x-small dark>
+            {{item.taskExplain}}：{{item.taskHandleDesc}}
+          </v-chip>
+        </template>
+        <template v-else>
+          <v-chip color="grey lighten-1" x-small dark>
             {{item.taskHandleDesc}}
           </v-chip>
-          <v-chip
-            v-else
-            color="green"
-            small dark
-          >
-            {{item.taskHandleDesc}}
-          </v-chip>
-        </span>
-        <span v-else>{{item.taskHandleDesc}}</span>
+        </template>
+
       </template>
     </v-data-table>
   </div>
