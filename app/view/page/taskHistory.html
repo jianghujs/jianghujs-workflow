@@ -47,14 +47,14 @@
               </template>
               <template v-slot:item.taskStatus="{ item }">
                 <v-chip
-                  v-if="item.taskStatus === '已结束'" 
+                  v-if="item.taskStatus === '已结束'"
                   color="red"
                   small dark
                 >
                   {{item.taskStatus}}
                 </v-chip>
                 <v-chip
-                  v-else 
+                  v-else
                   color="green"
                   small dark
                 >
@@ -71,15 +71,13 @@
               </template>
               <!--表格底部右侧功能按钮-->
               <template v-slot:footer.prepend>
-                <v-btn icon @click="doUiAction('openTableZebraLineMenu', $event)">
-                  <v-icon>mdi-menu</v-icon>
-                </v-btn>
-                <v-menu top offset-y :close-on-content-click="false" v-model="isTableZebraLineMenuShown" :position-x="tableZebraLineMenuPosition.x" :position-y="tableZebraLineMenuPosition.y">
-                  <v-list>
-                    <v-list-item>
-                      <v-switch v-model="isTableZebraLineShown" hide-details class="ma-0" label="显示斑马纹" dense flat></v-switch>
-                    </v-list-item>
-                  </v-list>
+                <v-menu top offset-y :close-on-content-click="false">
+                  <template v-slot:activator="{on, attrs}">
+                    <v-btn icon v-bind="attrs" v-on="on">
+                      <v-icon>mdi-menu</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-switch v-model="isTableZebraLineShown" hide-details class="mx-3 my-2" label="显示斑马纹" dense flat></v-switch>
                 </v-menu>
               </template>
               <!--表格底部右侧分页-->
@@ -175,8 +173,6 @@
       isHelpPageDrawerShown: false,
 
       // 表格相关数据
-      isTableZebraLineMenuShown: false,
-      tableZebraLineMenuPosition: {x: null, y: null},
       isTableZebraLineShown: true,
       // 生日日期选择
       validationRules: {
@@ -219,9 +215,6 @@
           case 'openDataPicker':
             await this.openDataPicker(uiActionData);
             break;
-          case 'openTableZebraLineMenu':
-            await this.openTableZebraLineMenu(uiActionData);
-            break;
           case 'startUpdateItem':
             await this.prepareUpdateFormData(uiActionData);
             await this.openUpdateDrawer();
@@ -258,13 +251,6 @@
         this.tableData = rows;
         this.isTableLoading = false;
       },
-      // ---------- 斑马纹开关 uiAction >>>>>>>>>> --------
-      async openTableZebraLineMenu(funObj) {
-        this.tableZebraLineMenuPosition.x = funObj.x -funObj.offsetX + 10;
-        this.tableZebraLineMenuPosition.y = window.innerHeight - 50;
-        this.isTableZebraLineMenuShown = !this.isTableZebraLineMenuShown;
-      },
-      // ---------- <<<<<<<<<< 斑马纹开关 uiAction --------
       // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
       async prepareUpdateFormData(funObj) {
         this.updateItem = _.cloneDeep(funObj);

@@ -58,15 +58,13 @@
               </template>
               <!--表格底部右侧功能按钮-->
               <template v-slot:footer.prepend>
-                <v-btn icon @click="doUiAction('openTableZebraLineMenu', $event)">
-                  <v-icon>mdi-menu</v-icon>
-                </v-btn>
-                <v-menu top offset-y :close-on-content-click="false" v-model="isTableZebraLineMenuShown" :position-x="tableZebraLineMenuPosition.x" :position-y="tableZebraLineMenuPosition.y">
-                  <v-list>
-                    <v-list-item>
-                      <v-switch v-model="isTableZebraLineShown" hide-details class="ma-0" label="显示斑马纹" dense flat></v-switch>
-                    </v-list-item>
-                  </v-list>
+                <v-menu top offset-y :close-on-content-click="false">
+                  <template v-slot:activator="{on, attrs}">
+                    <v-btn icon v-bind="attrs" v-on="on">
+                      <v-icon>mdi-menu</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-switch v-model="isTableZebraLineShown" hide-details class="mx-3 my-2" label="显示斑马纹" dense flat></v-switch>
                 </v-menu>
               </template>
               <!--表格底部右侧分页-->
@@ -98,23 +96,23 @@
                     <v-text-field class="cus-v-input " dense filled single-line hide-details v-model="node.label" disabled></v-text-field>
                   </v-col>
                   <v-col cols="4">
-                    <v-autocomplete 
-                      class="cus-v-input mr-2" 
+                    <v-autocomplete
+                      class="cus-v-input mr-2"
                       dense filled single-line clearable
-                      :items="userList" 
-                      item-text="username" 
+                      :items="userList"
+                      item-text="username"
                       item-value="userId"
                       multiple
                       hide-details
                       :rules="validationRules.requireRules"
                       v-model="node.assignValue">
-                      
+
                     </v-autocomplete>
                   </v-col>
                   <v-col cols="4">
                     <v-checkbox dense filled v-model="node.isNeedAllApproval" label="是否需要所有人审批" hide-details ></v-checkbox>
                   </v-col>
-                  
+
                 </v-row>
               </v-col>
             </v-row>
@@ -200,8 +198,6 @@
       searchInput: '',
       isHelpPageDrawerShown: false,
       isTableZebraLineShown: true,
-      isTableZebraLineMenuShown: false,
-      tableZebraLineMenuPosition: {x: null, y: null},
 
       isCreateDrawerShown: false,
       createFormList: [],
@@ -220,9 +216,6 @@
         switch (uiActionId) {
           case 'getTableData':
             await this.getTableData();
-            break;
-          case 'openTableZebraLineMenu':
-            await this.openTableZebraLineMenu(uiActionData);
             break;
           case 'startCreateWorkflow':
             await this.prepareCreateFormData(uiActionData);
@@ -268,7 +261,7 @@
           row.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
           row.workflowForm = JSON.parse(row.workflowForm);
         });
-        
+
         this.tableData = rows;
         this.isTableLoading = false;
       },
@@ -288,14 +281,6 @@
         const userList = result.data.appData.resultData.rows;
         this.userList = userList;
       },
-      
-      // ---------- <<<<<<<<<< 斑马纹开关 uiAction --------
-      async openTableZebraLineMenu(funObj) {
-        this.tableZebraLineMenuPosition.x = funObj.x -funObj.offsetX + 10;
-        this.tableZebraLineMenuPosition.y = window.innerHeight - 50;
-        this.isTableZebraLineMenuShown = !this.isTableZebraLineMenuShown;
-      },
-      // ---------- 斑马纹开关 uiAction >>>>>>>>>> --------
 
       // ---------- <<<<<<<<<< 申请项目审核 --------
       async prepareCreateFormData({workflowForm, workflowPersonList, workflowId}) {
@@ -333,7 +318,7 @@
 
       async doCreateWork() {
         await window.jhMask.show();
-        
+
         await window.jianghuAxios({
           data: {
             appData: {
@@ -360,7 +345,7 @@
         sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
         window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
       },
-      
+
       jumpToCreateWorkflow() {
         window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
       }
@@ -386,6 +371,6 @@
       flex: auto;
     }
   }
-  
+
 </style>
 {% endblock %}
