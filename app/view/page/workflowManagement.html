@@ -100,11 +100,11 @@
               <span class="jh-input-label">审批流程 - 添加审批人</span>
               <v-row v-for="workflowPersonItem in currentWorkflowPersonList">
                 <v-col cols="12" xs="6" md="4">
-                  <v-text-field class="cus-v-input " dense filled single-line hide-details v-model="workflowPersonItem.label" disabled></v-text-field>
+                  <v-text-field class="jh-v-input " dense filled single-line hide-details v-model="workflowPersonItem.label" disabled></v-text-field>
                 </v-col>
                 <v-col cols="12" xs="6" md="4">
                   <v-autocomplete
-                    class="cus-v-input mr-2"
+                    class="jh-v-input mr-2"
                     dense filled single-line clearable
                     :items="userList"
                     item-text="username"
@@ -175,14 +175,8 @@ new Vue({
   data: {
     // 面包屑
     breadcrumbs: [
-      {
-        text: '首页',
-        disabled: true,
-      },
-      {
-        text: '流程管理列表、发起任务',
-        disabled: true,
-      }
+      {text: '首页', disabled: true,},
+      {text: '流程管理列表、发起任务', disabled: true,}
     ],
     validationRules: {
       requireRules: [

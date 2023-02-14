@@ -103,11 +103,11 @@
                 <span class="jh-input-label">审批流程 - 添加审批人</span>
                 <v-row v-for="node in workflowPersonList">
                   <v-col cols="2">
-                    <v-text-field class="cus-v-input " dense filled single-line hide-details v-model="node.label" disabled></v-text-field>
+                    <v-text-field class="jh-v-input " dense filled single-line hide-details v-model="node.label" disabled></v-text-field>
                   </v-col>
                   <v-col cols="4">
                     <v-autocomplete
-                      class="cus-v-input mr-2"
+                      class="jh-v-input mr-2"
                       dense filled single-line clearable
                       :items="userList"
                       item-text="username"

@@ -66,7 +66,7 @@
               </v-list-item-content>
 
               <v-list-item-content v-if="formItem.component.type === 'input'">
-                <v-text-field class="cus-v-input" dense outlined :label="(index+1) + '. ' + formItem.component.outline"
+                <v-text-field class="jh-v-input" dense outlined :label="(index+1) + '. ' + formItem.component.outline"
                               :disabled="true"></v-text-field>
               </v-list-item-content>
 
@@ -103,7 +103,7 @@
                 v-if="formItemList[selectCanvaIndex].component.type === 'singleSelect' || formItemList[selectCanvaIndex].component.type === 'multipleSelect'">
           <v-row no-gutters>
             <v-col cols="12">
-              <v-text-field class="cus-v-input mr-2" dense filled single-line prefix="标题: " color="success"
+              <v-text-field class="jh-v-input mr-2" dense filled single-line prefix="标题: " color="success"
                             v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
               <div style="display: flex; flex-direction: row;justify-content: space-between; align-items: center;">
                 <v-subheader class="pa-0">选项列表</v-subheader>
@@ -139,11 +139,11 @@
           </v-row>
         </v-card>
         <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].component.type === 'textarea'">
-          <v-text-field class="cus-v-input" dense filled single-line label="多行文本"
+          <v-text-field class="jh-v-input" dense filled single-line label="多行文本"
                         v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
         </v-card>
         <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].component.type === 'input'">
-          <v-text-field class="cus-v-input" dense filled single-line label="单行文本"
+          <v-text-field class="jh-v-input" dense filled single-line label="单行文本"
                         v-model="formItemList[selectCanvaIndex].component.outline"></v-text-field>
         </v-card>
       </div>
@@ -382,7 +382,7 @@ Vue.component("form-item-list-generator", {
   border-radius: 5px;
 }
 
-body .theme--light.v-text-field--filled.cus-v-input.black > .v-input__control > .v-input__slot {
+body .theme--light.v-text-field--filled.jh-v-input.black > .v-input__control > .v-input__slot {
   background: #e6ebee;
 }
 

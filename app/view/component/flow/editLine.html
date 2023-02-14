@@ -21,26 +21,26 @@
     <v-row class="px-2" :class="{'pb-7': isMobile}">
       <v-col cols="12" class=" pb-3">
         <span class="inputLabel">GUID</span>
-        <v-text-field class="cus-v-input mr-2" dense filled single-line disabled label="GUID" v-model="line.id"></v-text-field>
+        <v-text-field class="jh-v-input mr-2" dense filled single-line disabled label="GUID" v-model="line.id"></v-text-field>
       </v-col>
       <v-col cols="12" class=" pb-3">
         <span class="inputLabel">源活动</span>
-        <v-text-field class="cus-v-input mr-2" dense filled single-line disabled label="源活动" v-model="line.from"></v-text-field>
+        <v-text-field class="jh-v-input mr-2" dense filled single-line disabled label="源活动" v-model="line.from"></v-text-field>
       </v-col>
       <v-col cols="12" class=" pb-3">
         <span class="inputLabel">目标活动</span>
-        <v-text-field class="cus-v-input mr-2" dense filled single-line disabled label="目标活动" v-model="line.to"></v-text-field>
+        <v-text-field class="jh-v-input mr-2" dense filled single-line disabled label="目标活动" v-model="line.to"></v-text-field>
       </v-col>
       <v-col cols="12" class=" pb-3">
         <span class="inputLabel">名称</span>
-        <v-text-field class="cus-v-input mr-2" dense filled single-line label="名称" v-model="line.label"></v-text-field>
+        <v-text-field class="jh-v-input mr-2" dense filled single-line label="名称" v-model="line.label"></v-text-field>
       </v-col>
       <v-col cols="12" class=" pb-3" v-if="mode == 'serial'">
         <span class="inputLabel">操作类型</span>
         <v-select
           :items="lineTypeList"
           dense filled single-line
-          class="cus-v-input mr-2"
+          class="jh-v-input mr-2"
           label="操作类型"
           color="success"
           item-color="success"
@@ -49,11 +49,11 @@
       </v-col>
       <v-col cols="12" class=" pb-3">
         <span class="inputLabel">执行Hook</span>
-        <v-text-field class="cus-v-input mr-2" dense filled single-line label="执行Hook" v-model="line.hook"></v-text-field>
+        <v-text-field class="jh-v-input mr-2" dense filled single-line label="执行Hook" v-model="line.hook"></v-text-field>
       </v-col>
       <v-col cols="12" class=" pb-3">
         <span class="inputLabel">备注说明</span>
-        <v-text-field class="cus-v-input mr-2" dense filled single-line label="备注说明" v-model="line.Remark"></v-text-field>
+        <v-text-field class="jh-v-input mr-2" dense filled single-line label="备注说明" v-model="line.Remark"></v-text-field>
       </v-col>
     </v-row>
   </v-form>
