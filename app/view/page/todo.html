@@ -261,7 +261,6 @@ new Vue({
           await this.confirmSubmitDialog();
           await this.submitForReview(uiActionData);
           await this.closeSubmitDrawer();
-          await this.clearSubmitData();
           this.getTableData();
           this.getHistoryData();
           break;
@@ -324,10 +323,6 @@ new Vue({
       this.lineTypeList = []; // 所有操作按钮
     },
 
-    async closeSubmitDrawer() {
-      this.isSubmitDrawerShown = false;
-    },
-
     async openUpdateDrawer() {
       this.isSubmitDrawerShown = true;
     },
@@ -338,9 +333,6 @@ new Vue({
       }
     },
 
-    async clearSubmitData() {
-      this.updateItem = {};
-    },
     async submitForReview(lineType) {
       await window.vtoast.loading("提交审核");
       await window.jianghuAxios({
@@ -353,6 +345,10 @@ new Vue({
         }
       })
       await window.vtoast.success("提交审核成功");
+    },
+    async closeSubmitDrawer() {
+      this.isSubmitDrawerShown = false;
+      this.updateItem = {};
     },
     setLineTypeList(lineTypeList) {
       this.lineTypeList = _.uniqBy((lineTypeList || '').split(",").map(lineType => ({type: lineType, label: lineType})), 'type');
