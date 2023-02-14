@@ -1,165 +1,170 @@
 <template id="form-item-list-review">
   <div class="form-item-list-review-container">
-        <!-- 单选 -->
-        <template v-if="formItem.component.type === 'singleSelect'">
-          <span class="jh-input-label">{{ formItem.component.statement
-            }}</span>
-          <v-radio-group readonly v-model="formItem.user.answer">
-            <v-radio v-for="(option, optionIndex) in formItem.component.selectOptionList" :key="optionIndex"
-              :label="assignmentOptionKey[optionIndex]+': '+option" :value="option"></v-radio>
-          </v-radio-group>
+    <!-- 单选 -->
+    <template v-if="formItem.component.type === 'singleSelect'">
+          <span class="jh-input-label">{{ formItem.component.statement }}</span>
+      <v-radio-group readonly v-model="formItem.user.answer">
+        <v-radio
+          v-for="(option, optionIndex) in formItem.component.selectOptionList" :key="optionIndex"
+          :label="assignmentOptionKey[optionIndex]+': '+option" :value="option"></v-radio>
+      </v-radio-group>
+    </template>
+    <!-- 多选和填空 -->
+    <template v-if="['fillBlank', 'multipleSelect'].includes(formItem.component.type)">
+      <span class="jh-input-label" style="white-space:nowrap !important;" v-if="formItem.component.type === 'fillBlank'">
+        <template v-for="(blank, blankIndex) in formItem.component.statement" :key="blankIndex">
+          <span class="fill-blank fill-blank-input" v-if="blank.type === 'input'">{{
+            formItem.user.answer[blank.id] }}</span>
+          <span v-else>{{ blank.value }}</span>
         </template>
-        <!-- 多选和填空 -->
-        <template v-if="['fillBlank', 'multipleSelect'].includes(formItem.component.type)">
-
-              <span class="jh-input-label" style="white-space:nowrap !important;"
-                v-if="formItem.component.type === 'fillBlank'">
-                <template v-for="(blank, blankIndex) in formItem.component.statement" :key="blankIndex">
-                  <span class="fill-blank fill-blank-input" v-if="blank.type === 'input'">{{
-                    formItem.user.answer[blank.id] }}</span>
-                  <span v-else>{{ blank.value }}</span>
-                </template>
-              </span>
-              <span class="jh-input-label" v-else>{{ formItem.component.statement
-                }}</span>
-              <template v-if="formItem.component.type === 'multipleSelect'">
-                <template v-for="(option, optionIndex) in formItem.component.selectOptionList" :key="optionIndex">
-                  <v-checkbox readonly style="margin-top: 0px;" v-model="formItem.user.answer" :value="option"
-                    :label="assignmentOptionKey[optionIndex]+': '+option" hide-details color="red"></v-checkbox>
-                </template>
-              </template>
+      </span>
+      <span class="jh-input-label" v-else>{{ formItem.component.statement }}</span>
+      <template v-if="formItem.component.type === 'multipleSelect'">
+        <template v-for="(option, optionIndex) in formItem.component.selectOptionList" :key="optionIndex">
+          <v-checkbox
+            readonly style="margin-top: 0px;" v-model="formItem.user.answer" :value="option"
+            :label="assignmentOptionKey[optionIndex]+': '+option" hide-details color="red"></v-checkbox>
         </template>
-        <!-- 多行文本，问答和markdown -->
-        <template v-if="['textarea', 'questionAnswer', 'markdown'].includes(formItem.component.type)">
-          <span class="jh-input-label">{{ formItem.component.statement
-            }}</span>
-          <template v-if="formItem.component.type === 'markdown'" cols="12">
-            <md2html :article-content="formItem.user.answer" @complete="isContentLoading = false"></md2html>
-          </template>
-          <template v-else cols="12">
-            <v-textarea readonly dense filled single-line v-model="formItem.user.answer" :rows="5" auto-grow />
-          </template>
-        </template>
-        <!-- 题目组 -->
-        <template v-if="formItem.component.type === 'questionGroup'">
-          <span class="jh-input-label">{{ formItem.component.statement
-            }}</span>
-          <md2html :article-content="formItem.component.markdownContent" @complete="isContentLoading = false">
-          </md2html>
-
-          <form-item-list-review :form-item-list="formItem.component.itemList" :review-data="reviewData"
-            :answer-check="answerCheck" />
-        </template>
-        <!-- 纯标题 -->
-        <v-list-item-content v-if="formItem.component.type === 'displayText'">
-          <p>{{formItem.component.statement}}</p>
-        </v-list-item-content>
-      </v-list-item>
-    </v-card>
+      </template>
+    </template>
+    <!-- 多行文本，问答和markdown -->
+    <template v-if="['textarea', 'questionAnswer', 'markdown'].includes(formItem.component.type)">
+      <span class="jh-input-label">{{ formItem.component.statement }}</span>
+      <template v-if="formItem.component.type === 'markdown'" cols="12">
+        <md2html :article-content="formItem.user.answer" @complete="isContentLoading = false"></md2html>
+      </template>
+      <template v-else cols="12">
+        <v-textarea readonly dense filled single-line v-model="formItem.user.answer" :rows="5" auto-grow />
+      </template>
+    </template>
+    <!-- 题目组 -->
+    <template v-if="formItem.component.type === 'questionGroup'">
+      <span class="jh-input-label">{{ formItem.component.statement }}</span>
+      <md2html :article-content="formItem.component.markdownContent" @complete="isContentLoading = false">
+      </md2html>
+      <form-item-list-review
+        :form-item-list="formItem.component.itemList" :review-data="reviewData"
+        :answer-check="answerCheck" />
+    </template>
+    <!-- 纯标题 -->
+    <v-list-item-content v-if="formItem.component.type === 'displayText'">
+      <p>{{formItem.component.statement}}</p>
+    </v-list-item-content>
   </div>
 </template>
 
 <script>
-  Vue.component("form-item-list-review", {
-    template: '#form-item-list-review',
-    vuetify: new Vuetify(),
-    name: 'form-item-list-review',
-    props: {
-      formItem: {
-        type: Object,
-        default: () => {
-          return {};
-        },
-      },
-      reviewData: {
-        type: Object,
-        default: () => {
-          return {};
-        },
-      },
-      answerCheck: {
-        type: Object,
-        default: () => {
-          return {};
-        },
+Vue.component("form-item-list-review", {
+  template: '#form-item-list-review',
+  vuetify: new Vuetify(),
+  name: 'form-item-list-review',
+  props: {
+    formItem: {
+      type: Object,
+      default: () => {
+        return {};
       },
     },
-    data: () => ({
-      overlay: false,
-      imgSrc: '',
-      assignmentOptionKey: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'],
-    }),
-    computed: {
-      isMobile() {
-        return window.innerWidth < 500;
-      }
+    reviewData: {
+      type: Object,
+      default: () => {
+        return {};
+      },
     },
-    destroyed() { },
-    watch: {
+    answerCheck: {
+      type: Object,
+      default: () => {
+        return {};
+      },
     },
-    created() {
-    },
-    methods: {}
-  })
+  },
+  data: () => ({
+    overlay: false,
+    imgSrc: '',
+    assignmentOptionKey: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'],
+  }),
+  computed: {
+    isMobile() {
+      return window.innerWidth < 500;
+    }
+  },
+  destroyed() {
+  },
+  watch: {},
+  created() {
+  },
+  methods: {}
+})
 </script>
 
 <style scoped>
-  .form-item-list-review-container {
-    background-color: unset;
-  }
+.form-item-list-review-container {
+  background-color: unset;
+}
 
-  .form-item-list-review-container .jh-input-label {
-    white-space: pre-line;
-    font-weight: bold;
-    font-size: 16px !important;
-  }
+.form-item-list-review-container .jh-input-label {
+  white-space: pre-line;
+  font-weight: bold;
+  font-size: 16px !important;
+}
 
-  .form-item-list-review-container audio {
-    height: 35px;
-  }
+.form-item-list-review-container audio {
+  height: 35px;
+}
 
-  .form-item-list-review-container .audio-box {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-  }
+.form-item-list-review-container .audio-box {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
 
-  /*.form-item-list-review-container .submit-handle-box {
-    position: relative;
+/*.form-item-list-review-container .submit-handle-box {
+  position: relative;
 }
 .form-item-list-review-container .submit-handle-box::after {
-    position: absolute;
-    width: 1px;
-    content: '';
-    background-color: #e0e0e0;
-    height: 200px;
-    top: auto;
-    bottom: auto;
+  position: absolute;
+  width: 1px;
+  content: '';
+  background-color: #e0e0e0;
+  height: 200px;
+  top: auto;
+  bottom: auto;
 }*/
-  .student-remark textarea {
-    color: rgb(0, 172, 37) !important;
-  }
+.student-remark textarea {
+  color: rgb(0, 172, 37) !important;
+}
 
-  .fill-blank {
-    display: inline-block;
+.fill-blank {
+  display: inline-block;
 
-  }
+}
 
-  .fill-blank-input {
-    padding-left: 10px;
-    padding-right: 10px;
-    border-bottom: 2px solid gray;
-    margin-left: 5px;
-    margin-right: 5px;
-  }
-  .icon-close {
-    position: fixed; right: 10px; top: 5px; z-index: 50000
-  }
-  .icon-download {
-    position: fixed; right: 50px; top: 5px; z-index: 50000
-  }
-  .file-prev-wrap {
-    overflow: auto; max-width: 80vw; max-height: 90vh;
-  }
+.fill-blank-input {
+  padding-left: 10px;
+  padding-right: 10px;
+  border-bottom: 2px solid gray;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.icon-close {
+  position: fixed;
+  right: 10px;
+  top: 5px;
+  z-index: 50000
+}
+
+.icon-download {
+  position: fixed;
+  right: 50px;
+  top: 5px;
+  z-index: 50000
+}
+
+.file-prev-wrap {
+  overflow: auto;
+  max-width: 80vw;
+  max-height: 90vh;
+}
 </style>

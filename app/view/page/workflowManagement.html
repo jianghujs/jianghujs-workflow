@@ -50,7 +50,7 @@
                 <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>申请
               </span>
               <span role="button" class="success--text jh-font-size-3 pr-2"
-                  @click="doUiAction('jumpUpdateWorkflow', item)">
+                    @click="doUiAction('jumpUpdateWorkflow', item)">
                 <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>编辑
               </span>
             </template>
@@ -65,6 +65,16 @@
                 <v-switch v-model="isTableZebraLineShown" hide-details class="mx-3 my-2" label="显示斑马纹" dense flat></v-switch>
               </v-menu>
             </template>
+            <!--没有数据-->
+            <template v-slot:loading>
+              <div class="jh-no-data">数据加载中</div>
+            </template>
+            <template v-slot:no-data>
+              <div class="jh-no-data">暂无数据</div>
+            </template>
+            <template v-slot:no-results>
+              <div class="jh-no-data">暂无数据</div>
+            </template>
             <!--表格底部右侧分页-->
             <template v-slot:footer.page-text="pagination">
               <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
@@ -75,8 +85,7 @@
         <!-- <<<<<<<<<<<<< 页面内容 -->
       </div>
       <!-- <<<<<<<<<<<<< 创建审批抽屉 -->
-      <v-navigation-drawer v-model="isCreateDrawerShown" :permanent="isCreateDrawerShown" fixed temporary right width="80%"
-                           class="elevation-24">
+      <v-navigation-drawer v-model="isCreateDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
         <v-form v-if="isCreateDrawerShown" ref="createForm" lazy-validation>
           <!--抽屉标题-->
           <v-row>
@@ -84,16 +93,16 @@
           </v-row>
           <!--抽屉表单主体-->
           <v-row class="mt-0 px-6">
-            <v-col cols="12" sm="12" md="4" v-for="(item, index) in createFormList" :key="index">
+            <v-col cols="12" sm="12" md="4" v-for="(item, index) in currentWorkflowForm" :key="index">
               <form-item :form-item="item"></form-item>
             </v-col>
             <v-col cols="12" sm="12" md="12">
               <span class="jh-input-label">审批流程 - 添加审批人</span>
-              <v-row v-for="node in workflowPersonList">
-                <v-col cols="2">
-                  <v-text-field class="cus-v-input " dense filled single-line hide-details v-model="node.label" disabled></v-text-field>
+              <v-row v-for="workflowPersonItem in currentWorkflowPersonList">
+                <v-col cols="12" xs="6" md="4">
+                  <v-text-field class="cus-v-input " dense filled single-line hide-details v-model="workflowPersonItem.label" disabled></v-text-field>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="12" xs="6" md="4">
                   <v-autocomplete
                     class="cus-v-input mr-2"
                     dense filled single-line clearable
@@ -103,14 +112,12 @@
                     multiple
                     hide-details
                     :rules="validationRules.requireRules"
-                    v-model="node.assignValue">
-
+                    v-model="workflowPersonItem.assignValue">
                   </v-autocomplete>
                 </v-col>
-                <v-col cols="4">
-                  <v-checkbox dense filled v-model="node.isNeedAllApproval" label="是否需要所有人审批" hide-details></v-checkbox>
+                <v-col cols="12" xs="12" md="4" class="pt-xs-0">
+                  <v-checkbox class="ma-0" dense filled v-model="workflowPersonItem.isNeedAllApproval" label="是否需要所有人审批" hide-details></v-checkbox>
                 </v-col>
-
               </v-row>
             </v-col>
           </v-row>
@@ -121,19 +128,15 @@
           </v-row>
         </v-form>
         <!--抽屉关闭按钮-->
-        <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
-               @click="isCreateDrawerShown = false">
+        <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn" @click="isCreateDrawerShown = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-navigation-drawer>
       <!-- 创建审批抽屉 >>>>>>>>>>>>> -->
 
       <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
-      <v-navigation-drawer v-model="isHelpPageDrawerShown" fixed temporary right width="80%" hide-overlay
-                           class="elevation-24">
-        <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%"
-                height="100%"></iframe>
-
+      <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
+        <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%" height="100%"></iframe>
         <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
                @click="isHelpPageDrawerShown = false">
           <v-icon>mdi-close</v-icon>
@@ -188,6 +191,7 @@ new Vue({
     },
     isTableLoading: false,
     userList: [],
+    tableDataFromBackend: [],
     tableData: [],
     headers: [
       {text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed'},
@@ -199,13 +203,13 @@ new Vue({
     isTableZebraLineShown: true,
 
     isCreateDrawerShown: false,
-    createFormList: [],
-    createItemWorkflowId: {},
-    workflowPersonList: [],
+    currentWorkflowForm: [],
+    currentWorkflowId: {},
+    currentWorkflowPersonList: [],
   },
   watch: {},
   created() {
-    this.getTableData();
+    this.doUiAction('getTableData');
     this.getUserList();
   },
   methods: {
@@ -213,6 +217,7 @@ new Vue({
       switch (uiActionId) {
         case 'getTableData':
           await this.getTableData();
+          await this.parseTableData();
           break;
         case 'startCreateWorkflow':
           await this.prepareCreateFormData(uiActionData);
@@ -249,7 +254,12 @@ new Vue({
         }
       });
 
-      const rows = result.data.appData.resultData.rows;
+      this.tableDataFromBackend = result.data.appData.resultData.rows;
+      this.isTableLoading = false;
+    },
+
+    async parseTableData() {
+      const rows = _.cloneDeep(this.tableDataFromBackend);
       rows.forEach(row => {
         const workflowNodeList = JSON.parse(row.workflowConfig).nodeList;
         workflowNodeList.forEach(node => {
@@ -258,9 +268,7 @@ new Vue({
         row.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
         row.workflowForm = JSON.parse(row.workflowForm);
       });
-
       this.tableData = rows;
-      this.isTableLoading = false;
     },
 
     async getUserList() {
@@ -281,10 +289,11 @@ new Vue({
 
     // ---------- <<<<<<<<<< 申请项目审核 --------
     async prepareCreateFormData(funObj) {
+      console.log(funObj);
       const {workflowForm, workflowPersonList, workflowId} = funObj;
-      this.createFormList = workflowForm;
-      this.workflowPersonList = workflowPersonList;
-      this.createItemWorkflowId = workflowId;
+      this.currentWorkflowForm = workflowForm;
+      this.currentWorkflowPersonList = workflowPersonList;
+      this.currentWorkflowId = workflowId;
     },
 
     async openCreateDrawer() {
@@ -295,16 +304,18 @@ new Vue({
         throw new Error("请完善表单信息")
       }
 
-      this.workflowPersonList.forEach(workflowPerson => {
-        if(!workflowPerson.assignValue) {
-          workflowPerson.assignValue = [];
+      this.currentWorkflowPersonList.forEach(workflowPersonItem => {
+        if (!workflowPersonItem.assignValue) {
+          workflowPersonItem.assignValue = [];
         }
-        workflowPerson.assignValue = workflowPerson.assignValue.filter(userId => {
-          return this.userList.find(user => user.userId === userId);
+        workflowPersonItem.assignValue = workflowPersonItem.assignValue.filter(userId => {
+          return this.userList.some(user => user.userId === userId);
         });
-        workflowPerson.origin.properties.assignValue = workflowPerson.assignValue;
-        if (workflowPerson.assignValue.length === 0) {
-          window.vtoast.fail({message: `${workflowPerson.label}必填!`});
+        if(!workflowPersonItem.origin) workflowPersonItem['origin'] = {};
+        if(!workflowPersonItem.origin.properties) workflowPersonItem.origin['properties'] = {};
+        workflowPersonItem.origin.properties.assignValue = workflowPersonItem.assignValue;
+        if (workflowPersonItem.assignValue.length === 0) {
+          window.vtoast.fail({message: `${workflowPersonItem.label}必填!`});
           throw new Error("[prepareValidate] 审批人 false");
         }
       });
@@ -315,20 +326,21 @@ new Vue({
       }
     },
     prepareDoWorkItem() {
-      console.log('create', this.createFormList);
+      console.log('create', this.currentWorkflowForm);
     },
 
     async doCreateWork() {
       await window.jhMask.show();
+      await window.vtoast.loading("正在申请");
       await window.jianghuAxios({
         data: {
           appData: {
             pageId: 'workflowManagement',
             actionId: 'insertTask',
             actionData: {
-              formItemList: this.createFormList,
-              workflowId: this.createItemWorkflowId,
-              workflowConfigCustom: JSON.stringify({nodeListOfUserTaskNode: this.workflowPersonList})
+              formItemList: this.currentWorkflowForm,
+              workflowId: this.currentWorkflowId,
+              workflowConfigCustom: JSON.stringify({nodeListOfUserTaskNode: this.currentWorkflowPersonList})
             }
           }
         }
@@ -337,8 +349,8 @@ new Vue({
       await window.vtoast.success("申请成功");
     },
     async closeCreateDrawer() {
-      this.createFormList = null;
-      this.createItemWorkflowId = null;
+      this.currentWorkflowForm = null;
+      this.currentWorkflowId = null;
       this.isCreateDrawerShown = false;
     },
     // ---------- 申请项目审核 >>>>>>>>>> --------

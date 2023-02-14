@@ -49,19 +49,19 @@
                 </v-text-field>
               </v-col>
               <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-                <v-select class="cus-v-input mr-2" dense filled single-line color="success" prefix="审批模式:" 
-                              v-model="editItem['mode']" :items="constantCollection.modeList" /> 
+                <v-select class="cus-v-input mr-2" dense filled single-line color="success" prefix="审批模式:"
+                              v-model="editItem['mode']" :items="constantCollection.modeList" />
               </v-col>
             </v-row>
             </v-card>
-    
+
             <div class="pt-4 pb-4 text-h7">流程设置</div>
             <process-flow v-if="!loading" ref="processFlow" :data="editItem.workflowConfig" :user="constantCollection.userList"
                           :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList"
                           :mode="editItem.mode">
             </process-flow>
         </div>
-        
+
         <!-- 页面loading 效果 -->
         <v-overlay :value="loading" absolute>
           <v-progress-circular
@@ -71,7 +71,7 @@
         </v-overlay>
 
         <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
-        <v-navigation-drawer v-model="isHelpPageDrawerShown" fixed temporary right width="80%" hide-overlay
+        <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%"
           class="elevation-24">
           <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%"
             height="100%"></iframe>

@@ -118,6 +118,16 @@
                   <v-switch v-model="isTableZebraLineShown" hide-details class="mx-3 my-2" label="显示斑马纹" dense flat></v-switch>
                 </v-menu>
               </template>
+              <!--没有数据-->
+              <template v-slot:loading>
+                <div class="jh-no-data">数据加载中</div>
+              </template>
+              <template v-slot:no-data>
+                <div class="jh-no-data">暂无数据</div>
+              </template>
+              <template v-slot:no-results>
+                <div class="jh-no-data">暂无数据</div>
+              </template>
               <!--表格底部右侧分页-->
               <template v-slot:footer.page-text="pagination">
                 <span>{{pagination.pageStart}}-{{pagination.pageStop}}</span>
@@ -127,7 +137,7 @@
           </v-card>
           <!-- <<<<<<<<<<<<< 页面内容 -->
           <!--编辑抽屉-->
-          <v-navigation-drawer v-model="isSubmitDrawerShown" :permanent="isSubmitDrawerShown" fixed temporary right hide-overlay width="80%"
+          <v-navigation-drawer v-model="isSubmitDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%"
             class="elevation-24">
             <v-form v-if="isSubmitDrawerShown" ref="updateForm" lazy-validation>
               <!--抽屉标题-->
@@ -168,7 +178,7 @@
         </div>
 
         <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
-        <v-navigation-drawer v-model="isHelpPageDrawerShown" fixed temporary right width="80%" hide-overlay
+        <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%"
           class="elevation-24">
           <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#todo.md`" width="100%"
             height="100%"></iframe>
