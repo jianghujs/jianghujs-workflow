@@ -16,7 +16,6 @@
           <v-breadcrumbs class="pb-3 pt-0 px-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
         </div>
         <!-- <<<<<<<<<<<<< 头部内容 -->
-
         <div class="jh-page-body-container px-8">
           <!-- 页面内容 >>>>>>>>>>>>> -->
           <v-card class="rounded-lg">
@@ -41,30 +40,22 @@
               checkbox-color="success"
               fixed-header
               class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
-
+              <!--标题-->
               <template v-slot:item.taskTitle="{ item }">
                 <span>{{item.taskTitle}}</span>
               </template>
+              <!--审核状态-->
               <template v-slot:item.taskStatus="{ item }">
-                <v-chip
-                  v-if="item.taskStatus === '已结束'"
-                  color="red"
-                  small dark
-                >
+                <v-chip v-if="item.taskStatus === '已结束'" color="red" x-small dark>
                   {{item.taskStatus}}
                 </v-chip>
-                <v-chip
-                  v-else
-                  color="green"
-                  small dark
-                >
+                <v-chip v-else color="green" x-small dark >
                   {{item.taskStatus}}
                 </v-chip>
               </template>
               <!--表格行操作按钮-->
               <template v-slot:item.action="{ item }">
-                <span role="button" class="success--text jh-font-size-3 pr-2"
-                  @click="doUiAction('startUpdateItem', item)">
+                <span role="button" class="success--text jh-font-size-3 pr-2" @click="doUiAction('startUpdateItem', item)">
                   <v-icon size="14" class="success--text">mdi-text-box-outline</v-icon>
                   查看
                 </span>
@@ -108,12 +99,12 @@
               </v-row>
               <!--抽屉表单-->
               <v-row class="mt-0 px-6">
-                <v-col cols="12" sm="12" md="4" v-for="(item, index) in updateItem.taskFormInput.formList" :key="index">
+                <v-col cols="12" sm="12" md="4" v-for="(item, index) in viewItem.taskFormInput.formList" :key="index">
                   <form-item :form-item="item" readonly></form-item>
                 </v-col>
                 <v-col cols="12" sm="12" md="12">
                   <span class="jh-input-label">审核申请信息</span>
-                  <task-history :task-id="updateItem.taskId"></task-history>
+                  <task-history :task-id="viewItem.taskId"></task-history>
                 </v-col>
               </v-row>
             </v-form>
@@ -129,8 +120,7 @@
         <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
         <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%"
           class="elevation-24">
-          <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#taskHistory.md`" width="100%"
-            height="100%"></iframe>
+          <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#taskHistory.md`" width="100%" height="100%"></iframe>
 
           <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
             @click="isHelpPageDrawerShown = false">
@@ -171,17 +161,10 @@
     data: {
       // 面包屑
       breadcrumbs: [
-        {
-          text: '首页',
-          disabled: true,
-        },
-        {
-          text: '全部任务列表',
-          disabled: true,
-        }
+        {text: '首页', disabled: true,},
+        {text: '全部任务列表', disabled: true,}
       ],
       isHelpPageDrawerShown: false,
-
       // 表格相关数据
       isTableZebraLineShown: true,
       // 生日日期选择
@@ -193,9 +176,8 @@
       searchInput: null,
       isTableLoading: true,
       tableData: [],
-      historyData: [],
       headers: [
-        { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
+        { text: '操作', value: 'action', align: 'center', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed' },
         { text: "审批项", value: "taskTitle" },
         { text: "审核状态", value: "taskStatus" },
         { text: "操作者", value: "operationByUser", width: 120 },
@@ -203,9 +185,7 @@
       ],
 
       isViewDrawerShown: false,
-      updateItem: {},
-      workflowType: 'todo', // todo, history
-      lineTypeList: [],
+      viewItem: {},
       userId: '<$ ctx.userInfo.userId $>'
     },
     // 计算
@@ -226,8 +206,8 @@
             await this.openDataPicker(uiActionData);
             break;
           case 'startUpdateItem':
-            await this.prepareUpdateFormData(uiActionData);
-            await this.openUpdateDrawer();
+            await this.prepareViewItemData(uiActionData);
+            await this.openViewDrawer();
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
@@ -261,20 +241,15 @@
         this.tableData = rows;
         this.isTableLoading = false;
       },
-      // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
-      async prepareUpdateFormData(funObj) {
-        this.updateItem = _.cloneDeep(funObj);
-        console.log(this.updateItem)
+      // ---------- 查看 uiAction >>>>>>>>>>>> --------
+      async prepareViewItemData(funObj) {
+        this.viewItem = _.cloneDeep(funObj);
       },
 
-      async closeSubmitDrawer() {
-        this.isViewDrawerShown = false;
-      },
-
-      async openUpdateDrawer() {
+      async openViewDrawer() {
         this.isViewDrawerShown = true;
       },
-      // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
+      // ---------- 查看 uiAction >>>>>>>>>>>> --------
     }
   })
 </script>
