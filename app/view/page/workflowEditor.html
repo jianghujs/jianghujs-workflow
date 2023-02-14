@@ -48,17 +48,17 @@
             <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
               <v-select
                 class="jh-v-input mr-2" dense filled single-line color="success" prefix="审批模式:"
-                v-model="editItem['mode']" :items="constantCollection.modeList" />
+                v-model="editItem['mode']" :items="constantObj.modeList" />
             </v-col>
           </v-row>
         </v-card>
 
         <div class="pt-4 pb-4 text-h7">流程设置</div>
         <process-flow
-          v-if="!loading" ref="processFlow" :data="editItem.workflowConfig" :user="constantCollection.userList"
-          :group="constantCollection.groupList" :tpl="constantCollection.workflowFormList"
+          v-if="!loading" ref="processFlow" :data="editItem.workflowConfig" :user="constantObj.userList"
+          :group="constantObj.groupList"
           :mode="editItem.mode">
-        </process-flow>
+        </process-flow>`
       </div>
 
       <!-- 页面loading 效果 -->
@@ -70,8 +70,7 @@
       </v-overlay>
 
       <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
-      <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%"
-                           class="elevation-24">
+      <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
         <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%"
                 height="100%"></iframe>
 
@@ -96,7 +95,6 @@
 
 {% block vueScript %}
 {% include 'component/flow/processFlow.html' %}
-{% include 'component/flow/editFlow.html' %}
 {% include 'component/flow/editLine.html' %}
 {% include 'component/flow/editNode.html' %}
 
@@ -116,7 +114,7 @@ new Vue({
         v => !!v || '必填',
       ],
     },
-    constantCollection: {
+    constantObj: {
       userList: [],
       groupList: [],
       workflowFormList: [],
@@ -177,9 +175,9 @@ new Vue({
 
 
     buildWorkflowFormList(val) {
-      this.constantCollection.workflowFormList = [];
+      this.constantObj.workflowFormList = [];
       for (const item of val) {
-        this.constantCollection.workflowFormList.push({
+        this.constantObj.workflowFormList.push({
           text: item.component.outline,
           value: item.id
         })
@@ -191,7 +189,7 @@ new Vue({
         if (!config.formId) return;
         const formId = []
         for (const item of config.formId) {
-          if (!this.constantCollection.workflowFormList.find(e => e.value === item)) {
+          if (!this.constantObj.workflowFormList.some(e => e.value === item)) {
             formId.push(item)
           }
         }
@@ -213,7 +211,7 @@ new Vue({
           }
         }
       })).data.appData.resultData;
-      this.constantCollection.userList = rows.map(e => {
+      this.constantObj.userList = rows.map(e => {
         return {text: e.username, value: e.userId, userId: e.userId}
       })
     },
@@ -231,7 +229,7 @@ new Vue({
           }
         }
       })).data.appData.resultData;
-      this.constantCollection.groupList = rows.map(e => {
+      this.constantObj.groupList = rows.map(e => {
         return {text: e.groupName, value: e.groupId}
       });
     },
@@ -297,7 +295,7 @@ new Vue({
       workflowConfig.nodeList.forEach(node => {
         if (node.type === 'userTask') {
           node.assignValue = node.assignValue || [];
-          node.assignValue = node.assignValue.filter(userId => this.constantCollection.userList.findIndex(u => u.userId === userId) > -1);
+          node.assignValue = node.assignValue.filter(userId => this.constantObj.userList.findIndex(u => u.userId === userId) > -1);
           node.origin.properties.assignValue = node.assignValue;
         }
       });

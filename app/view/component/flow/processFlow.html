@@ -15,10 +15,10 @@
           <v-icon>mdi-application-edit-outline</v-icon>
           <span style="transform: translateY(2px); display: inline-block; ">{{editType == 'node' ? '节点' : '连线'}}属性</span>
         </div>
-          <div class="flow-edit-content">
-            <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="lf" :user="user" :group="group" :tpl="tpl" :mode="mode"></edit-node>
-            <edit-line ref="lineForm" v-if="editType == 'line'" :lf="lf" :mode="mode"></edit-line>
-          </div>
+        <div class="flow-edit-content">
+          <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="logicFlow" :user="user" :group="group" :mode="mode"></edit-node>
+          <edit-line ref="lineForm" v-if="editType == 'line'" :lf="logicFlow" :mode="mode"></edit-line>
+        </div>
       </template>
       <template v-else>
         <div class="mb-3">
@@ -44,540 +44,539 @@
 <script src="/<$ ctx.app.config.appId $>/public/logicflow/extension/lib/Popup.js"></script>
 
 <script type="module">
-  Vue.component("process-flow", {
-    template: '#process-flow',
-    vuetify: new Vuetify(),
-    name: 'process-flow',
-    props: {
-      data: {
-        type: Object,
-        default: () => {
-          return {
-            nodeList: [],
-            lineList: []
-          }
+Vue.component("process-flow", {
+  template: '#process-flow',
+  vuetify: new Vuetify(),
+  name: 'process-flow',
+  props: {
+    data: {
+      type: Object,
+      default: () => {
+        return {
+          nodeList: [],
+          lineList: []
         }
-      },
-      user: {
-        type: Array,
-        default: () => {
-          return []
-        }
-      },
-      group: {
-        type: Array,
-        default: () => {
-          return []
-        }
-      },
-      tpl: {
-        type: Array,
-        default: () => {
-          return []
-        }
-      },
-      currentNodeId: {
-        type: String,
-        default: ''
-      },
-      readonly: {
-        type: Boolean,
-        default: false
-      },
-      mode: {
-        type: String,
-        default: 'serial'
       }
     },
-    data: () => {
-      return {
-        menuList: [
-          { name: '起点', type: 'start', icon: 'el-icon-help' },
-          { name: '终点', type: 'end', icon: 'el-icon-s-help' },
-          { name: '审批节点', type: 'userTask', icon: 'el-icon-user' },
-          { name: '处理节点', type: 'receiveTask', icon: 'el-icon-s-tools' },
-        ],
-        lf: null, // logicflow实例
-        // 是否加载完毕
-        loadEasyFlowFinish: false,
-        // 数据
-        editType: 'flow', //编辑的类型
-        lineTypeList: [
-          {text: '同意', value: 'agree'},
-          {text: '拒绝', value: 'deny'},
-        ]
-      };
-    },
-    watch: {
-      mode() {
-        this.lf.clearData();
+    user: {
+      type: Array,
+      default: () => {
+        return []
       }
     },
-    mounted() {
-      this.init();
+    group: {
+      type: Array,
+      default: () => {
+        return []
+      }
     },
-    methods: {
-      init() {
-        this.initLFInstance();
-        this.initLFCustomType();
-        this.initLFControl();
-        this.initLFMenu();
-        this.initLFEvent();
-        this.initLFData();
-      },
+    currentNodeId: {
+      type: String,
+      default: ''
+    },
+    readonly: {
+      type: Boolean,
+      default: false
+    },
+    mode: {
+      type: String,
+      default: 'serial'
+    }
+  },
+  data: () => {
+    return {
+      menuList: [
+        {name: '起点', type: 'start', icon: 'el-icon-help'},
+        {name: '终点', type: 'end', icon: 'el-icon-s-help'},
+        {name: '审批节点', type: 'userTask', icon: 'el-icon-user'},
+        {name: '处理节点', type: 'receiveTask', icon: 'el-icon-s-tools'},
+      ],
+      logicFlow: null, // logicflow实例
+      // 是否加载完毕
+      loadEasyFlowFinish: false,
+      // 数据
+      editType: 'flow', //编辑的类型
+      lineTypeList: [
+        {text: '同意', value: 'agree'},
+        {text: '拒绝', value: 'deny'},
+      ]
+    };
+  },
+  watch: {
+    mode() {
+      this.logicFlow.clearData();
+    }
+  },
+  mounted() {
+    this.init();
+  },
+  methods: {
+    init() {
+      this.initLogicFlowInstance();
+      this.initLogicFlowCustomType();
+      this.initLogicFlowControl();
+      this.initLogicFlowMenu();
+      this.initLogicFlowEvent();
+      this.initLogicFlowData();
+    },
 
-      /**
-       *  初始化logicFlow实例
-       */
-      initLFInstance() {
-        this.lf = new LogicFlow({
-          container: document.querySelector('#flowContent'),
-          grid: true,
-          style: {
-            rect: {
-              fill: "#fbf4dc",
-              stroke: "#cecece",
-              className: "node-item"
-            },
-            nodeText: {
-            },
-            polyline: {
-              stroke: '#409eff'
-            },
-            edgeText: {
-              background: {
-                fill: "white"
-              },
-              color: '#409eff'
-            }
+    /**
+     *  初始化logicFlow实例
+     */
+    initLogicFlowInstance() {
+      this.logicFlow = new LogicFlow({
+        container: document.querySelector('#flowContent'),
+        grid: true,
+        style: {
+          rect: {
+            fill: "#fbf4dc",
+            stroke: "#cecece",
+            className: "node-item"
           },
-          textEdit: false,
-          // edgeTextDraggable: true,
-          stopScrollGraph: true,
-          edgeType: 'polyline',
-          plugins: [MiniMap, Menu, SelectionSelect, Control, Popup],
-          isSilentMode: this.readonly
-
-        });
-      },
-
-      /**
-       *  注册自定义节点
-       */
-      initLFCustomType() {
-        let _this = this
-        class CustomNodeView extends RectNode {}
-        class CustomNodeModel extends RectNodeModel {
-          initNodeData(data) {
-            super.initNodeData(data);
-            this.width = 100;
-            this.height = 40;
-            this.radius = 5;
+          nodeText: {},
+          polyline: {
+            stroke: '#409eff'
+          },
+          edgeText: {
+            background: {
+              fill: "white"
+            },
+            color: '#409eff'
           }
-          getNodeStyle() {
-            const style = super.getNodeStyle();
-            const properties = this.properties;
-            if (_this.currentNodeId === this.id) {
-              style.fill = "#4caf50";
-            } else {
-              const rawNode = _this.data.nodeList.find(o => o.id === this.id)
-              if (rawNode && rawNode.inPath) {
-                style.fill = "#d4ffd6";
-              }
+        },
+        textEdit: false,
+        // edgeTextDraggable: true,
+        stopScrollGraph: true,
+        edgeType: 'polyline',
+        plugins: [MiniMap, Menu, SelectionSelect, Control, Popup],
+        isSilentMode: this.readonly
+
+      });
+    },
+
+    /**
+     *  注册自定义节点
+     */
+    initLogicFlowCustomType() {
+      let _this = this
+
+      class CustomNodeView extends RectNode {
+      }
+
+      class CustomNodeModel extends RectNodeModel {
+        initNodeData(data) {
+          super.initNodeData(data);
+          this.width = 100;
+          this.height = 40;
+          this.radius = 5;
+        }
+
+        getNodeStyle() {
+          const style = super.getNodeStyle();
+          const properties = this.properties;
+          if (_this.currentNodeId === this.id) {
+            style.fill = "#4caf50";
+          } else {
+            const rawNode = _this.data.nodeList.find(o => o.id === this.id)
+            if (rawNode && rawNode.inPath) {
+              style.fill = "#d4ffd6";
             }
-            return style;
           }
-          getTextStyle() {
-            const style = super.getTextStyle();
-            const properties = this.properties;
-            if (_this.currentNodeId === this.id) {
-              style.color = "white";
-            } 
-            return style;
-          }
+          return style;
         }
-        let CustomNode = {
-          type: "CustomNode",
-          view: CustomNodeView,
-          model: CustomNodeModel
-        }
-        this.lf.register(CustomNode);
-      },
-      
-      /** 
-       * 初始化LogicFlow控制台
-       */
-       initLFControl() {
-        let lf = this.lf;
-        // 删除上一步
-        lf.extension.control.removeItem('undo');
-        // 删除下一步
-        lf.extension.control.removeItem('redo');
-      },
 
-      /** 
-       * 初始化LogicFlow菜单
-       */
-      initLFMenu() {
-        let lf = this.lf;
-        if(this.readonly) {
-          lf.extension.menu.setMenuConfig({
-            nodeMenu: false,
-            edgeMenu: false
-          })
+        getTextStyle() {
+          const style = super.getTextStyle();
+          if (_this.currentNodeId === this.id) {
+            style.color = "white";
+          }
+          return style;
+        }
+      }
+
+      let CustomNode = {
+        type: "CustomNode",
+        view: CustomNodeView,
+        model: CustomNodeModel
+      }
+      this.logicFlow.register(CustomNode);
+    },
+
+    /**
+     * 初始化LogicFlow控制台
+     */
+    initLogicFlowControl() {
+      // 删除上一步
+      this.logicFlow.extension.control.removeItem('undo');
+      // 删除下一步
+      this.logicFlow.extension.control.removeItem('redo');
+    },
+
+    /**
+     * 初始化LogicFlow菜单
+     */
+    initLogicFlowMenu() {
+      let logicFlow = this.logicFlow;
+      if (this.readonly) {
+        logicFlow.extension.menu.setMenuConfig({
+          nodeMenu: false,
+          edgeMenu: false
+        })
+        return
+      }
+      logicFlow.extension.menu.setMenuConfig({
+        nodeMenu: [
+          {
+            text: '删除节点',
+            callback(node) {
+              logicFlow.deleteNode(node.id);
+            }
+          }
+        ],
+        edgeMenu: [
+          {
+            text: '删除连线',
+            callback(edge) {
+              logicFlow.deleteEdge(edge.id);
+            }
+          }
+        ]
+      });
+    },
+
+    /**
+     *  绑定logicFlow事件
+     */
+    initLogicFlowEvent() {
+      if (this.readonly) {
+        return
+      }
+      let logicFlow = this.logicFlow;
+      // 添加节点
+      logicFlow.on('node:add', (e) => {
+        const {data} = e;
+        this.data.nodeList.push(data);
+        this.addNode(data);
+        this.editNode(data);
+      });
+      // 选中节点
+      logicFlow.on("node:click", (e) => {
+        const {data} = e;
+        this.editNode(data);
+      });
+      // 添加边
+      logicFlow.on("edge:add", (e) => {
+        const {data} = e;
+        const {id, sourceNodeId, targetNodeId, properties} = data;
+        // 并行模式不允许多条流程线
+        if (this.mode == 'parallel') {
+          const sourceNodeEdges = logicFlow.getNodeEdges(sourceNodeId);
+          const targetNodeEdges = logicFlow.getNodeEdges(targetNodeId);
+          if (
+            sourceNodeEdges.filter(edge => edge.sourceNodeId == sourceNodeId).length > 1 ||
+            sourceNodeEdges.filter(edge => edge.targetNodeId == sourceNodeId).length > 1 ||
+            targetNodeEdges.filter(edge => edge.sourceNodeId == targetNodeId).length > 1 ||
+            targetNodeEdges.filter(edge => edge.targetNodeId == targetNodeId).length > 1
+          ) {
+            window.vtoast.fail("并行模式不允许多条流程线");
+            logicFlow.deleteEdge(id);
+            return;
+          }
+        }
+        let line = {
+          from: sourceNodeId,
+          to: targetNodeId,
+          label: '连线文本',
+          type: '同意',
+          id: this.getUUID('line'),
+          Remark: '',
+          endpoint: 'Dot' // 线的类型
+        }
+        this.data.lineList.push(line);
+        logicFlow.updateText(id, line.label);
+        logicFlow.setProperties(id, line);
+        this.editLine(logicFlow.getEdgeDataById(id));
+        logicFlow.changeEdgeId(id, line.id);
+      });
+      // 选中边
+      logicFlow.on("edge:click", (e) => {
+        const {data} = e;
+        if (this.readonly) {
+          // 只读模式禁止切换
           return
         }
-        lf.extension.menu.setMenuConfig({
-          nodeMenu: [
-            {
-              text: '删除节点',
-              callback(node) {
-                lf.deleteNode(node.id);
-              }
-            }
-          ],
-          edgeMenu: [
-            {
-              text: '删除连线',
-              callback(edge) {
-                lf.deleteEdge(edge.id);
-              }
-            }
-          ]
-        });
-      },
+        this.editLine(data);
+      });
+      // 双击节点
+      logicFlow.on("node:dbclick", (e) => {
+        const {id} = e.data;
+        logicFlow.deleteNode(id);
+      });
 
-      /**
-       *  绑定logicFlow事件
-       */
-      initLFEvent() {
-        if(this.readonly) {
-          return
-        }
-        let lf = this.lf;
-        // 添加节点
-        lf.on('node:add', (e) => {
-          const { data } = e;
-          this.data.nodeList.push(data);
-          this.addNode(data);
-          this.editNode(data);
-        });
-        // 选中节点
-        lf.on("node:click", (e) => {
-          const { data } = e;
-          this.editNode(data);
-        });
-        // 添加边
-        lf.on("edge:add", (e) => {
-          const { data } = e;
-          const { id, sourceNodeId, targetNodeId, properties } = data;
-          // 并行模式不允许多条流程线
-          if(this.mode == 'parallel') {
-            const sourceNodeEdges = lf.getNodeEdges(sourceNodeId);
-            const targetNodeEdges = lf.getNodeEdges(targetNodeId);
-            if (
-              sourceNodeEdges.filter(edge => edge.sourceNodeId == sourceNodeId).length > 1 ||
-              sourceNodeEdges.filter(edge => edge.targetNodeId == sourceNodeId).length > 1 ||
-              targetNodeEdges.filter(edge => edge.sourceNodeId == targetNodeId).length > 1 ||
-              targetNodeEdges.filter(edge => edge.targetNodeId == targetNodeId).length > 1
-            ) {
-              window.vtoast.fail("并行模式不允许多条流程线");
-              lf.deleteEdge(id);
-              return;
-            }
-          }
-          let line = {
-            from: sourceNodeId,
-            to: targetNodeId,
-            label: '连线文本',
-            type: '同意',
-            id: this.getUUID('line'),
-            Remark: '',
-            endpoint: 'Dot' // 线的类型
-          }
-          this.data.lineList.push(line);
-          lf.updateText(id, line.label);
-          lf.setProperties(id, line);
-          this.editLine(lf.getEdgeDataById(id)); 
-          lf.changeEdgeId(id, line.id);
-        });
-        // 选中边
-        lf.on("edge:click", (e) => {
-          const { data } = e;
-          if (this.readonly) {
-            // 只读模式禁止切换
-            return
-          }
-          this.editLine(data);
-        });
-        // 双击节点
-        lf.on("node:dbclick", (e) => {
-          const { id } = e.data;
-          lf.deleteNode(id);
-        });
+      // 双击边
+      logicFlow.on("edge:dbclick", (e) => {
+        const {id} = e.data;
+        logicFlow.deleteEdge(id);
+      });
+      // // 历史变化
+      // logicFlow.on("history:change", (e) => {
+      //   console.log("history:change", e);
+      // });
+      // // 进入边
+      // logicFlow.on("edge:mouseenter", (e) => {
+      //   const { id } = e.data;
+      //   logicFlow.openEdgeAnimation(id)
+      // });
+      // // 离开边
+      // logicFlow.on("edge:mouseleave", (e) => {
+      //   const { id } = e.data;
+      //   logicFlow.closeEdgeAnimation(id)
+      // });
+    },
 
-        // 双击边
-        lf.on("edge:dbclick", (e) => {
-          const { id } = e.data;
-          lf.deleteEdge(id);
-        });
-        // // 历史变化
-        // lf.on("history:change", (e) => {
-        //   console.log("history:change", e);
-        // });
-        // // 进入边
-        // lf.on("edge:mouseenter", (e) => {
-        //   const { id } = e.data;
-        //   lf.openEdgeAnimation(id)
-        // });
-        // // 离开边
-        // lf.on("edge:mouseleave", (e) => {
-        //   const { id } = e.data;
-        //   lf.closeEdgeAnimation(id)
-        // });
-      },
+    /**
+     *  初始化LogicFlow数据
+     */
+    initLogicFlowData() {
+      // this.logicFlow.render({ "nodes":[], "edges":[] })
+      // this.logicFlow.render({"nodes":[{"id":"3","type":"CustomNode","x":380,"y":140,"properties":{},"text":{"x":380,"y":140,"value":"开始"}},{"id":"1","type":"CustomNode","x":380,"y":280,"properties":{},"text":{"x":380,"y":280,"value":"经理"}},{"id":"2","type":"CustomNode","x":380,"y":420,"properties":{},"text":{"x":380,"y":420,"value":"结束"}}],"edges":[{"id":"a2ed12a0-7548-4725-a8e6-290d565d66da","type":"polyline","sourceNodeId":"3","targetNodeId":"1","startPoint":{"x":380,"y":160},"endPoint":{"x":380,"y":260},"properties":{},"text":{"x":380,"y":190,"value":"开始"},"pointsList":[{"x":380,"y":160},{"x":380,"y":260}]},{"id":"135f3e3a-d8c5-4329-83d6-833512175ea4","type":"polyline","sourceNodeId":"2","targetNodeId":"1","startPoint":{"x":330,"y":420},"endPoint":{"x":330,"y":280},"properties":{},"text":{"x":265,"y":350,"value":"经理审核拒绝"},"pointsList":[{"x":330,"y":420},{"x":265,"y":420},{"x":265,"y":280},{"x":330,"y":280}]},{"id":"c4dbefa6-1ce0-4cef-babe-444329affea7","type":"polyline","sourceNodeId":"1","targetNodeId":"2","startPoint":{"x":430,"y":280},"endPoint":{"x":430,"y":420},"properties":{},"text":{"x":495,"y":350,"value":"经理审核通过"},"pointsList":[{"x":430,"y":280},{"x":495,"y":280},{"x":495,"y":420},{"x":430,"y":420}]},{"id":"6fb6a3b1-a8fc-4d22-b9f0-5692208118d5","type":"polyline","sourceNodeId":"1","targetNodeId":"2","startPoint":{"x":348,"y":300},"endPoint":{"x":348,"y":400},"properties":{},"text":{"x":348,"y":350,"value":"同意-连线文本"},"pointsList":[{"x":348,"y":300},{"x":348,"y":400}]}]})
+      // this.logicFlow.render({"nodes":[{"id":"start-c31f75a55c48","type":"CustomNode","x":100,"y":80,"properties":{"id":"start-c31f75a55c48","label":"起点","type":"start","assignType":"person","assignValue":["admin"],"lineTypeList":"同意"},"text":{"x":100,"y":80,"value":"起点"}},{"id":"end-72e945407d48","type":"CustomNode","x":540,"y":80,"properties":{"id":"end-72e945407d48","label":"终点","type":"end","assignType":"person","assignValue":["admin"],"lineTypeList":""},"text":{"x":540,"y":80,"value":"终点"}},{"id":"userTask-fa96d9f1f548","type":"CustomNode","x":320,"y":80,"properties":{"id":"userTask-fa96d9f1f548","label":"审批节点","type":"userTask","assignType":"person","assignValue":["admin"],"lineTypeList":"同意,拒绝"},"text":{"x":320,"y":80,"value":"审批节点"}}],"edges":[{"id":"line-8c746156fb48","type":"polyline","sourceNodeId":"start-c31f75a55c48","targetNodeId":"userTask-fa96d9f1f548","startPoint":{"x":150,"y":80},"endPoint":{"x":270,"y":80},"properties":{"from":"start-c31f75a55c48","to":"userTask-fa96d9f1f548","label":"同意-连线文本3","type":"同意","id":"line-8c746156fb48","Remark":"","endpoint":"Dot"},"text":{"x":210,"y":80,"value":"同意-连线文本3"},"pointsList":[{"x":150,"y":80},{"x":270,"y":80}]},{"id":"line-088a246e9248","type":"polyline","sourceNodeId":"userTask-fa96d9f1f548","targetNodeId":"end-72e945407d48","startPoint":{"x":370,"y":80},"endPoint":{"x":490,"y":80},"properties":{"from":"userTask-fa96d9f1f548","to":"end-72e945407d48","label":"同意-连线文本","type":"同意","id":"line-088a246e9248","Remark":"","endpoint":"Dot"},"text":{"x":430,"y":80,"value":"同意-连线文本"},"pointsList":[{"x":370,"y":80},{"x":490,"y":80}]}]});
+      this.logicFlow.render(this.parseBusinessDataToLfData(this.data));
+    },
 
-      /**
-       *  初始化LogicFlow数据
-       */
-      initLFData() {
-        // this.lf.render({ "nodes":[], "edges":[] })
-        // this.lf.render({"nodes":[{"id":"3","type":"CustomNode","x":380,"y":140,"properties":{},"text":{"x":380,"y":140,"value":"开始"}},{"id":"1","type":"CustomNode","x":380,"y":280,"properties":{},"text":{"x":380,"y":280,"value":"经理"}},{"id":"2","type":"CustomNode","x":380,"y":420,"properties":{},"text":{"x":380,"y":420,"value":"结束"}}],"edges":[{"id":"a2ed12a0-7548-4725-a8e6-290d565d66da","type":"polyline","sourceNodeId":"3","targetNodeId":"1","startPoint":{"x":380,"y":160},"endPoint":{"x":380,"y":260},"properties":{},"text":{"x":380,"y":190,"value":"开始"},"pointsList":[{"x":380,"y":160},{"x":380,"y":260}]},{"id":"135f3e3a-d8c5-4329-83d6-833512175ea4","type":"polyline","sourceNodeId":"2","targetNodeId":"1","startPoint":{"x":330,"y":420},"endPoint":{"x":330,"y":280},"properties":{},"text":{"x":265,"y":350,"value":"经理审核拒绝"},"pointsList":[{"x":330,"y":420},{"x":265,"y":420},{"x":265,"y":280},{"x":330,"y":280}]},{"id":"c4dbefa6-1ce0-4cef-babe-444329affea7","type":"polyline","sourceNodeId":"1","targetNodeId":"2","startPoint":{"x":430,"y":280},"endPoint":{"x":430,"y":420},"properties":{},"text":{"x":495,"y":350,"value":"经理审核通过"},"pointsList":[{"x":430,"y":280},{"x":495,"y":280},{"x":495,"y":420},{"x":430,"y":420}]},{"id":"6fb6a3b1-a8fc-4d22-b9f0-5692208118d5","type":"polyline","sourceNodeId":"1","targetNodeId":"2","startPoint":{"x":348,"y":300},"endPoint":{"x":348,"y":400},"properties":{},"text":{"x":348,"y":350,"value":"同意-连线文本"},"pointsList":[{"x":348,"y":300},{"x":348,"y":400}]}]})
-        // this.lf.render({"nodes":[{"id":"start-c31f75a55c48","type":"CustomNode","x":100,"y":80,"properties":{"id":"start-c31f75a55c48","label":"起点","type":"start","assignType":"person","assignValue":["admin"],"lineTypeList":"同意"},"text":{"x":100,"y":80,"value":"起点"}},{"id":"end-72e945407d48","type":"CustomNode","x":540,"y":80,"properties":{"id":"end-72e945407d48","label":"终点","type":"end","assignType":"person","assignValue":["admin"],"lineTypeList":""},"text":{"x":540,"y":80,"value":"终点"}},{"id":"userTask-fa96d9f1f548","type":"CustomNode","x":320,"y":80,"properties":{"id":"userTask-fa96d9f1f548","label":"审批节点","type":"userTask","assignType":"person","assignValue":["admin"],"lineTypeList":"同意,拒绝"},"text":{"x":320,"y":80,"value":"审批节点"}}],"edges":[{"id":"line-8c746156fb48","type":"polyline","sourceNodeId":"start-c31f75a55c48","targetNodeId":"userTask-fa96d9f1f548","startPoint":{"x":150,"y":80},"endPoint":{"x":270,"y":80},"properties":{"from":"start-c31f75a55c48","to":"userTask-fa96d9f1f548","label":"同意-连线文本3","type":"同意","id":"line-8c746156fb48","Remark":"","endpoint":"Dot"},"text":{"x":210,"y":80,"value":"同意-连线文本3"},"pointsList":[{"x":150,"y":80},{"x":270,"y":80}]},{"id":"line-088a246e9248","type":"polyline","sourceNodeId":"userTask-fa96d9f1f548","targetNodeId":"end-72e945407d48","startPoint":{"x":370,"y":80},"endPoint":{"x":490,"y":80},"properties":{"from":"userTask-fa96d9f1f548","to":"end-72e945407d48","label":"同意-连线文本","type":"同意","id":"line-088a246e9248","Remark":"","endpoint":"Dot"},"text":{"x":430,"y":80,"value":"同意-连线文本"},"pointsList":[{"x":370,"y":80},{"x":490,"y":80}]}]});
-        this.lf.render(this.parseBusinessDataToLfData(this.data));
-      },
+    /**
+     * 获取UUID
+     * @returns {string}
+     */
+    getUUID(prefix) {
+      var s = [];
+      var hexDigits = "0123456789abcdef";
+      for (var i = 0; i < 10; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+      }
+      s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+      s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+      var uuid = s.join("");
+      return prefix + '-' + uuid;
+    },
 
-      /**
-       * 获取UUID
-       * @returns {string}
-       */
-      getUUID(prefix) {
-        var s = [];
-        var hexDigits = "0123456789abcdef";
-        for (var i = 0; i < 10; i++) {
-          s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-        var uuid = s.join("");
-        return prefix + '-' + uuid;
-      },
-
-      /**
-       * 拖拽生成节点
-       * @param 拖拽项
-       */
-      startDrag(item) {
-        let id = this.getUUID(item.type);
-        let node = {
-          type: 'CustomNode',
+    /**
+     * 拖拽生成节点
+     * @param 拖拽项
+     */
+    startDrag(item) {
+      let id = this.getUUID(item.type);
+      let node = {
+        type: 'CustomNode',
+        id,
+        text: item.name,
+        properties: {
           id,
-          text: item.name,
-          properties: {
-            id,
-            label: item.name,
-            type: item.type,
-            assignType: 'person',
-            assignValue: ['<$ ctx.userInfo.userId $>'],
-            lineTypeList: item.type === 'start' ?  '同意' : item.type === 'end' ? '' : '同意,拒绝',
+          label: item.name,
+          type: item.type,
+          assignType: 'person',
+          assignValue: ['<$ ctx.userInfo.userId $>'],
+          lineTypeList: item.type === 'start' ? '同意' : item.type === 'end' ? '' : '同意,拒绝',
+        }
+      }
+      this.logicFlow.dnd.startDrag(node);
+    },
+
+    /**
+     *  添加新的节点
+     * @param node
+     */
+    addNode(node) {
+      this.data.nodeList.push(node);
+    },
+
+    /**
+     * 编辑节点
+     * @param node
+     */
+    editNode(node) {
+      if (this.readonly) {
+        return
+      }
+      this.editType = 'node';
+      // this.currentNodeId = node.id;
+      this.$nextTick(function () {
+        this.$refs.nodeForm.init(node);
+      })
+    },
+
+    /**
+     * 编辑连线
+     * @param line
+     */
+    editLine(line) {
+      if (this.readonly) {
+        return
+      }
+      const {id, properties} = line;
+      let fromNodeData = this.logicFlow.getNodeDataById(line.sourceNodeId).properties;
+      const lineTypeList = fromNodeData.lineTypeList ? fromNodeData.lineTypeList.split(',') : [];
+      this.editType = 'line';
+      this.currentLineId = line.id;
+      this.$nextTick(function () {
+        this.$refs.lineForm.init(line, lineTypeList);
+      })
+    },
+
+    /**
+     * 获取流程图数据（组件外使用）
+     * @returns {{nodeList: Array, lineList: Array}}
+     */
+    getData() {
+      return this.parseLFDataToBusinessData();
+    },
+
+    /**
+     * 将流程设计器数据转换为业务数据
+     */
+    parseLFDataToBusinessData() {
+      const lfData = this.getOrderedGraphData();
+      return {
+        nodeList: lfData.nodes.map(node => ({
+          ...node.properties,
+          origin: node
+        })),
+        lineList: lfData.edges.map(line => ({
+          ...line.properties,
+          origin: line
+        }))
+      }
+    },
+
+    /**
+     * 获取排序后的GraphData
+     * @param nodeList
+     */
+    getOrderedGraphData() {
+      const lfData = this.logicFlow.getGraphData();
+      const orderedNodes = lfData.edges.reduce((acc, edge) => {
+        const sourceNode = lfData.nodes.find(node => node.id === edge.sourceNodeId);
+        const targetNode = lfData.nodes.find(node => node.id === edge.targetNodeId);
+        if (sourceNode && targetNode) {
+          const sourceIndex = acc.findIndex(node => node.id === sourceNode.id);
+          const targetIndex = acc.findIndex(node => node.id === targetNode.id);
+          if (sourceIndex > targetIndex) {
+            acc.splice(targetIndex, 0, sourceNode);
+            acc.splice(sourceIndex + 1, 1);
           }
         }
-        this.lf.dnd.startDrag(node);
-      },
+        return acc;
+      }, lfData.nodes);
+      return {
+        nodes: orderedNodes,
+        edges: lfData.edges
+      }
+    },
 
-      /**
-       *  添加新的节点
-       * @param node
-       */
-      addNode(node) {
-        this.data.nodeList.push(node);
-      },
-
-      /**
-       * 编辑节点
-       * @param node
-       */
-      editNode(node) {
-        if (this.readonly) {
-          return
-        }
-        this.editType = 'node';
-        // this.currentNodeId = node.id;
-        this.$nextTick(function () {
-          this.$refs.nodeForm.init(node);
-        })
-      },
-
-      /**
-       * 编辑连线
-       * @param line
-       */
-      editLine(line) {
-        if (this.readonly) {
-          return
-        }
-        const { id, properties } = line;
-        let fromNodeData = this.lf.getNodeDataById(line.sourceNodeId).properties;
-        const lineTypeList = fromNodeData.lineTypeList? fromNodeData.lineTypeList.split(','): [];
-        this.editType = 'line';
-        this.currentLineId = line.id;
-        this.$nextTick(function () {
-          this.$refs.lineForm.init(line, lineTypeList);
-        })
-      },
-
-      /**
-       * 获取流程图数据（组件外使用）
-       * @returns {{nodeList: Array, lineList: Array}}
-       */
-      getData() {
-        return this.parseLFDataToBusinessData();
-      },
-
-      /**
-       * 将流程设计器数据转换为业务数据
-       */
-      parseLFDataToBusinessData() {
-        const lfData = this.getOrderedGraphData();
-        return {
-          nodeList: lfData.nodes.map(node => ({
-            ...node.properties,
-            origin: node
-          })),
-          lineList: lfData.edges.map(line => ({
-            ...line.properties,
-            origin: line
-          }))
-        }
-      },
-
-      /**
-       * 获取排序后的GraphData
-       * @param nodeList
-       */
-      getOrderedGraphData() {
-        const lfData = this.lf.getGraphData();
-        const orderedNodes = lfData.edges.reduce((acc, edge) => {
-          const sourceNode = lfData.nodes.find(node => node.id === edge.sourceNodeId);
-          const targetNode = lfData.nodes.find(node => node.id === edge.targetNodeId);
-          if (sourceNode && targetNode) {
-            const sourceIndex = acc.findIndex(node => node.id === sourceNode.id);
-            const targetIndex = acc.findIndex(node => node.id === targetNode.id);
-            if (sourceIndex > targetIndex) {
-              acc.splice(targetIndex, 0, sourceNode);
-              acc.splice(sourceIndex + 1, 1);
-            }
-          }
-          return acc;
-        }, lfData.nodes);
-        return {
-          nodes: orderedNodes,
-          edges: lfData.edges
-        }
-      },
-
-      /**
-       * 将业务数据转换为流程设计器数据
-       */
-       parseBusinessDataToLfData() {
-        return {
-          nodes: this.data.nodeList.map(node => node.origin).filter(node => node != null),
-          edges: this.data.lineList.map(line => line.origin).filter(line => line != null)
-        }
+    /**
+     * 将业务数据转换为流程设计器数据
+     */
+    parseBusinessDataToLfData() {
+      return {
+        nodes: this.data.nodeList.map(node => node.origin).filter(node => node != null),
+        edges: this.data.lineList.map(line => line.origin).filter(line => line != null)
       }
     }
-  })
+  }
+})
 </script>
 
 <style>
-  .process-flow-container {
-    display: flex;
-    width: 100%;
-    /* height: calc(100vh - 260px); */
-    height: 500px;
-    color: #606266;
-    margin-bottom: 20px;
-  }
-  .lf-element-text {
-    cursor: move;
-  }
+.process-flow-container {
+  display: flex;
+  width: 100%;
+  /* height: calc(100vh - 260px); */
+  height: 500px;
+  color: #606266;
+  margin-bottom: 20px;
+}
 
-  .flow-detail {
-    flex: 1;
-    border: 1px solid #EBEEF5;
-    padding: 12px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
-    word-break: break-all;
-    border-radius: 4px;
-    position: relative;
-  }
+.lf-element-text {
+  cursor: move;
+}
 
-  #flowContent {
-    width: 100%;
-    height: 100%;
-    position: relative;
-		background-image: url("/<$ ctx.app.config.appId $>/public/images/point.png");
-    background-repeat: repeat;
-    overflow: hidden;
-    cursor: grab;
-  }
+.flow-detail {
+  flex: 1;
+  border: 1px solid #EBEEF5;
+  padding: 12px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+  word-break: break-all;
+  border-radius: 4px;
+  position: relative;
+}
 
-  .item {
-    position: absolute;
-    width: 60px;
-    height: 90px;
-    border: 1px solid #007AFF;
-  }
+#flowContent {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-image: url("/<$ ctx.app.config.appId $>/public/images/point.png");
+  background-repeat: repeat;
+  overflow: hidden;
+  cursor: grab;
+}
 
-  .flow-menu {
-    width: 100px;
-    border: 1px solid #EBEEF5;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
-    word-break: break-all;
-    border-radius: 4px;
-  }
+.item {
+  position: absolute;
+  width: 60px;
+  height: 90px;
+  border: 1px solid #007AFF;
+}
 
-  .menu-item {
-    text-align: center;
-    margin-bottom: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #606266;
-    background: #f5f8fa;
-    padding: 5px 0;
-    border-radius: 5px;
-  }
-  .menu-item:hover {
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
+.flow-menu {
+  width: 100px;
+  border: 1px solid #EBEEF5;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+  word-break: break-all;
+  border-radius: 4px;
+}
 
-  .menu-item>i {
-    font-size: 30px;
-  }
+.menu-item {
+  text-align: center;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #606266;
+  background: #f5f8fa;
+  padding: 5px 0;
+  border-radius: 5px;
+}
 
-  .flow-edit {
-    width: 300px;
-    padding: 0 10px;
-    max-height: 100%;
-    min-height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
+.menu-item:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
-  .flow-edit-content {
-    min-height: 100%;
-    color: #606266;
-    line-height: 1.4;
-    text-align: justify;
-    font-size: 14px;
-    padding: 12px;
-    word-break: break-all;
-    border-radius: 4px;
-  }
+.menu-item > i {
+  font-size: 30px;
+}
 
-  .lf-control-item i{
-    width: 10px;
-    height: 10px;
-  }
+.flow-edit {
+  width: 300px;
+  padding: 0 10px;
+  max-height: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.flow-edit-content {
+  min-height: 100%;
+  color: #606266;
+  line-height: 1.4;
+  text-align: justify;
+  font-size: 14px;
+  padding: 12px;
+  word-break: break-all;
+  border-radius: 4px;
+}
+
+.lf-control-item i {
+  width: 10px;
+  height: 10px;
+}
 
 </style>

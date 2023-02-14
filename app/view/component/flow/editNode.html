@@ -142,12 +142,12 @@
           return []
         }
       },
-      tpl: {
-        type: Array,
-        default: () => {
-          return []
-        }
-      },
+      // tpl: {
+      //   type: Array,
+      //   default: () => {
+      //     return []
+      //   }
+      // },
       mode: {
         type: String,
         default: 'serial'
@@ -181,9 +181,6 @@
       isMobile() {
         return window.innerWidth < 600;
       },
-      showTask() {
-        return ['userTask', 'receiveTask'].includes(this.node.type);
-      },
       assignType() {
         if (!this.node.assignType) return '请选择指派类型';
         return this.assignTypeList.find(e => e.value === this.node.assignType).text;
@@ -204,17 +201,6 @@
       init(node) {
         this.node = node.properties;
       },
-      getOptionList() {
-        if (!this.node.assignType) {
-          return []
-        }
-        if (!this.node.assignType === 'person') {
-          return this.user
-        }
-        if (!this.node.assignType === 'group') {
-          return this.group
-        }
-      }
     }
   })
 </script>

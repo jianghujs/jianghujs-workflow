@@ -52,6 +52,8 @@ class WorkflowService extends Service {
       tableName: tableEnum.workflow,
       columnName: "workflowId"
     });
+    console.log("cesni")
+
   }
 
   async assignTplData() {
@@ -87,12 +89,12 @@ class WorkflowService extends Service {
     const { actionData } = this.ctx.request.body.appData;
     const { jianghuKnex } = this.app;
     const { formItemList, workflowConfigCustom, workflowId } = actionData;
-    
+
     let workflow = await jianghuKnex(tableEnum.workflow, this.ctx).where({workflowId}).first();
     if(!workflow) {
       throw new BizError(errorInfoEnum.workflow_not_found);
     }
-    
+
     actionData.workflowConfigCustom = workflowConfigCustom;
     actionData.workflowId = workflow.workflowId;
     actionData.taskTitle = workflow.workflowName;
@@ -106,7 +108,7 @@ class WorkflowService extends Service {
   }
   /**
    * 获取节点审批历史
-   * @returns 
+   * @returns
    */
   async getTaskHistory() {
     const { taskId } = this.ctx.request.body.appData.actionData;
