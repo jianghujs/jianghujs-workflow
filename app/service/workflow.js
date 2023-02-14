@@ -1,8 +1,5 @@
 'use strict';
 const Service = require('egg').Service;
-const { tableEnum, articlePublishStatusEnum } = require("../constant/constant");
-const _ = require("lodash");
-const path = require("path");
 
 // TODO: 封装一下
 const dayjs = require("dayjs");
@@ -12,24 +9,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 
 const idGenerateUtil = require("@jianghujs/jianghu/app/common/idGenerateUtil");
-const validateUtil = require("@jianghujs/jianghu/app/common/validateUtil");
 const { BizError, errorInfoEnum } = require("../constant/error");
-const fs = require("fs"),
-    fsPromises = require("fs").promises,
-    unlink = fsPromises.unlink,
-    rename = fsPromises.rename,
-    util = require("util"),
-    exists = util.promisify(fs.exists);
-const actionDataScheme = Object.freeze({
-  deletedArticle: {
-    type: "object",
-    additionalProperties: true,
-    required: ["articleId"],
-    properties: {
-      articleId: { anyOf: [{ type: "string" }, { type: "number" }] },
-    },
-  },
-});
 
 class WorkflowService extends Service {
 
@@ -39,7 +19,7 @@ class WorkflowService extends Service {
     actionData.formId = await idGenerateUtil.idPlus({
       knex: jianghuKnex,
       startValue: 1000,
-      tableName: tableEnum.form,
+      tableName: 'form',
       columnName: "formId"
     });
   }
@@ -49,7 +29,7 @@ class WorkflowService extends Service {
     actionData.workflowId = await idGenerateUtil.idPlus({
       knex: jianghuKnex,
       startValue: 1000,
-      tableName: tableEnum.workflow,
+      tableName: 'workflow',
       columnName: "workflowId"
     });
   }
@@ -60,7 +40,7 @@ class WorkflowService extends Service {
     let { tplId } = actionData;
     const tplIds = tplId ? tplId.split(',') : [];
     if (tplIds.length) {
-      const tplList = await jianghuKnex(tableEnum.form).whereIn('formId', tplIds).select();
+      const tplList = await jianghuKnex('form').whereIn('formId', tplIds).select();
       let formList = [];
       const formData = {};
       for( const item of tplList) {
@@ -88,7 +68,7 @@ class WorkflowService extends Service {
     const { jianghuKnex } = this.app;
     const { formItemList, workflowConfigCustom, workflowId } = actionData;
     
-    let workflow = await jianghuKnex(tableEnum.workflow, this.ctx).where({workflowId}).first();
+    let workflow = await jianghuKnex('workflow', this.ctx).where({workflowId}).first();
     if(!workflow) {
       throw new BizError(errorInfoEnum.workflow_not_found);
     }
@@ -112,9 +92,9 @@ class WorkflowService extends Service {
     const { taskId } = this.ctx.request.body.appData.actionData;
     const { jianghuKnex } = this.app;
 
-    const taskInfo = await jianghuKnex(tableEnum.task, this.ctx).where({taskId}).first();
-    const taskHistoryList = await jianghuKnex(tableEnum.task_history).where({taskId: taskInfo.taskId}).orderBy('id', 'asc').select();
-    // const userList = await jianghuKnex(tableEnum._view01_user).whereIn('userId', taskInfo.taskViewUserList.split(',')).select();
+    const taskInfo = await jianghuKnex('task', this.ctx).where({taskId}).first();
+    const taskHistoryList = await jianghuKnex('task_history').where({taskId: taskInfo.taskId}).orderBy('id', 'asc').select();
+    // const userList = await jianghuKnex('_view01_user').whereIn('userId', taskInfo.taskViewUserList.split(',')).select();
     // taskInfo.workflowConfig = JSON.parse(taskInfo.workflowConfig);
     // return this.ctx.service.task.getTaskHistoryConfigList(taskInfo.workflowConfig, taskHistoryList, userList);
     const lineTypeList = taskInfo.taskLineTypeList;
@@ -127,7 +107,7 @@ class WorkflowService extends Service {
   async appendUsername() {
     const rows = this.ctx.body.appData.resultData.rows;
     const { jianghuKnex } = this.app;
-    const userList = await jianghuKnex(tableEnum._view01_user).whereIn('userId', rows.map(item => item.taskInitUser)).select();
+    const userList = await jianghuKnex('_view01_user').whereIn('userId', rows.map(item => item.taskInitUser)).select();
     rows.forEach(item => {
       const user = userList.find(it => it.userId === item.taskInitUser);
       item.taskInitUsername = user.username;
