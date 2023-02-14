@@ -1,8 +1,6 @@
 'use strict';
 const Service = require('egg').Service;
-const { tableEnum, articlePublishStatusEnum } = require("../constant/constant");
 const _ = require("lodash");
-const path = require("path");
 
 // TODO: 封装一下
 const dayjs = require("dayjs");
@@ -12,24 +10,7 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 
 const idGenerateUtil = require("@jianghujs/jianghu/app/common/idGenerateUtil");
-const validateUtil = require("@jianghujs/jianghu/app/common/validateUtil");
 const { BizError, errorInfoEnum } = require("../constant/error");
-const fs = require("fs"),
-    fsPromises = require("fs").promises,
-    unlink = fsPromises.unlink,
-    rename = fsPromises.rename,
-    util = require("util"),
-    exists = util.promisify(fs.exists);
-const actionDataScheme = Object.freeze({
-  deletedArticle: {
-    type: "object",
-    additionalProperties: true,
-    required: ["articleId"],
-    properties: {
-      articleId: { anyOf: [{ type: "string" }, { type: "number" }] },
-    },
-  },
-});
 
 class TaskService extends Service {
   async upcomingToUserId() {
@@ -62,7 +43,7 @@ class TaskService extends Service {
     const { workflowId, taskTitle, workflowForm,  workflowFormData, workflowConfigCustom } = actionData;
     const { userId, username } = this.ctx.userInfo;
     const taskId = await idGenerateUtil.uuid();
-    const workflow = await jianghuKnex(tableEnum.workflow, this.ctx).where({workflowId}).first();
+    const workflow = await jianghuKnex('workflow', this.ctx).where({workflowId}).first();
     if (!workflow) {
       throw new BizError(errorInfoEnum.workflow_not_found)
       return
@@ -106,7 +87,7 @@ class TaskService extends Service {
       workflowConfig: JSON.stringify(workflowConfig)
     }
     await jianghuKnex.transaction(async trx => {
-      const [id] = await trx(tableEnum.task, this.ctx).insert(startData);
+      const [id] = await trx('task', this.ctx).insert(startData);
       // 并行模式下，生成所有的userTask
       if (mode == 'parallel') {
         await this.generateAllUserTask(id, trx);
@@ -125,7 +106,7 @@ class TaskService extends Service {
    */
   async getGroupUserList(groupId) {
     const { jianghuKnex, config } = this.app;
-    const userList = await jianghuKnex(tableEnum._user_group_role).where({groupId}).select('userId');
+    const userList = await jianghuKnex('_user_group_role').where({groupId}).select('userId');
     return userList.map(e => {
       return e.userId
     });
@@ -147,7 +128,7 @@ class TaskService extends Service {
     const { jianghuKnex, config } = this.app;
     const { userId: careUser, taskId } = actionData;
     const { userId } = this.ctx.userInfo;
-    const taskInfo = await jianghuKnex(tableEnum.task).where({taskId}).first();
+    const taskInfo = await jianghuKnex('task').where({taskId}).first();
     // 转交写入历史
     const history = {
       taskId: taskId,
@@ -157,10 +138,10 @@ class TaskService extends Service {
       historyChooseName: line.label,
       historyCostDuration: 0
     }
-    await jianghuKnex(tableEnum.task_history).insert(history);
+    await jianghuKnex('task_history').insert(history);
     // 修改task处理人
     const taskProcessorList = taskInfo.taskProcessorList.replace(userId, careUser);
-    await jianghuKnex(tableEnum.task).where({taskId}).update({taskProcessorList});
+    await jianghuKnex('task').where({taskId}).update({taskProcessorList});
   }
   /**
    * 工单历史信息
@@ -171,14 +152,14 @@ class TaskService extends Service {
     const { jianghuKnex, config } = this.app;
     const { id } = actionData;
     const { userId } = this.ctx.userInfo;
-    const taskInfo = await jianghuKnex(tableEnum.task).where({id}).first();
+    const taskInfo = await jianghuKnex('task').where({id}).first();
     // 获取process 流程、根据节点线路组建步骤条
     if (!taskInfo) {
       throw new BizError(errorInfoEnum.task_not_found);
     }
-    const taskHistoryList = await jianghuKnex(tableEnum.task_history).where({taskId: taskInfo.taskId}).orderBy('id', 'asc').select();
+    const taskHistoryList = await jianghuKnex('task_history').where({taskId: taskInfo.taskId}).orderBy('id', 'asc').select();
     const taskStepperList = this.makeStepper(taskInfo.workflowConfig, taskHistoryList, taskInfo);
-    const userList = await jianghuKnex(tableEnum._view01_user).whereIn('userId', taskInfo.taskViewUserList.split(',')).select();
+    const userList = await jianghuKnex('_view01_user').whereIn('userId', taskInfo.taskViewUserList.split(',')).select();
     taskInfo.workflowConfig = JSON.parse(taskInfo.workflowConfig);
     const taskHistoryConfigList = this.getTaskHistoryConfigList(taskInfo.workflowConfig, taskHistoryList, userList);
 
@@ -310,14 +291,14 @@ class TaskService extends Service {
     return nodeAllList.filter(e => lineList.some(s => s.to === e.id) && !existIdList.includes(e.id));
   }
   async generateAllUserTask(id, trx) {
-    const taskInfo = await trx(tableEnum.task).where({id}).first();
+    const taskInfo = await trx('task').where({id}).first();
     delete taskInfo.id;
     const {nodeList = [], lineList = []} = JSON.parse(taskInfo.workflowConfig || '{}');
     const userNode =  nodeList.filter(e => e.id.includes('userTask') || e.id.includes('receiveTask') );
     for (const node of userNode) {
       let taskEditUserList = await this.getProcessUserList([node]);
       const nextLineList = lineList.filter(e => e.from === node.id);
-      await trx(tableEnum.task).insert({
+      await trx('task').insert({
         ...taskInfo,
         taskNextConfigList: JSON.stringify(nextLineList),
         taskLineTypeList: node.lineTypeList,
@@ -339,7 +320,7 @@ class TaskService extends Service {
     const { userId } = this.ctx.userInfo;
 
     // 准备任务数据
-    const taskInfo = await trx(tableEnum.task).where({id}).first();
+    const taskInfo = await trx('task').where({id}).first();
     delete taskInfo.id;
     const {mode = 'serial', nodeList = [], lineList = []} = JSON.parse(taskInfo.workflowConfig || '{}');
     const userNode =  nodeList.filter(e => e.id.includes('userTask') || e.id.includes('receiveTask') );
@@ -350,7 +331,7 @@ class TaskService extends Service {
     const currentNode = nodeList.find(e => e.id === taskInfo.taskConfigId);
 
     // 写入exec历史
-    const taskHistory = await trx(tableEnum.task_history, this.ctx).where({taskId: taskInfo.taskId}).orderBy('operationAt', 'desc').select();
+    const taskHistory = await trx('task_history', this.ctx).where({taskId: taskInfo.taskId}).orderBy('operationAt', 'desc').select();
     const [prevHistory] = taskHistory;
     // let taskFormInput = JSON.parse(taskInfo.taskFormInput);
     // taskFormInput.input = taskTpl.input;
@@ -372,7 +353,7 @@ class TaskService extends Service {
       taskComment
     }
     delete history.taskEditedUserList;
-    await trx(tableEnum.task_history, this.ctx).insert(history);
+    await trx('task_history', this.ctx).insert(history);
 
     // 未配置连线时，默认添加拒绝连线到end节点
     if (endNode && !lines.length) {
@@ -393,13 +374,13 @@ class TaskService extends Service {
       // 当前节点如果需要所有人审批并且不是拒绝连线时，检查是否所有人都审批过了
       if (currentNode.isNeedAllApproval && !line.toInterruptEnd) {
         let taskEditedUserList = taskInfo.taskEditedUserList? `${taskInfo.taskEditedUserList},${userId}`: userId;
-        await trx(tableEnum.task, this.ctx).where({id}).update({taskEditedUserList});
+        await trx('task', this.ctx).where({id}).update({taskEditedUserList});
         if (_.xor(taskEditedUserList.split(','), taskInfo.taskEditUserList.split(',')).length != 0) {
           return
         }
       }
 
-      await trx(tableEnum.task, this.ctx).where({id}).delete();
+      await trx('task', this.ctx).where({id}).delete();
       
       // 结束流程
       // 条件：
@@ -423,8 +404,8 @@ class TaskService extends Service {
           taskLineLabel: line.type + '-' + line.label,
           taskCostDuration: 0
         }
-        await trx(tableEnum.task_history, this.ctx).insert(endHistory);
-        await trx(tableEnum.task).insert({
+        await trx('task_history', this.ctx).insert(endHistory);
+        await trx('task').insert({
           ...taskInfo,
           taskId: taskInfo.taskId,
           taskFormInput: taskInfo.taskFormInput,
@@ -436,7 +417,7 @@ class TaskService extends Service {
         });
         // 默认拒绝节点，删除全部任务，执行interruptHook
         if (line.toInterruptEnd) {
-          await trx(tableEnum.task, this.ctx).where({taskId: taskInfo.taskId, taskStatus: 'running'}).delete();
+          await trx('task', this.ctx).where({taskId: taskInfo.taskId, taskStatus: 'running'}).delete();
           await this.executeHook(endNode.interruptHook);
         } else {
           await this.executeHook(endNode.finishHook);
@@ -457,7 +438,7 @@ class TaskService extends Service {
 
       // 串行审核，生成下一个task
       if (mode == 'serial') {
-        await trx(tableEnum.task, this.ctx).insert({
+        await trx('task', this.ctx).insert({
           ...taskInfo,
           taskId: taskInfo.taskId,
           taskFormInput,
