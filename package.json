@@ -8,7 +8,7 @@
     "framework": "@jianghujs/jianghu"
   },
   "dependencies": {
-    "@jianghujs/jianghu": "4.0.14",
+    "@jianghujs/jianghu": "4.0.15",
     "dayjs": "^1.11.4",
     "egg": "^2.15.1",
     "egg-scripts": "^2.11.0"

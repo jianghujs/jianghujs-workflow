@@ -55,7 +55,7 @@
               </template>
               <!--表格行操作按钮-->
               <template v-slot:item.action="{ item }">
-                <span role="button" class="success--text jh-font-size-3 pr-2" @click="doUiAction('startUpdateItem', item)">
+                <span role="button" class="success--text jh-font-size-3" @click="doUiAction('startUpdateItem', item)">
                   <v-icon size="16" class="success--text">mdi-text-box-outline</v-icon>
                   查看
                 </span>
@@ -94,19 +94,17 @@
             class="elevation-24">
             <v-form v-if="isViewDrawerShown" ref="updateForm" lazy-validation>
               <!--抽屉标题-->
-              <v-row>
-                <span class="title pa-6 pl-8">历史审核记录</span>
+              <v-row class="ma-0">
+                <span class="text-h6 pa-4">历史审核记录</span>
               </v-row>
               <!--抽屉表单-->
-              <v-row class="mt-0 px-6">
-                <v-col cols="12" sm="12" md="4" v-for="(item, index) in viewItem.taskFormInput.formList" :key="index">
+              <v-row class="mt-0 px-4">
+                <v-col cols="12" sm="12" v-for="(item, index) in viewItem.taskFormInput.formList" :key="index">
                   <form-item :form-item="item" readonly></form-item>
                 </v-col>
-                <v-col cols="12" sm="12" md="12">
-                  <span class="jh-input-label">审核申请信息</span>
-                  <task-history :task-id="viewItem.taskId"></task-history>
-                </v-col>
               </v-row>
+              <span class="jh-input-label px-4">审核申请信息</span>
+              <task-history :task-id="viewItem.taskId"></task-history>
             </v-form>
 
             <!--抽屉关闭按钮-->
@@ -161,8 +159,8 @@
     data: {
       // 面包屑
       breadcrumbs: [
-        {text: '首页', disabled: true,},
-        {text: '全部任务列表', disabled: true,}
+        { text: '首页', disabled: true, },
+        { text: '全部任务列表', disabled: true, }
       ],
       isHelpPageDrawerShown: false,
       // 表格相关数据
@@ -177,8 +175,8 @@
       isTableLoading: true,
       tableData: [],
       headers: [
-        { text: '操作', value: 'action', align: 'center', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed' },
-        { text: "审批项", value: "taskTitle" },
+        { text: '操作', value: 'action', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed' },
+        { text: "审批项", value: "taskTitle", width: 150 },
         { text: "审核状态", value: "taskStatus" },
         { text: "操作者", value: "operationByUser", width: 120 },
         { text: "操作时间", value: "operationAt", width: 250 }
@@ -257,4 +255,3 @@
 <style scoped>
 </style>
 {% endblock %}
-

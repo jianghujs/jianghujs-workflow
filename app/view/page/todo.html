@@ -118,11 +118,11 @@
         <v-navigation-drawer v-model="isSubmitDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
           <v-form v-if="isSubmitDrawerShown" ref="updateForm" lazy-validation>
             <!--抽屉标题-->
-            <v-row>
-              <span class="title pa-6 pl-8">审核信息</span>
+            <v-row class="ma-0">
+              <span class="title pa-4">审核信息</span>
             </v-row>
             <!--抽屉表单-->
-            <v-row class="mt-0 px-6">
+            <v-row class="mt-0 px-4">
               <v-col cols="12" sm="12" md="4" v-for="(formItem, index) in updateItem.taskFormInput.formList" :key="index">
                 <form-item :form-item="formItem" readonly></form-item>
               </v-col>
@@ -139,13 +139,13 @@
                 {{ lineTypeItem.type }}
               </v-btn>
             </v-row>
-            <v-row class="mt-0 px-6">
-              <v-col cols="12" sm="12" md="12">
-                <span class="jh-input-label">审核历史</span>
-                <task-history :task-id="updateItem.taskId" @line-type-list="setLineTypeList"></task-history>
-              </v-col>
-            </v-row>
           </v-form>
+          <v-row class="mt-0">
+            <v-col cols="12" sm="12" md="12">
+              <span class="jh-input-label px-4">审核历史</span>
+              <task-history :task-id="updateItem.taskId" @line-type-list="setLineTypeList"></task-history>
+            </v-col>
+          </v-row>
 
           <!--抽屉关闭按钮-->
           <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
@@ -192,170 +192,170 @@
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
 
 <script type="module">
-new Vue({
-  el: '#app',
-  template: '#app-template',
-  vueComponent: 'page',
-  vuetify: new Vuetify(),
-  data: {
-    // 面包屑
-    breadcrumbs: [
-      {text: '首页', disabled: true,},
-      {text: '待办、已处理的任务', disabled: true,}
-    ],
-    isHelpPageDrawerShown: false,
-
-    // 表格相关数据
-    isTableZebraLineShown: true,
-    // 生日日期选择
-    validationRules: {
-      requireRules: [
-        v => !!v || 'This is required',
+  new Vue({
+    el: '#app',
+    template: '#app-template',
+    vueComponent: 'page',
+    vuetify: new Vuetify(),
+    data: {
+      // 面包屑
+      breadcrumbs: [
+        { text: '首页', disabled: true, },
+        { text: '待办、已处理的任务', disabled: true, }
       ],
-    },
-    searchInput: null,
-    isTableLoading: true,
-    tableData: [],
-    historyData: [],
-    headers: [
-      {text: '操作', value: 'action', align: 'center', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed'},
-      {text: "审批项", value: "taskTitle"},
-      {text: "操作者", value: "operationByUser", width: 120},
-      {text: "操作时间", value: "operationAt", width: 250}
-    ],
+      isHelpPageDrawerShown: false,
 
-    isSubmitDrawerShown: false,
-    updateItem: {},
-    workflowType: 'todo', // todo, history
-    lineTypeList: [],
-    userId: '<$ ctx.userInfo.userId $>'
-  },
-  // 计算
-  computed: {
-    tableDataList() {
-      return this.workflowType === 'todo' ? this.tableData : this.historyData;
-    },
-  },
-  watch: {},
-  mounted() {
-    this.doUiAction('getTableData');
-    this.doUiAction('getHistoryData');
-  },
-  methods: {
-    async doUiAction(uiActionId, uiActionData) {
-      switch (uiActionId) {
-        case 'getTableData':
-          await this.getTableData();
-          break;
-        case 'getHistoryData':
-          await this.getHistoryData();
-          break;
-        case 'openDataPicker':
-          await this.openDataPicker(uiActionData);
-          break;
-        case 'startUpdateItem':
-          await this.prepareUpdateFormData(uiActionData);
-          await this.openUpdateDrawer();
-          break;
-        case 'submitNode':
-          await this.confirmSubmitDialog();
-          await this.submitForReview(uiActionData);
-          await this.closeSubmitDrawer();
-          this.getTableData();
-          this.getHistoryData();
-          break;
-        default:
-          console.error("[doUiAction] uiActionId not find", {uiActionId});
-          break;
-      }
-    },
+      // 表格相关数据
+      isTableZebraLineShown: true,
+      // 生日日期选择
+      validationRules: {
+        requireRules: [
+          v => !!v || 'This is required',
+        ],
+      },
+      searchInput: null,
+      isTableLoading: true,
+      tableData: [],
+      historyData: [],
+      headers: [
+        { text: '操作', value: 'action', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed' },
+        { text: "审批项", value: "taskTitle" },
+        { text: "操作者", value: "operationByUser", width: 120 },
+        { text: "操作时间", value: "operationAt", width: 250 }
+      ],
 
-    async getTableData() {
-      this.isTableLoading = true;
-      const result = await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'todo',
-            actionId: 'selectItemList',
-            actionData: {},
-            where: {taskStatus: 'running'},
-            whereLike: {taskEditUserList: this.userId},
-            orderBy: [{column: 'operationAt', order: 'desc'}]
-          }
+      isSubmitDrawerShown: false,
+      updateItem: {},
+      workflowType: 'todo', // todo, history
+      lineTypeList: [],
+      userId: '<$ ctx.userInfo.userId $>'
+    },
+    // 计算
+    computed: {
+      tableDataList() {
+        return this.workflowType === 'todo' ? this.tableData : this.historyData;
+      },
+    },
+    watch: {},
+    mounted() {
+      this.doUiAction('getTableData');
+      this.doUiAction('getHistoryData');
+    },
+    methods: {
+      async doUiAction(uiActionId, uiActionData) {
+        switch (uiActionId) {
+          case 'getTableData':
+            await this.getTableData();
+            break;
+          case 'getHistoryData':
+            await this.getHistoryData();
+            break;
+          case 'openDataPicker':
+            await this.openDataPicker(uiActionData);
+            break;
+          case 'startUpdateItem':
+            await this.prepareUpdateFormData(uiActionData);
+            await this.openUpdateDrawer();
+            break;
+          case 'submitNode':
+            await this.confirmSubmitDialog();
+            await this.submitForReview(uiActionData);
+            await this.closeSubmitDrawer();
+            this.getTableData();
+            this.getHistoryData();
+            break;
+          default:
+            console.error("[doUiAction] uiActionId not find", { uiActionId });
+            break;
         }
-      });
+      },
 
-      const rows = result.data.appData.resultData.rows;
-      rows.forEach(row => {
-        row.taskFormInput = JSON.parse(row.taskFormInput);
-        row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
-      });
-      this.tableData = rows.filter(item => !item.taskEditedUserList || !item.taskEditedUserList.includes(this.userId));
-      this.isTableLoading = false;
-    },
-    async getHistoryData() {
-      this.isTableLoading = true;
-      const result = await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'todo',
-            actionId: 'selectHistoryList',
-            actionData: {},
-            where: {taskStatus: 'running'},
-            whereLike: {taskEditUserList: '<$ ctx.userInfo.userId $>', taskConfigId: 'userTask-'},
-            orderBy: [{column: 'id', order: 'desc'}]
+      async getTableData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'selectItemList',
+              actionData: {},
+              where: { taskStatus: 'running' },
+              whereLike: { taskEditUserList: this.userId },
+              orderBy: [{ column: 'operationAt', order: 'desc' }]
+            }
           }
-        }
-      });
+        });
 
-      const rows = result.data.appData.resultData.rows;
-      rows.forEach(row => {
-        row.taskFormInput = JSON.parse(row.taskFormInput);
-        row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
-      });
-      this.historyData = rows;
-    },
-    // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
-    async prepareUpdateFormData(funObj) {
-      this.updateItem = _.cloneDeep(funObj);
-      this.updateItem.taskHistoryList = []; // 审核历史
-      this.updateItem.taskComment = ''; // 备注
-      this.lineTypeList = []; // 所有操作按钮
-    },
-
-    async openUpdateDrawer() {
-      this.isSubmitDrawerShown = true;
-    },
-
-    async confirmSubmitDialog() {
-      if (await window.confirmDialog({title: "审核", content: "确定提交审核吗？"}) === false) {
-        throw new Error("[confirmSubmitDialog] 否");
-      }
-    },
-
-    async submitForReview(lineType) {
-      await window.vtoast.loading("提交审核");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'todo',
-            actionId: 'submitNode',
-            actionData: {type: lineType, id: this.updateItem.id, taskId: this.updateItem.taskId, taskComment: this.updateItem.taskComment}
+        const rows = result.data.appData.resultData.rows;
+        rows.forEach(row => {
+          row.taskFormInput = JSON.parse(row.taskFormInput);
+          row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
+        });
+        this.tableData = rows.filter(item => !item.taskEditedUserList || !item.taskEditedUserList.includes(this.userId));
+        this.isTableLoading = false;
+      },
+      async getHistoryData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'selectHistoryList',
+              actionData: {},
+              where: { taskStatus: 'running' },
+              whereLike: { taskEditUserList: '<$ ctx.userInfo.userId $>', taskConfigId: 'userTask-' },
+              orderBy: [{ column: 'id', order: 'desc' }]
+            }
           }
+        });
+
+        const rows = result.data.appData.resultData.rows;
+        rows.forEach(row => {
+          row.taskFormInput = JSON.parse(row.taskFormInput);
+          row.operationAt = dayjs(row.operationAt).format('YYYY-MM-DD HH:mm:ss');
+        });
+        this.historyData = rows;
+      },
+      // ---------- 审核、查看 uiAction >>>>>>>>>>>> --------
+      async prepareUpdateFormData(funObj) {
+        this.updateItem = _.cloneDeep(funObj);
+        this.updateItem.taskHistoryList = []; // 审核历史
+        this.updateItem.taskComment = ''; // 备注
+        this.lineTypeList = []; // 所有操作按钮
+      },
+
+      async openUpdateDrawer() {
+        this.isSubmitDrawerShown = true;
+      },
+
+      async confirmSubmitDialog() {
+        if (await window.confirmDialog({ title: "审核", content: "确定提交审核吗？" }) === false) {
+          throw new Error("[confirmSubmitDialog] 否");
         }
-      })
-      await window.vtoast.success("提交审核成功");
-    },
-    async closeSubmitDrawer() {
-      this.isSubmitDrawerShown = false;
-      this.updateItem = {};
-    },
-    setLineTypeList(lineTypeList) {
-      this.lineTypeList = _.uniqBy((lineTypeList || '').split(",").map(lineType => ({type: lineType, label: lineType})), 'type');
-    },
-    // ---------- <<<<<<<<<<< 审核、查看 uiAction  --------
-  }
-})
+      },
+
+      async submitForReview(lineType) {
+        await window.vtoast.loading("提交审核");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'todo',
+              actionId: 'submitNode',
+              actionData: { type: lineType, id: this.updateItem.id, taskId: this.updateItem.taskId, taskComment: this.updateItem.taskComment }
+            }
+          }
+        })
+        await window.vtoast.success("提交审核成功");
+      },
+      async closeSubmitDrawer() {
+        this.isSubmitDrawerShown = false;
+        this.updateItem = {};
+      },
+      setLineTypeList(lineTypeList) {
+        this.lineTypeList = _.uniqBy((lineTypeList || '').split(",").map(lineType => ({ type: lineType, label: lineType })), 'type');
+      },
+      // ---------- <<<<<<<<<<< 审核、查看 uiAction  --------
+    }
+  })
 </script>
 
 <style scoped>

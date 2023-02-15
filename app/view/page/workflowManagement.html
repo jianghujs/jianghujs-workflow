@@ -188,7 +188,7 @@
       tableDataFromBackend: [],
       tableData: [],
       headers: [
-        { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
+        { text: '操作', value: 'action', sortable: false, width: 130, class: 'fixed', cellClass: 'fixed' },
         { text: '流程ID', value: 'workflowId' },
         { text: '流程名称', value: 'workflowName' },
       ],
@@ -218,9 +218,9 @@
             await this.openCreateDrawer();
             break;
           case 'createWorkflow':
+            await this.prepareDoCreateWork();
             await this.prepareCreateValidate();
             await this.confirmCreateWorkDialog();
-            await this.prepareDoWorkItem();
             await this.doCreateWork();
             await this.closeCreateDrawer();
             break;
@@ -283,7 +283,6 @@
 
       // ---------- <<<<<<<<<< 申请项目审核 --------
       async prepareCreateFormData(funObj) {
-        console.log(funObj);
         const { workflowForm, workflowPersonList, workflowId } = funObj;
         this.currentWorkflowForm = workflowForm;
         this.currentWorkflowPersonList = workflowPersonList;
@@ -293,11 +292,7 @@
       async openCreateDrawer() {
         this.isCreateDrawerShown = true;
       },
-      async prepareCreateValidate() {
-        if (!await this.$refs.createForm.validate()) {
-          throw new Error("请完善表单信息")
-        }
-
+      async prepareDoCreateWork() {
         this.currentWorkflowPersonList.forEach(workflowPersonItem => {
           if (!workflowPersonItem.assignValue) {
             workflowPersonItem.assignValue = [];
@@ -308,6 +303,13 @@
           if (!workflowPersonItem.origin) workflowPersonItem['origin'] = {};
           if (!workflowPersonItem.origin.properties) workflowPersonItem.origin['properties'] = {};
           workflowPersonItem.origin.properties.assignValue = workflowPersonItem.assignValue;
+        });
+      },
+      async prepareCreateValidate() {
+        if (!await this.$refs.createForm.validate()) {
+          throw new Error("请完善表单信息")
+        }
+        this.currentWorkflowPersonList.forEach(workflowPersonItem => {
           if (workflowPersonItem.assignValue.length === 0) {
             window.vtoast.fail({ message: `${workflowPersonItem.label}必填!` });
             throw new Error("[prepareValidate] 审批人 false");
@@ -318,9 +320,6 @@
         if (await window.confirmDialog({ title: "新增", content: "确定新增吗？" }) === false) {
           throw new Error("[confirmCreateFormDialog] 否");
         }
-      },
-      prepareDoWorkItem() {
-        console.log('create', this.currentWorkflowForm);
       },
 
       async doCreateWork() {

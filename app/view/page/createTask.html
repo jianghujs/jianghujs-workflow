@@ -201,7 +201,7 @@
       userList: [],
       tableData: [],
       headers: [
-        { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
+        { text: '操作', value: 'action', sortable: false, width: 130, class: 'fixed', cellClass: 'fixed' },
         { text: '流程ID', value: 'workflowId' },
         { text: '流程名称', value: 'workflowName' },
       ],
@@ -293,7 +293,7 @@
       },
 
       // ---------- <<<<<<<<<< 申请项目审核 --------
-      async prepareCreateFormData({workflowForm, workflowPersonList, workflowId}) {
+      async prepareCreateFormData({ workflowForm, workflowPersonList, workflowId }) {
         this.createFormList = workflowForm;
         this.workflowPersonList = workflowPersonList;
         this.createItem.workflowId = workflowId;
@@ -303,7 +303,7 @@
         this.isCreateDrawerShown = true;
       },
       async prepareCreateValidate() {
-        if(!await this.$refs.createForm.validate()) {
+        if (!await this.$refs.createForm.validate()) {
           throw new Error("请完善表单信息")
         }
 
@@ -318,7 +318,7 @@
         });
       },
       async confirmCreateWorkDialog() {
-        if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
+        if (await window.confirmDialog({ title: "新增", content: "确定新增吗？" }) === false) {
           throw new Error("[confirmCreateFormDialog] 否");
         }
       },
@@ -368,6 +368,7 @@
     padding: 50% 0;
     position: relative;
   }
+
   .work-item-content {
     position: absolute;
     left: 0;
@@ -376,11 +377,11 @@
     height: 100%;
 
   }
+
   @media (max-width: 500px) {
     body [xs='4'] {
       flex: auto;
     }
   }
-
 </style>
 {% endblock %}
