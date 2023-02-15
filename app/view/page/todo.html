@@ -76,12 +76,12 @@
             <template v-slot:item.action="{ item }">
               <span v-if="workflowType === 'todo'" role="button" class="success--text jh-font-size-3 pr-2"
                     @click="doUiAction('startUpdateItem', item)">
-                <v-icon size="14" class="success--text">mdi-note-edit-outline</v-icon>
+                <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>
                 审核
               </span>
               <span v-else role="button" class="success--text jh-font-size-3 pr-2"
                     @click="doUiAction('startUpdateItem', item)">
-                <v-icon size="14" class="success--text">mdi-text-box-outline</v-icon>
+                <v-icon size="16" class="success--text">mdi-text-box-outline</v-icon>
                 查看
               </span>
             </template>
