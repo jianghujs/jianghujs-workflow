@@ -138,7 +138,7 @@
       <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
         <iframe style="border: 0" :src="`/${appInfo.appId}/pageDoc#workflowManagement.md`" width="100%" height="100%"></iframe>
         <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"
-               @click="isHelpPageDrawerShown = false">
+          @click="isHelpPageDrawerShown = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-navigation-drawer>
@@ -167,222 +167,221 @@
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
 
 <script type="module">
-new Vue({
-  el: '#app',
-  template: '#app-template',
-  vueComponent: 'page',
-  vuetify: new Vuetify(),
-  data: {
-    // 面包屑
-    breadcrumbs: [
-      {text: '首页', disabled: true,},
-      {text: '流程管理列表、发起任务', disabled: true,}
-    ],
-    validationRules: {
-      requireRules: [
-        v => !!v || 'This is required',
+  new Vue({
+    el: '#app',
+    template: '#app-template',
+    vueComponent: 'page',
+    vuetify: new Vuetify(),
+    data: {
+      // 面包屑
+      breadcrumbs: [
+        { text: '首页', disabled: true, },
+        { text: '流程管理列表、发起任务', disabled: true, }
       ],
-    },
-    isTableLoading: false,
-    userList: [],
-    tableDataFromBackend: [],
-    tableData: [],
-    headers: [
-      {text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed'},
-      {text: '流程ID', value: 'workflowId'},
-      {text: '流程名称', value: 'workflowName'},
-    ],
-    searchInput: '',
-    isHelpPageDrawerShown: false,
-    isTableZebraLineShown: true,
+      validationRules: {
+        requireRules: [
+          v => !!v || 'This is required',
+        ],
+      },
+      isTableLoading: false,
+      userList: [],
+      tableDataFromBackend: [],
+      tableData: [],
+      headers: [
+        { text: '操作', value: 'action', align: 'center', sortable: false, width: 120, class: 'fixed', cellClass: 'fixed' },
+        { text: '流程ID', value: 'workflowId' },
+        { text: '流程名称', value: 'workflowName' },
+      ],
+      searchInput: '',
+      isHelpPageDrawerShown: false,
+      isTableZebraLineShown: true,
 
-    isCreateDrawerShown: false,
-    currentWorkflowForm: [],
-    currentWorkflowId: {},
-    currentWorkflowPersonList: [],
-  },
-  watch: {},
-  created() {
-    this.doUiAction('getTableData');
-    this.getUserList();
-  },
-  methods: {
-    async doUiAction(uiActionId, uiActionData) {
-      switch (uiActionId) {
-        case 'getTableData':
-          await this.getTableData();
-          await this.parseTableData();
-          break;
-        case 'startCreateWorkflow':
-          await this.prepareCreateFormData(uiActionData);
-          await this.openCreateDrawer();
-          break;
-        case 'createWorkflow':
-          await this.prepareCreateValidate();
-          await this.confirmCreateWorkDialog();
-          await this.prepareDoWorkItem();
-          await this.doCreateWork();
-          await this.closeCreateDrawer();
-          break;
-        case 'jumpToCreateWorkflow':
-          await this.jumpToCreateWorkflow();
-          break;
-        case 'jumpUpdateWorkflow':
-          await this.jumpUpdateWorkflow(uiActionData);
-          break;
-        default:
-          console.error("[doUiAction] uiActionId not find", {uiActionId});
-          break;
-      }
+      isCreateDrawerShown: false,
+      currentWorkflowForm: [],
+      currentWorkflowId: {},
+      currentWorkflowPersonList: [],
     },
-
-    async getTableData() {
-      this.isTableLoading = true;
-      const result = await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'workflowManagement',
-            actionId: 'selectItemList',
-            actionData: {}
-          }
+    watch: {},
+    created() {
+      this.doUiAction('getTableData');
+      this.getUserList();
+    },
+    methods: {
+      async doUiAction(uiActionId, uiActionData) {
+        switch (uiActionId) {
+          case 'getTableData':
+            await this.getTableData();
+            await this.parseTableData();
+            break;
+          case 'startCreateWorkflow':
+            await this.prepareCreateFormData(uiActionData);
+            await this.openCreateDrawer();
+            break;
+          case 'createWorkflow':
+            await this.prepareCreateValidate();
+            await this.confirmCreateWorkDialog();
+            await this.prepareDoWorkItem();
+            await this.doCreateWork();
+            await this.closeCreateDrawer();
+            break;
+          case 'jumpToCreateWorkflow':
+            await this.jumpToCreateWorkflow();
+            break;
+          case 'jumpUpdateWorkflow':
+            await this.jumpUpdateWorkflow(uiActionData);
+            break;
+          default:
+            console.error("[doUiAction] uiActionId not find", { uiActionId });
+            break;
         }
-      });
+      },
 
-      this.tableDataFromBackend = result.data.appData.resultData.rows;
-      this.isTableLoading = false;
-    },
-
-    async parseTableData() {
-      const rows = _.cloneDeep(this.tableDataFromBackend);
-      rows.forEach(row => {
-        const workflowNodeList = JSON.parse(row.workflowConfig).nodeList;
-        workflowNodeList.forEach(node => {
-          node.isNeedAllApproval = true;
-        });
-        row.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
-        row.workflowForm = JSON.parse(row.workflowForm);
-      });
-      this.tableData = rows;
-    },
-
-    async getUserList() {
-      const result = await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'workflowManagement',
-            actionId: 'selectUserList',
-            actionData: {},
-            orderBy: [{column: 'userId', order: 'asc'}]
-          }
-        }
-      });
-
-      const userList = result.data.appData.resultData.rows;
-      this.userList = userList;
-    },
-
-    // ---------- <<<<<<<<<< 申请项目审核 --------
-    async prepareCreateFormData(funObj) {
-      console.log(funObj);
-      const {workflowForm, workflowPersonList, workflowId} = funObj;
-      this.currentWorkflowForm = workflowForm;
-      this.currentWorkflowPersonList = workflowPersonList;
-      this.currentWorkflowId = workflowId;
-    },
-
-    async openCreateDrawer() {
-      this.isCreateDrawerShown = true;
-    },
-    async prepareCreateValidate() {
-      if (!await this.$refs.createForm.validate()) {
-        throw new Error("请完善表单信息")
-      }
-
-      this.currentWorkflowPersonList.forEach(workflowPersonItem => {
-        if (!workflowPersonItem.assignValue) {
-          workflowPersonItem.assignValue = [];
-        }
-        workflowPersonItem.assignValue = workflowPersonItem.assignValue.filter(userId => {
-          return this.userList.some(user => user.userId === userId);
-        });
-        if (!workflowPersonItem.origin) workflowPersonItem['origin'] = {};
-        if (!workflowPersonItem.origin.properties) workflowPersonItem.origin['properties'] = {};
-        workflowPersonItem.origin.properties.assignValue = workflowPersonItem.assignValue;
-        if (workflowPersonItem.assignValue.length === 0) {
-          window.vtoast.fail({message: `${workflowPersonItem.label}必填!`});
-          throw new Error("[prepareValidate] 审批人 false");
-        }
-      });
-    },
-    async confirmCreateWorkDialog() {
-      if (await window.confirmDialog({title: "新增", content: "确定新增吗？"}) === false) {
-        throw new Error("[confirmCreateFormDialog] 否");
-      }
-    },
-    prepareDoWorkItem() {
-      console.log('create', this.currentWorkflowForm);
-    },
-
-    async doCreateWork() {
-      await window.jhMask.show();
-      await window.vtoast.loading("正在申请");
-      await window.jianghuAxios({
-        data: {
-          appData: {
-            pageId: 'workflowManagement',
-            actionId: 'insertTask',
-            actionData: {
-              formItemList: this.currentWorkflowForm,
-              workflowId: this.currentWorkflowId,
-              workflowConfigCustom: JSON.stringify({nodeListOfUserTaskNode: this.currentWorkflowPersonList})
+      async getTableData() {
+        this.isTableLoading = true;
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectItemList',
+              actionData: {}
             }
           }
+        });
+
+        this.tableDataFromBackend = result.data.appData.resultData.rows;
+        this.isTableLoading = false;
+      },
+
+      async parseTableData() {
+        const rows = _.cloneDeep(this.tableDataFromBackend);
+        rows.forEach(row => {
+          const workflowNodeList = JSON.parse(row.workflowConfig).nodeList;
+          workflowNodeList.forEach(node => {
+            node.isNeedAllApproval = true;
+          });
+          row.workflowPersonList = workflowNodeList.filter(node => node.id.includes('userTask-'));
+          row.workflowForm = JSON.parse(row.workflowForm);
+        });
+        this.tableData = rows;
+      },
+
+      async getUserList() {
+        const result = await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'selectUserList',
+              actionData: {},
+              orderBy: [{ column: 'userId', order: 'asc' }]
+            }
+          }
+        });
+
+        const userList = result.data.appData.resultData.rows;
+        this.userList = userList;
+      },
+
+      // ---------- <<<<<<<<<< 申请项目审核 --------
+      async prepareCreateFormData(funObj) {
+        console.log(funObj);
+        const { workflowForm, workflowPersonList, workflowId } = funObj;
+        this.currentWorkflowForm = workflowForm;
+        this.currentWorkflowPersonList = workflowPersonList;
+        this.currentWorkflowId = workflowId;
+      },
+
+      async openCreateDrawer() {
+        this.isCreateDrawerShown = true;
+      },
+      async prepareCreateValidate() {
+        if (!await this.$refs.createForm.validate()) {
+          throw new Error("请完善表单信息")
         }
-      })
-      await window.jhMask.hide();
-      await window.vtoast.success("申请成功");
-    },
-    async closeCreateDrawer() {
-      this.currentWorkflowForm = null;
-      this.currentWorkflowId = null;
-      this.isCreateDrawerShown = false;
-    },
-    // ---------- 申请项目审核 >>>>>>>>>> --------
 
-    // ---------- <<<<<<<<<< jump --------
-    jumpUpdateWorkflow(item) {
-      sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
-      window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
-    },
+        this.currentWorkflowPersonList.forEach(workflowPersonItem => {
+          if (!workflowPersonItem.assignValue) {
+            workflowPersonItem.assignValue = [];
+          }
+          workflowPersonItem.assignValue = workflowPersonItem.assignValue.filter(userId => {
+            return this.userList.some(user => user.userId === userId);
+          });
+          if (!workflowPersonItem.origin) workflowPersonItem['origin'] = {};
+          if (!workflowPersonItem.origin.properties) workflowPersonItem.origin['properties'] = {};
+          workflowPersonItem.origin.properties.assignValue = workflowPersonItem.assignValue;
+          if (workflowPersonItem.assignValue.length === 0) {
+            window.vtoast.fail({ message: `${workflowPersonItem.label}必填!` });
+            throw new Error("[prepareValidate] 审批人 false");
+          }
+        });
+      },
+      async confirmCreateWorkDialog() {
+        if (await window.confirmDialog({ title: "新增", content: "确定新增吗？" }) === false) {
+          throw new Error("[confirmCreateFormDialog] 否");
+        }
+      },
+      prepareDoWorkItem() {
+        console.log('create', this.currentWorkflowForm);
+      },
 
-    jumpToCreateWorkflow() {
-      window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
+      async doCreateWork() {
+        await window.jhMask.show();
+        await window.vtoast.loading("正在申请");
+        await window.jianghuAxios({
+          data: {
+            appData: {
+              pageId: 'workflowManagement',
+              actionId: 'insertTask',
+              actionData: {
+                formItemList: this.currentWorkflowForm,
+                workflowId: this.currentWorkflowId,
+                workflowConfigCustom: JSON.stringify({ nodeListOfUserTaskNode: this.currentWorkflowPersonList })
+              }
+            }
+          }
+        })
+        await window.jhMask.hide();
+        await window.vtoast.success("申请成功");
+      },
+      async closeCreateDrawer() {
+        this.currentWorkflowForm = null;
+        this.currentWorkflowId = null;
+        this.isCreateDrawerShown = false;
+      },
+      // ---------- 申请项目审核 >>>>>>>>>> --------
+
+      // ---------- <<<<<<<<<< jump --------
+      jumpUpdateWorkflow(item) {
+        sessionStorage.setItem('workflowEditItem', JSON.stringify(item))
+        window.location.href = `/${window.appInfo.appId}/page/workflowEditor?id=${item.id}`;
+      },
+
+      jumpToCreateWorkflow() {
+        window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
+      }
+      // ---------- jump >>>>>>>>>> --------
     }
-    // ---------- jump >>>>>>>>>> --------
-  }
-})
+  })
 </script>
 
 <style scoped>
-.work-item-box {
-  padding: 50% 0;
-  position: relative;
-}
-
-.work-item-content {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-
-}
-
-@media (max-width: 500px) {
-  body [xs='4'] {
-    flex: auto;
+  .work-item-box {
+    padding: 50% 0;
+    position: relative;
   }
-}
 
+  .work-item-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+  }
+
+  @media (max-width: 500px) {
+    body [xs='4'] {
+      flex: auto;
+    }
+  }
 </style>
 {% endblock %}
