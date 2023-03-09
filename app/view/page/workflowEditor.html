@@ -54,12 +54,16 @@
           </v-row>
         </v-card>
 
-        <div class="pt-4 pb-4 text-h7">流程设置</div>
+        <div class="py-4 text-h7">模板设置</div>
+        <tpl-form-design :form="formObj.workflowForm" v-if="!loading" />
+
+        <div class="py-4 text-h7">流程设置</div>
         <process-flow
           v-if="!loading" ref="processFlow"
           :data="formObj.workflowConfig"
           :user="constantObj.userList"
           :group="constantObj.groupList"
+          :tpl="constantObj.workflowFormList"
           :mode="formObj.mode">
         </process-flow>
       </div>
@@ -98,6 +102,9 @@
 {% include 'component/flow/processFlow.html' %}
 {% include 'component/flow/editLine.html' %}
 {% include 'component/flow/editNode.html' %}
+{% include 'component/tpl/tplFormDesign.html' %}
+{% include 'component/tpl/formItemListGenerator.html' %}
+{% include 'component/tpl/formItemListReview.html' %}
 
 <script type="module">
 new Vue({
@@ -137,7 +144,7 @@ new Vue({
         if (!this.formObj.workflowForm) return;
         this.buildConstantWorkflowFormList();
         if (!this.formObj.workflowConfig) return;
-        this.buildConstantWorkflowConfig()
+        this.buildConstantWorkflowConfig();
       },
       deep: true,
       immediate: true

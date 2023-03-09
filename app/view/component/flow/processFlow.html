@@ -16,7 +16,7 @@
           <span style="transform: translateY(2px); display: inline-block; ">{{editType == 'node' ? '节点' : '连线'}}属性</span>
         </div>
         <div class="flow-edit-content">
-          <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="logicFlow" :user="user" :group="group" :mode="mode"></edit-node>
+          <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="logicFlow" :user="user" :group="group" :mode="mode" :tpl="tpl"></edit-node>
           <edit-line ref="lineForm" v-if="editType == 'line'" :lf="logicFlow" :mode="mode"></edit-line>
         </div>
       </template>
@@ -67,6 +67,12 @@ Vue.component("process-flow", {
       }
     },
     group: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    },
+    tpl: {
       type: Array,
       default: () => {
         return []

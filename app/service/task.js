@@ -64,7 +64,6 @@ class TaskService extends Service {
     nodeList = _.values(nodeList);
     workflowConfig.nodeList = nodeList
 
-
     // start 节点进入历史
     const startNode = nodeList.find(e => e.id.includes('start-'));
     const startLine = lineList.filter(e => e.from === startNode.id);
