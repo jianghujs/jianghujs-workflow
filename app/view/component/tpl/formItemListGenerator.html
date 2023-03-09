@@ -42,31 +42,31 @@
               dense>
             <v-list-item>
 
-              <v-list-item-content v-if="formItem.component.type === 'singleSelect'">
-                <v-radio-group :disabled="true" :label="(index+1) + '. ' + formItem.component.statement">
-                  <v-radio hide-details v-for="(option, optionIndex) in formItem.component.property.selectOptionList"
-                           :key="optionIndex" :label="option.value" :value="option.value"></v-radio>
+              <v-list-item-content v-if="formItem.type === 'single'">
+                <v-radio-group :disabled="true" :label="(index+1) + '. ' + formItem.statement">
+                  <v-radio hide-details v-for="(option, optionIndex) in formItem.optionList"
+                           :key="optionIndex" :label="option" :value="option"></v-radio>
                 </v-radio-group>
               </v-list-item-content>
 
-              <v-list-item-content v-if="formItem.component.type === 'multipleSelect'">
+              <v-list-item-content v-if="formItem.type === 'multiple'">
                 <v-list-item-title class="formItem-title">{{ index + 1 }}. {{
-                    formItem.component.statement
+                    formItem.statement
                   }}
                 </v-list-item-title>
-                <div v-for="(option, optionIndex) in formItem.component.property.selectOptionList" :key="optionIndex">
-                  <v-checkbox hide-details style="margin-top: 0px;" :disabled="true" :label="option.value" hide-details
+                <div v-for="(option, optionIndex) in formItem.optionList" :key="optionIndex">
+                  <v-checkbox hide-details style="margin-top: 0px;" :disabled="true" :label="option" hide-details
                               color="red"></v-checkbox>
                 </div>
               </v-list-item-content>
 
-              <v-list-item-content v-if="formItem.component.type === 'textarea'">
+              <v-list-item-content v-if="formItem.type === 'textarea'">
                 <v-textarea dense outlined placeholder="请输入答案" hide-details :disabled="true" :rows="4"
-                            :label="(index+1) + '. ' + formItem.component.statement"/>
+                            :label="(index+1) + '. ' + formItem.statement"/>
               </v-list-item-content>
 
-              <v-list-item-content v-if="formItem.component.type === 'input'">
-                <v-text-field class="cus-v-input" dense outlined :label="(index+1) + '. ' + formItem.component.statement"
+              <v-list-item-content v-if="formItem.type === 'input'">
+                <v-text-field class="cus-v-input" dense outlined :label="(index+1) + '. ' + formItem.statement"
                               :disabled="true"></v-text-field>
               </v-list-item-content>
 
@@ -100,26 +100,26 @@
       </div>
       <div v-if="selectCanvaIndex >= 0 && formItemList[selectCanvaIndex]">
         <v-card class="mt-5" flat
-                v-if="formItemList[selectCanvaIndex].component.type === 'singleSelect' || formItemList[selectCanvaIndex].component.type === 'multipleSelect'">
+                v-if="formItemList[selectCanvaIndex].type === 'single' || formItemList[selectCanvaIndex].type === 'multiple'">
           <v-row no-gutters>
             <v-col cols="12">
               <v-text-field class="cus-v-input mr-2" dense filled single-line prefix="标题: " color="success"
-                            v-model="formItemList[selectCanvaIndex].component.statement"></v-text-field>
+                            v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
               <div style="display: flex; flex-direction: row;justify-content: space-between; align-items: center;">
                 <v-subheader class="pa-0">选项列表</v-subheader>
                 <v-btn icon
-                       @click.stop="propertyAddOption(formItemList[selectCanvaIndex].component.property.selectOptionList.length)">
+                       @click.stop="propertyAddOption(formItemList[selectCanvaIndex].optionList.length)">
                   <v-icon dark color="grey lighten-1">mdi-plus-box</v-icon>
                 </v-btn>
               </div>
               <v-list class="propertyList" dense style="max-height: 300px; overflow-y: auto;">
                 <v-list-item
                     class="pa-0"
-                    v-for="(option, index) in formItemList[selectCanvaIndex].component.property.selectOptionList"
+                    v-for="(option, index) in formItemList[selectCanvaIndex].optionList"
                     :key="index">
                   <v-list-item-content>
                     <v-text-field
-                        v-model="option.value"
+                        v-model="formItemList[selectCanvaIndex].optionList[index]"
                         prefix="选项:"
                         color="success"
                         filled single-line
@@ -138,13 +138,13 @@
             </v-col>
           </v-row>
         </v-card>
-        <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].component.type === 'textarea'">
+        <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].type === 'textarea'">
           <v-text-field class="cus-v-input" dense filled single-line label="多行文本"
-                        v-model="formItemList[selectCanvaIndex].component.statement"></v-text-field>
+                        v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
         </v-card>
-        <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].component.type === 'input'">
+        <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].type === 'input'">
           <v-text-field class="cus-v-input" dense filled single-line label="单行文本"
-                        v-model="formItemList[selectCanvaIndex].component.statement"></v-text-field>
+                        v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
         </v-card>
       </div>
     </v-card>
@@ -174,16 +174,16 @@ Vue.component("form-item-list-generator", {
       {typeName: '多行文本', type: 'textarea', statement: '多行文本', property: {}, icon: 'mdi-form-textarea'},
       {
         typeName: '单选',
-        type: 'singleSelect',
+        type: 'single',
         statement: '单选',
-        property: {selectOptionList: []},
+        optionList: [],
         icon: 'mdi-checkbox-marked-circle'
       },
       {
         typeName: '多选',
-        type: 'multipleSelect',
+        type: 'multiple',
         statement: '多选',
-        property: {selectOptionList: []},
+        optionList: [],
         icon: 'mdi-checkbox-marked'
       },
     ],
@@ -250,7 +250,7 @@ Vue.component("form-item-list-generator", {
     },
     formItemCopy(index, formItem) {
       const newFormItem = _.cloneDeep(formItem);
-      newFormItem.id = `${newFormItem.component.type}_${this.uuid(8)}`,
+      newFormItem.id = `${newFormItem.type}_${this.uuid(8)}`,
           this.formItemList.splice(index + 1, 0, newFormItem);
     },
     emptyCanva() {
@@ -263,10 +263,10 @@ Vue.component("form-item-list-generator", {
       }
     },
     propertyAddOption(index) {
-      this.formItemList[this.selectCanvaIndex].component.property.selectOptionList.splice(index, 0, {value: ""});
+      this.formItemList[this.selectCanvaIndex].optionList.splice(index, 0, "");
     },
     propertyDeleteOption(index) {
-      this.formItemList[this.selectCanvaIndex].component.property.selectOptionList.splice(index, 1);
+      this.formItemList[this.selectCanvaIndex].optionList.splice(index, 1);
     },
     uuid(t = 21) {
       let e = "", r = crypto.getRandomValues(new Uint8Array(t));

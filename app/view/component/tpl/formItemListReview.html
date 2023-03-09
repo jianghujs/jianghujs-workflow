@@ -1,26 +1,26 @@
 <template id="form-item-list-review">
   <div class="form-item-list-review-container">
     <!-- 单选 -->
-    <template v-if="formItem.component.type === 'singleSelect'">
-          <span class="jh-input-label">{{ formItem.component.statement }}</span>
+    <template v-if="formItem.type === 'single'">
+          <span class="jh-input-label">{{ formItem.statement }}</span>
       <v-radio-group readonly v-model="formItem.user.answer">
         <v-radio
-          v-for="(option, optionIndex) in formItem.component.selectOptionList" :key="optionIndex"
+          v-for="(option, optionIndex) in formItem.optionList" :key="optionIndex"
           :label="assignmentOptionKey[optionIndex]+': '+option" :value="option"></v-radio>
       </v-radio-group>
     </template>
     <!-- 多选和填空 -->
-    <template v-if="['fillBlank', 'multipleSelect'].includes(formItem.component.type)">
-      <span class="jh-input-label" style="white-space:nowrap !important;" v-if="formItem.component.type === 'fillBlank'">
-        <template v-for="(blank, blankIndex) in formItem.component.statement" :key="blankIndex">
+    <template v-if="['fillBlank', 'multiple'].includes(formItem.type)">
+      <span class="jh-input-label" style="white-space:nowrap !important;" v-if="formItem.type === 'fillBlank'">
+        <template v-for="(blank, blankIndex) in formItem.statement" :key="blankIndex">
           <span class="fill-blank fill-blank-input" v-if="blank.type === 'input'">{{
             formItem.user.answer[blank.id] }}</span>
           <span v-else>{{ blank.value }}</span>
         </template>
       </span>
-      <span class="jh-input-label" v-else>{{ formItem.component.statement }}</span>
-      <template v-if="formItem.component.type === 'multipleSelect'">
-        <template v-for="(option, optionIndex) in formItem.component.selectOptionList" :key="optionIndex">
+      <span class="jh-input-label" v-else>{{ formItem.statement }}</span>
+      <template v-if="formItem.type === 'multiple'">
+        <template v-for="(option, optionIndex) in formItem.optionList" :key="optionIndex">
           <v-checkbox
             readonly style="margin-top: 0px;" v-model="formItem.user.answer" :value="option"
             :label="assignmentOptionKey[optionIndex]+': '+option" hide-details color="red"></v-checkbox>
@@ -28,9 +28,9 @@
       </template>
     </template>
     <!-- 多行文本，问答和markdown -->
-    <template v-if="['textarea', 'questionAnswer', 'markdown'].includes(formItem.component.type)">
-      <span class="jh-input-label">{{ formItem.component.statement }}</span>
-      <template v-if="formItem.component.type === 'markdown'" cols="12">
+    <template v-if="['textarea', 'questionAnswer', 'markdown'].includes(formItem.type)">
+      <span class="jh-input-label">{{ formItem.statement }}</span>
+      <template v-if="formItem.type === 'markdown'" cols="12">
         <md2html :article-content="formItem.user.answer" @complete="isContentLoading = false"></md2html>
       </template>
       <template v-else cols="12">
@@ -38,17 +38,17 @@
       </template>
     </template>
     <!-- 题目组 -->
-    <template v-if="formItem.component.type === 'questionGroup'">
-      <span class="jh-input-label">{{ formItem.component.statement }}</span>
-      <md2html :article-content="formItem.component.markdownContent" @complete="isContentLoading = false">
+    <template v-if="formItem.type === 'questionGroup'">
+      <span class="jh-input-label">{{ formItem.statement }}</span>
+      <md2html :article-content="formItem.markdownContent" @complete="isContentLoading = false">
       </md2html>
       <form-item-list-review
-        :form-item-list="formItem.component.itemList" :review-data="reviewData"
+        :form-item-list="formItem.itemList" :review-data="reviewData"
         :answer-check="answerCheck" />
     </template>
     <!-- 纯标题 -->
-    <v-list-item-content v-if="formItem.component.type === 'displayText'">
-      <p>{{formItem.component.statement}}</p>
+    <v-list-item-content v-if="formItem.type === 'displayText'">
+      <p>{{formItem.statement}}</p>
     </v-list-item-content>
   </div>
 </template>
