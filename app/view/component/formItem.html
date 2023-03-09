@@ -11,7 +11,7 @@
     dense single-line filled
     label=""
     v-model="formItem.answer"
-    :readonly="readonly"
+    :readonly="typeof readonly == 'boolean'? readonly: readonly.indexOf(formItem.id) > -1"
   ></v-text-field>
 
   <!-- 单选 -->
@@ -21,7 +21,7 @@
     :items="formItem.optionList"
     dense single-line filled
     :rules="validationRules.requireRules"
-    :readonly="readonly"
+    :readonly="typeof readonly == 'boolean'? readonly: readonly.indexOf(formItem.id) > -1"
   ></v-select>
 
   <!-- 多选 -->
@@ -32,7 +32,7 @@
     multiple
     dense single-line filled
     :rules="validationRules.requireRules"
-    :readonly="readonly"
+    :readonly="typeof readonly == 'boolean'? readonly: readonly.indexOf(formItem.id) > -1"
   ></v-select>
 
   <!-- 文本框 -->
@@ -41,8 +41,8 @@
     :rules="validationRules.requireRules"
     class="jh-v-input" no-resize dense single-line filled
     label="备注"
-    :readonly="readonly"
     v-model="formItem.answer"
+    :readonly="typeof readonly == 'boolean'? readonly: false"
   ></v-textarea>
 
   <!-- 时间选择 -->
@@ -70,7 +70,7 @@ Vue.component('form-item', {
       },
     },
     readonly: {
-      type: Boolean,
+      type: [Array, Boolean],
       default: false
     }
   },
