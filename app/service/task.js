@@ -315,7 +315,7 @@ class TaskService extends Service {
     });
   }
   async buildNext(actionData, trx) {
-    const { type, id, taskComment } = actionData;
+    let { type, id, taskComment, taskFormInput } = actionData;
     const { userId } = this.ctx.userInfo;
 
     // 准备任务数据
@@ -337,7 +337,7 @@ class TaskService extends Service {
     // taskFormInput = JSON.stringify(taskFormInput);
     // const historyTaskFormInput = JSON.parse(taskInfo.taskFormInput)
     // historyTaskFormInput .input = taskTpl.input;
-    const taskFormInput = taskInfo.taskFormInput;
+    taskFormInput = taskFormInput || taskInfo.taskFormInput;
     const history = {
       ...taskInfo,
       // taskFormInput: JSON.stringify(historyTaskFormInput),

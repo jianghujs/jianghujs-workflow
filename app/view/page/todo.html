@@ -334,13 +334,14 @@
       },
 
       async submitForReview(lineType) {
+        debugger
         await window.vtoast.loading("提交审核");
         await window.jianghuAxios({
           data: {
             appData: {
               pageId: 'todo',
               actionId: 'submitNode',
-              actionData: { type: lineType, id: this.updateItem.id, taskId: this.updateItem.taskId, taskComment: this.updateItem.taskComment }
+              actionData: { type: lineType, id: this.updateItem.id, taskId: this.updateItem.taskId, taskComment: this.updateItem.taskComment, taskFormInput: JSON.stringify(this.updateItem.taskFormInput) }
             }
           }
         })
