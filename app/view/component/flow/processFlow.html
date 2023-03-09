@@ -379,7 +379,7 @@ Vue.component("process-flow", {
           type: funObj.type,
           assignType: 'person',
           assignValue: ['<$ ctx.userInfo.userId $>'],
-          lineTypeList: funObj.type === 'start' ? '同意' : item.type === 'end' ? '' : '同意,拒绝',
+          lineTypeList: funObj.type === 'start' ? '同意' : funObj.type === 'end' ? '' : '同意,拒绝',
         }
       }
       this.logicFlow.dnd.startDrag(node);
