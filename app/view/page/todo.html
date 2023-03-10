@@ -124,7 +124,7 @@
             <!--抽屉表单-->
             <v-row class="mt-0 px-4">
               <v-col cols="12" sm="12" md="4" v-for="(formItem, index) in updateItem.taskFormInput.formList" :key="index">
-                <form-item :form-item="formItem" :readonly="updateItem.readonlyFormIdList"></form-item>
+                <form-item :form-item="formItem" readonly></form-item>
               </v-col>
               <v-col cols="12" sm="12" md="12">
                 <span class="jh-input-label">备注</span>
@@ -320,7 +320,6 @@
         this.updateItem = _.cloneDeep(funObj);
         this.updateItem.workflowConfig = JSON.parse(funObj.workflowConfig);
         this.updateItem.currentNode = this.updateItem.workflowConfig.nodeList.find(e => e.id === this.updateItem.taskConfigId);
-        this.updateItem.readonlyFormIdList = this.updateItem.taskFormInput.formList.map(form => form.id).filter(formId => this.updateItem.currentNode.formId.indexOf(formId) === -1);
         this.updateItem.taskHistoryList = []; // 审核历史
         this.updateItem.taskComment = ''; // 备注
         this.lineTypeList = []; // 所有操作按钮
@@ -337,7 +336,6 @@
       },
 
       async submitForReview(lineType) {
-        debugger
         await window.vtoast.loading("提交审核");
         await window.jianghuAxios({
           data: {
