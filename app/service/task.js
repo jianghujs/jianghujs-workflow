@@ -379,6 +379,8 @@ class TaskService extends Service {
     }
     delete history.taskEditedUserList;
     await trx('task_history', this.ctx).insert(history);
+
+    return history;
   }
 
   async saveWorkFlowExecHistory(trx, taskInfo, currentNode, endNode, line, nextLineList, taskEditUserList, history) {
@@ -430,7 +432,7 @@ class TaskService extends Service {
     const currentNode = nodeList.find(e => e.id === taskInfo.taskConfigId);
     taskFormInput = taskFormInput || taskInfo.taskFormInput;
 
-    await this.saveCurrentNodeExecHistory(trx, taskInfo, currentNode, taskFormInput, taskComment, lines, type);
+    const history = await this.saveCurrentNodeExecHistory(trx, taskInfo, currentNode, taskFormInput, taskComment, lines, type);
 
     // 未配置连线时，默认添加拒绝连线到end节点
     if (endNode && !lines.length) {
