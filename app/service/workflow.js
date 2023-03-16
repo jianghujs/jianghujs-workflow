@@ -1,21 +1,57 @@
 'use strict';
 const Service = require('egg').Service;
 
-// TODO: 封装一下
-const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc')
-const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
-dayjs.extend(utc)
-dayjs.extend(timezone)
-
+const validateUtil = require('@jianghujs/jianghu/app/common/validateUtil');
 const idGenerateUtil = require("@jianghujs/jianghu/app/common/idGenerateUtil");
 const { BizError, errorInfoEnum } = require("../constant/error");
+
+const appDataSchema = {};
+appDataSchema.createWorkflowTask = Object.freeze({
+  type: 'object',
+  required: ['formItemList', 'workflowId', 'workflowConfigCustom'],
+  properties: {
+    formItemList: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', "typeName", "type", "statement"],
+        properties: {
+          id: {
+            type: 'string', minLength: 1, maxLength: 200
+          },
+          typeName: {
+            type: 'string', minLength: 1, maxLength: 200
+          },
+          type: {
+            type: 'string', minLength: 1, maxLength: 200
+          },
+          statement: {
+            type: 'string', minLength: 1, maxLength: 200
+          },
+          answer: {
+            type: 'string', minLength: 1, maxLength: 200
+          }
+        },
+        additionalProperties: true
+      }
+    },
+    workflowId: {type: 'string', minLength: 1, maxLength: 100},
+    workflowConfigCustom: {type: 'string', minLength: 1, maxLength: 10000},
+  },
+  additionalProperties: true
+});
+
+appDataSchema.getTaskHistory = Object.freeze({
+  type: 'string',
+  minLength: 1,
+  maxLength: 200
+});
 
 class WorkflowService extends Service {
 
   async createTplId() {
     const { actionData } = this.ctx.request.body.appData;
-    const { jianghuKnex, config } = this.app;
+    const { jianghuKnex } = this.app;
     actionData.formId = await idGenerateUtil.idPlus({
       knex: jianghuKnex,
       startValue: 1000,
@@ -25,7 +61,7 @@ class WorkflowService extends Service {
   }
   async createWorkflowId() {
     const { actionData } = this.ctx.request.body.appData;
-    const { jianghuKnex, config } = this.app;
+    const { jianghuKnex } = this.app;
     actionData.workflowId = await idGenerateUtil.idPlus({
       knex: jianghuKnex,
       startValue: 1000,
@@ -36,7 +72,7 @@ class WorkflowService extends Service {
 
   async assignTplData() {
     const { actionData } = this.ctx.request.body.appData;
-    const { jianghuKnex, config } = this.app;
+    const { jianghuKnex } = this.app;
     let { tplId } = actionData;
     const tplIds = tplId ? tplId.split(',') : [];
     if (tplIds.length) {
@@ -59,12 +95,13 @@ class WorkflowService extends Service {
     }
     console.log(actionData);
   }
-
+  
   /**
    * 创建流程审批
    */
   async createWorkflowTask() {
     const { actionData } = this.ctx.request.body.appData;
+    validateUtil.validate(appDataSchema.createWorkflowTask , actionData);
     const { jianghuKnex } = this.app;
     const { formItemList, workflowConfigCustom, workflowId } = actionData;
 
@@ -90,6 +127,7 @@ class WorkflowService extends Service {
    */
   async getTaskHistory() {
     const { taskId } = this.ctx.request.body.appData.actionData;
+    validateUtil.validate(appDataSchema.getTaskHistory , taskId);
     const { jianghuKnex } = this.app;
 
     const taskInfo = await jianghuKnex('task', this.ctx).where({taskId}).first();

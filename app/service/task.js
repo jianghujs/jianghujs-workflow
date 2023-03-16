@@ -2,28 +2,42 @@
 const Service = require('egg').Service;
 const _ = require("lodash");
 
-// TODO: 封装一下
-const dayjs = require("dayjs");
-const utc = require('dayjs/plugin/utc')
-const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
-dayjs.extend(utc)
-dayjs.extend(timezone)
-
+const validateUtil = require('@jianghujs/jianghu/app/common/validateUtil');
 const idGenerateUtil = require("@jianghujs/jianghu/app/common/idGenerateUtil");
 const { BizError, errorInfoEnum } = require("../constant/error");
 
+const appDataSchema = {};
+appDataSchema.submitNode = Object.freeze({
+  type: 'object',
+  required: ['id', 'taskFormInput', 'taskId', 'type'],
+  properties: {
+    id: {
+      type: 'number'
+    },
+    taskFormInput: {
+      type: 'string', minLength: 1, maxLength: 10000
+    },
+    taskId: {
+      type: 'string', minLength: 1, maxLength: 200
+    },
+    type: {
+      type: 'string', minLength: 1, maxLength: 200
+    },
+    taskComment: {
+      type: 'string'
+    }
+  },
+  additionalProperties: true
+});
+
 class TaskService extends Service {
   async upcomingToUserId() {
-    const { userId, username } = this.ctx.userInfo;
-    this.ctx.request.body.appData.whereLike = { taskEditUserList: userId };
-  }
-  async upcomingToUserId() {
-    const { userId, username } = this.ctx.userInfo;
+    const { userId } = this.ctx.userInfo;
     this.ctx.request.body.appData.whereLike = { taskEditUserList: userId };
   }
   async whereToUserId() {
     const { where } = this.ctx.request.body.appData;
-    const { userId, username } = this.ctx.userInfo;
+    const { userId } = this.ctx.userInfo;
     where.createByUser = userId;
   }
   async whereToViewUserId() {
@@ -38,18 +52,43 @@ class TaskService extends Service {
    */
   async createTask() {
     const { actionData } = this.ctx.request.body.appData;
-    const { jianghuKnex, config } = this.app;
-    // const { workflowId, taskTitle, taskFormStructure, taskFormData } = actionData;
+    const { jianghuKnex } = this.app;
     const { workflowId, taskTitle, workflowForm,  workflowFormData, workflowConfigCustom } = actionData;
-    const { userId, username } = this.ctx.userInfo;
+    const { userId } = this.ctx.userInfo;
     const taskId = await idGenerateUtil.uuid();
     const workflow = await jianghuKnex('workflow', this.ctx).where({workflowId}).first();
     if (!workflow) {
       throw new BizError(errorInfoEnum.workflow_not_found)
-      return
     }
     
     const workflowConfig = JSON.parse(workflow.workflowConfig || '{}');
+    /*
+     * workflowConfig = {
+     *   "nodeList": [...],
+     *   "lineList": [...],
+     *   "mode": "serial"
+     * }
+     * nodeList: 流程编辑器中的节点
+     * lineList: 流程编辑器中节点间的连线
+     * mode: serial | parallel
+     * serial: 仅启动下一阶段的任务
+     * parallel: 后续任务都启动
+     * 
+     * workflowForm = [
+     *   {
+     *     "id": "input_kBIjNmho",
+     *     "type": "input",
+     *     // ...
+     *   },
+     *   
+     *   // ...
+     * ]
+     * type: input | short | single | multiple
+     * input: 单行文本
+     * short: 多行文本
+     * single: 单选框
+     * multiple: 多选框  
+    */
     let {mode = 'serial', nodeList = [], lineList = []} = workflowConfig;
     const nodeListOfUserTaskNode = (JSON.parse(workflowConfigCustom || '{}')).nodeListOfUserTaskNode || []
     // 合并定制的审批人和workflow的审批人
@@ -104,7 +143,7 @@ class TaskService extends Service {
    * @returns 
    */
   async getGroupUserList(groupId) {
-    const { jianghuKnex, config } = this.app;
+    const { jianghuKnex } = this.app;
     const userList = await jianghuKnex('_user_group_role').where({groupId}).select('userId');
     return userList.map(e => {
       return e.userId
@@ -124,7 +163,7 @@ class TaskService extends Service {
   }
   async taskCareUser() {
     const { actionData } = this.ctx.request.body.appData;
-    const { jianghuKnex, config } = this.app;
+    const { jianghuKnex } = this.app;
     const { userId: careUser, taskId } = actionData;
     const { userId } = this.ctx.userInfo;
     const taskInfo = await jianghuKnex('task').where({taskId}).first();
@@ -148,7 +187,7 @@ class TaskService extends Service {
    */
   async getTaskHistoryInfo() {
     const { actionData } = this.ctx.request.body.appData;
-    const { jianghuKnex, config } = this.app;
+    const { jianghuKnex } = this.app;
     const { id } = actionData;
     const { userId } = this.ctx.userInfo;
     const taskInfo = await jianghuKnex('task').where({id}).first();
@@ -309,26 +348,14 @@ class TaskService extends Service {
   }
   async submitNode() {
     const { actionData } = this.ctx.request.body.appData;
+    validateUtil.validate(appDataSchema.submitNode , actionData);
     const { jianghuKnex } = this.app;
     await jianghuKnex.transaction(async trx => {
       await this.buildNext(actionData, trx);
     });
   }
-  async buildNext(actionData, trx) {
-    let { type, id, taskComment, taskFormInput } = actionData;
-    const { userId } = this.ctx.userInfo;
 
-    // 准备任务数据
-    const taskInfo = await trx('task').where({id}).first();
-    delete taskInfo.id;
-    const {mode = 'serial', nodeList = [], lineList = []} = JSON.parse(taskInfo.workflowConfig || '{}');
-    const userNode =  nodeList.filter(e => e.id.includes('userTask') || e.id.includes('receiveTask') );
-    const userTaskCount = userNode.reduce((acc, cur) => acc += cur.isNeedAllApproval? cur.assignValue.length: 1, 0);
-    const endNode = nodeList.find(e => e.id.includes('end-'));
-    const nLineList = JSON.parse(taskInfo.taskNextConfigList);
-    const lines = nLineList.filter(e => e.type === type);
-    const currentNode = nodeList.find(e => e.id === taskInfo.taskConfigId);
-
+  async saveCurrentNodeExecHistory(trx, taskInfo, currentNode, taskFormInput, taskComment, lines, lineType) {
     // 写入exec历史
     const taskHistory = await trx('task_history', this.ctx).where({taskId: taskInfo.taskId}).orderBy('operationAt', 'desc').select();
     const [prevHistory] = taskHistory;
@@ -337,14 +364,13 @@ class TaskService extends Service {
     // taskFormInput = JSON.stringify(taskFormInput);
     // const historyTaskFormInput = JSON.parse(taskInfo.taskFormInput)
     // historyTaskFormInput .input = taskTpl.input;
-    taskFormInput = taskFormInput || taskInfo.taskFormInput;
     const history = {
       ...taskInfo,
       // taskFormInput: JSON.stringify(historyTaskFormInput),
       taskFormInput,
       taskExplain: currentNode.label,
       taskConfigId: currentNode.id,
-      taskHandleDesc: currentNode.id.includes('start-') ? '流程开始' : type,
+      taskHandleDesc: currentNode.id.includes('start-') ? '流程开始' : lineType,
       taskLineFrom: (lines.map(e => {return e.form})).join(','),
       taskLineTo: (lines.map(e => {return e.to})).join(','),
       taskLineLabel: (lines.map(e => {return e.type + '-' + e.label})).join(','),
@@ -353,6 +379,60 @@ class TaskService extends Service {
     }
     delete history.taskEditedUserList;
     await trx('task_history', this.ctx).insert(history);
+
+    return history;
+  }
+
+  async saveWorkFlowExecHistory(trx, taskInfo, currentNode, endNode, line, nextLineList, taskEditUserList, history) {
+    taskEditUserList = await this.getProcessUserList([currentNode]);
+    const endHistory = {
+      ...history,
+      taskStatus: 'end',
+      taskExplain: '结束',
+      taskConfigId: endNode.id,
+      taskHandleDesc: '流程结束',
+      taskLineFrom: line.from,
+      taskLineTo: line.to,
+      taskLineLabel: line.type + '-' + line.label,
+      taskCostDuration: 0
+    }
+    await trx('task_history', this.ctx).insert(endHistory);
+    await trx('task').insert({
+      ...taskInfo,
+      taskId: taskInfo.taskId,
+      taskFormInput: taskInfo.taskFormInput,
+      taskNextConfigList: JSON.stringify(nextLineList),
+      taskLineTypeList: endNode.lineTypeList,
+      taskEditUserList,
+      taskConfigId: endNode.id,
+      taskStatus: 'end'
+    });
+  }
+
+  // 保存历史任务，并生成下一阶段的任务
+  async buildNext(actionData, trx) {
+    let { type, id, taskComment, taskFormInput } = actionData;
+    const { userId } = this.ctx.userInfo;
+
+    // 准备任务数据
+    const taskInfo = await trx('task').where({id}).first();
+    delete taskInfo.id;
+    /*
+     * mode: serial / parallel
+     * serial: 仅启动下一阶段的任务
+     * parallel: 后续任务都启动
+    */
+    const {mode = 'serial', nodeList = [], lineList = []} = JSON.parse(taskInfo.workflowConfig || '{}');
+    const userNode =  nodeList.filter(e => e.id.includes('userTask') || e.id.includes('receiveTask') );
+    const userTaskCount = userNode.reduce((acc, cur) => acc += cur.isNeedAllApproval? cur.assignValue.length: 1, 0);
+    const endNode = nodeList.find(e => e.id.includes('end-'));
+    const nLineList = JSON.parse(taskInfo.taskNextConfigList);
+    // 取同意类型的连线
+    const lines = nLineList.filter(e => e.type === type);
+    const currentNode = nodeList.find(e => e.id === taskInfo.taskConfigId);
+    taskFormInput = taskFormInput || taskInfo.taskFormInput;
+
+    const history = await this.saveCurrentNodeExecHistory(trx, taskInfo, currentNode, taskFormInput, taskComment, lines, type);
 
     // 未配置连线时，默认添加拒绝连线到end节点
     if (endNode && !lines.length) {
@@ -391,29 +471,8 @@ class TaskService extends Service {
         line.toInterruptEnd === true ||
         (mode == 'parallel' && taskHistory.length == userTaskCount && line.type != '拒绝')
       ) {
-        taskEditUserList = await this.getProcessUserList([currentNode]);
-        const endHistory = {
-          ...history,
-          taskStatus: 'end',
-          taskExplain: '结束',
-          taskConfigId: endNode.id,
-          taskHandleDesc: '流程结束',
-          taskLineFrom: line.from,
-          taskLineTo: line.to,
-          taskLineLabel: line.type + '-' + line.label,
-          taskCostDuration: 0
-        }
-        await trx('task_history', this.ctx).insert(endHistory);
-        await trx('task').insert({
-          ...taskInfo,
-          taskId: taskInfo.taskId,
-          taskFormInput: taskInfo.taskFormInput,
-          taskNextConfigList: JSON.stringify(nextLineList),
-          taskLineTypeList: endNode.lineTypeList,
-          taskEditUserList,
-          taskConfigId: endNode.id,
-          taskStatus: 'end'
-        });
+        await this.saveWorkFlowExecHistory(trx, taskInfo, currentNode, endNode, line, nextLineList, taskEditUserList, history);
+
         // 默认拒绝节点，删除全部任务，执行interruptHook
         if (line.toInterruptEnd) {
           await trx('task', this.ctx).where({taskId: taskInfo.taskId, taskStatus: 'running'}).delete();
