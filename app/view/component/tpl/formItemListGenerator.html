@@ -1,7 +1,7 @@
 <template id="form-item-list-generator">
-  <v-card color="#f5f8fa" :class="{'d-flex': !isMobile, 'form-item-list-generator-content': !isMobile}">
+  <v-card :class="{'d-flex': !isMobile, 'form-item-list-generator-content': !isMobile}">
     <v-card :style="{'width': isMobile ? '100%' : '300px'}"
-            :class="{'pa-4': !isMobile, 'pa-2': isMobile, 'mr-6': !isMobile}">
+            :class="{'pa-4': !isMobile, 'pa-2': isMobile, 'ma-2': !isMobile}">
       <div class="left-component-item-title" :style="{'white-space': 'nowrap'}">
         <v-icon>mdi-puzzle-outline</v-icon>
         <span style="transform: translateY(2px); display: inline-block;">组件</span>
@@ -23,7 +23,7 @@
       </draggable>
     </v-card>
 
-    <v-card class="formItemList py-10 pl-4 pr-4" style="position: relative;">
+    <v-card class="formItemList my-2 pa-2 pt-10" style="position: relative;">
       <v-btn small color="error" @click.stop="emptyCanva" class="mr-2 mt-2"
              style="position: absolute; right: 8px; top: 0;">
         <span>重置</span>
@@ -93,7 +93,7 @@
       </v-row>
     </v-card>
 
-    <v-card :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ml-6': !isMobile}">
+    <v-card :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ma-2': !isMobile}">
       <div class="property-title">
         <v-icon>mdi-application-edit-outline</v-icon>
         <span style="transform: translateY(2px); display: inline-block;">组件属性</span>
@@ -333,7 +333,6 @@ Vue.component("form-item-list-generator", {
 .formItemList {
   flex: 1;
   overflow-y: auto;
-  height: 100%;
   max-height: 100%;
 }
 

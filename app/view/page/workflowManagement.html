@@ -22,7 +22,7 @@
         <v-card class="rounded-lg">
           <v-row class="ma-0 pa-4">
             <!--新增按钮-->
-            <v-btn color="success" small class="elevation-0 mr-2" @click="doUiAction('jumpToCreateWorkflow')">新增
+            <v-btn color="success" small class="elevation-0 mr-2" @click="doUiAction('openWorkflowEditorDrawer')">新增
             </v-btn>
             <v-spacer></v-spacer>
             <!--搜索-->
@@ -50,7 +50,7 @@
                 <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>申请
               </span>
               <span role="button" class="success--text jh-font-size-3 pr-2"
-                    @click="doUiAction('jumpUpdateWorkflow', item)">
+                    @click="doUiAction('openWorkflowEditorDrawer', item)">
                 <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>编辑
               </span>
             </template>
@@ -132,7 +132,11 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-navigation-drawer>
-      <!-- 创建审批抽屉 >>>>>>>>>>>>> -->
+      <!-- <<<<<<<<<<<<< 创建审批抽屉 -->
+
+      <!-- 编辑流程抽屉 >>>>>>>>>>>>> -->
+      <workflow-editor-drawer ref="workflowEditorDrawer" />
+      <!-- <<<<<<<<<<<<< 编辑流程抽屉 -->
 
       <!-- 帮助页抽屉 >>>>>>>>>>>>> -->
       <v-navigation-drawer v-model="isHelpPageDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
@@ -163,6 +167,7 @@
 
 <!-- 加载页面组件 >>>>>>>>>>>>> -->
 {% include 'component/formItem.html' %}
+{% include 'component/workflowEditorDrawer.html' %}
 {% include 'common/jianghuJs/fixedTableHeightV4.html' %}
 <!-- <<<<<<<<<<<<< 加载页面组件 -->
 
@@ -229,6 +234,9 @@
             break;
           case 'jumpUpdateWorkflow':
             await this.jumpUpdateWorkflow(uiActionData);
+            break;
+          case 'openWorkflowEditorDrawer':
+            await this.openWorkflowEditorDrawer(uiActionData);
             break;
           default:
             console.error("[doUiAction] uiActionId not find", { uiActionId });
@@ -357,8 +365,12 @@
 
       jumpToCreateWorkflow() {
         window.location.href = '/<$ ctx.app.config.appId $>/page/workflowEditor';
-      }
+      },
       // ---------- jump >>>>>>>>>> --------
+      
+      openWorkflowEditorDrawer(item) {
+        this.$refs.workflowEditorDrawer.doUiAction('open', item);
+      }
     }
   })
 </script>

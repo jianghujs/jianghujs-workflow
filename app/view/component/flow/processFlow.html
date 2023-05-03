@@ -1,15 +1,15 @@
 <template id="process-flow">
-  <div class="process-flow-container">
-    <v-card v-if="!readonly" class="flow-menu pa-4 mr-4" width="140px">
+  <v-card class="process-flow-container">
+    <v-card v-if="!readonly" class="flow-menu pa-4 ma-2" width="140px">
       <div class="menu-item mb-3" v-for="item in menuList" @mousedown.stop.prevent="startDrag(item)">
         <i :class="item.icon"></i>
         <div>{{item.name}}</div>
       </div>
     </v-card>
-    <v-card class="flow-detail pa-0">
+    <v-card class="flow-detail pa-0 my-2">
       <div id="flowContent" ref="flowContent"></div>
     </v-card>
-    <v-card v-show="!readonly" class="flow-edit pa-4 ml-4">
+    <v-card v-show="!readonly" class="flow-edit pa-2 ma-2">
       <template v-if="editType == 'node' || editType == 'line'">
         <div class="mb-3">
           <v-icon>mdi-application-edit-outline</v-icon>
@@ -31,7 +31,7 @@
       </template>
     </v-card>
 
-  </div>
+  </v-card>
 </template>
 
 <!-- 加载logicflow组件 >>>>>>>>>>>>> -->
@@ -116,7 +116,6 @@ Vue.component("process-flow", {
     }
   },
   mounted() {
-    this.init();
   },
   methods: {
     init() {
