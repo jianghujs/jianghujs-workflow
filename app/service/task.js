@@ -329,14 +329,14 @@ class TaskService extends Service {
     return nodeAllList.filter(e => lineList.some(s => s.to === e.id) && !existIdList.includes(e.id));
   }
   async generateAllUserTask(id, trx) {
-    const taskInfo = await trx('task').where({id}).first();
+    const taskInfo = await trx('task', this.ctx).where({id}).first();
     delete taskInfo.id;
     const {nodeList = [], lineList = []} = JSON.parse(taskInfo.workflowConfig || '{}');
     const userNode =  nodeList.filter(e => e.id.includes('userTask') || e.id.includes('receiveTask') );
     for (const node of userNode) {
       let taskEditUserList = await this.getProcessUserList([node]);
       const nextLineList = lineList.filter(e => e.from === node.id);
-      await trx('task').insert({
+      await trx('task', this.ctx).insert({
         ...taskInfo,
         taskNextConfigList: JSON.stringify(nextLineList),
         taskLineTypeList: node.lineTypeList,
@@ -397,7 +397,7 @@ class TaskService extends Service {
       taskCostDuration: 0
     }
     await trx('task_history', this.ctx).insert(endHistory);
-    await trx('task').insert({
+    await trx('task', this.ctx).insert({
       ...taskInfo,
       taskId: taskInfo.taskId,
       taskFormInput: taskInfo.taskFormInput,
