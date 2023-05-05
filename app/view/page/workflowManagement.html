@@ -135,7 +135,7 @@
       <!-- <<<<<<<<<<<<< 创建审批抽屉 -->
 
       <!-- 编辑流程抽屉 >>>>>>>>>>>>> -->
-      <workflow-editor-drawer ref="workflowEditorDrawer" />
+      <workflow-editor-drawer ref="workflowEditorDrawer" @success="doUiAction('getTableData')"/>
       <!-- <<<<<<<<<<<<< 编辑流程抽屉 -->
 
       <!-- 帮助页抽屉 >>>>>>>>>>>>> -->

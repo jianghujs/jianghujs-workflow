@@ -125,13 +125,15 @@ Vue.component("workflow-editor-drawer", {
           await this.confirmCreateItemDialog();
           await this.prepareFormSubmitData();
           await this.doCreateItem();
-          await this.syncUpdateFormObj()
+          await this.syncUpdateFormObj();
+          await this.closeDrawer();
           break;
         case 'updateItem':
           await this.confirmUpdateItemDialog();
           await this.prepareFormSubmitData();
           await this.doUpdateItem();
-          await this.syncUpdateFormObj()
+          await this.syncUpdateFormObj();
+          await this.closeDrawer();
           break;
         default:
           console.error("[doUiAction] uiActionId not find", {uiActionId});
@@ -292,6 +294,7 @@ Vue.component("workflow-editor-drawer", {
       })).data.appData.resultData;
       this.formObj.id = rows[0];
       await window.vtoast.success("新增数据成功");
+      this.$emit('success');
     },
     // ---------- <<<<<<<<<< 新建流程 createItem --------
     // ---------- 修改流程 updateItem >>>>>>>>>> --------
@@ -313,6 +316,7 @@ Vue.component("workflow-editor-drawer", {
         }
       })
       await window.vtoast.success("修改数据成功");
+      this.$emit('success');
     },
     // ---------- <<<<<<<<<< 修改流程 updateItem --------
   }
