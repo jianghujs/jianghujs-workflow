@@ -205,7 +205,7 @@ Vue.component("form-item-list-generator", {
   }),
   computed: {
     selectCanvaIndex() {
-      const index = this.formItemList.findIndex(item => item.id === this.selectedFormItemId);
+      const index = (this.formItemList || []).findIndex(item => item.id === this.selectedFormItemId);
       return index;
     },
     isMobile() {
