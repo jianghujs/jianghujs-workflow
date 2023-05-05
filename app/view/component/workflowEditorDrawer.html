@@ -148,7 +148,6 @@ Vue.component("workflow-editor-drawer", {
         let formObj = _.clone(item);
         formObj.workflowConfig = formObj.workflowConfig ? JSON.parse(formObj.workflowConfig) : null;
         formObj.workflowForm = formObj.workflowForm ? (typeof formObj.workflowForm == 'string'? JSON.parse(formObj.workflowForm): formObj.workflowForm) : [];
-        debugger
         formObj.mode = formObj.workflowConfig.mode || 'serial';
         this.formObj = formObj;
       } else {
