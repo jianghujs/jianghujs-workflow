@@ -27,9 +27,6 @@ appDataSchema.createWorkflowTask = Object.freeze({
           },
           statement: {
             type: 'string', minLength: 1, maxLength: 200
-          },
-          answer: {
-            type: 'string', minLength: 1, maxLength: 200
           }
         },
         additionalProperties: true
