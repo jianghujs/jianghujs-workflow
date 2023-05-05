@@ -2,10 +2,20 @@
 <script type="text/html" id="form-item">
 <div>
   <span class="jh-input-label">{{ formItem.statement }}</span>
-
   <!-- 文本 -->
   <v-text-field
     v-if="formItem.type === 'input'"
+    :rules="validationRules.requireRules"
+    class="jh-v-input"
+    dense single-line filled
+    label=""
+    v-model="formItem.answer"
+    :readonly="typeof readonly == 'boolean'? readonly: readonly.indexOf(formItem.id) > -1"
+  ></v-text-field>
+
+  <!-- 文本 -->
+  <v-text-field
+    v-if="formItem.type === 'textarea'"
     :rules="validationRules.requireRules"
     class="jh-v-input"
     dense single-line filled
