@@ -1,11 +1,13 @@
 <template id="form-item-list-generator">
   <v-card :class="{'d-flex': !isMobile, 'form-item-list-generator-content': !isMobile}">
-    <v-card :style="{'width': isMobile ? '100%' : '300px'}"
-            :class="{'pa-4': !isMobile, 'pa-2': isMobile, 'ma-2': !isMobile}">
-      <div class="left-component-item-title" :style="{'white-space': 'nowrap'}">
-        <v-icon>mdi-puzzle-outline</v-icon>
+    <!-- 左侧 组件选择列表 >>>>>>>>>>>>> -->
+    <v-card :style="{'width': isMobile ? '100%' : '300px'}" outlined
+            :class="{'pa-4': !isMobile, 'pa-2': isMobile, 'mr-2': !isMobile}">
+      <div class="font-weight-medium text-subtitle-2 text-subtitle-2 mb-3">
+        <v-icon size="18" class="mr-1">mdi-puzzle-outline</v-icon>
         <span style="transform: translateY(2px); display: inline-block;">组件</span>
       </div>
+      <!--左侧 可拖动按钮列表 >>>>>>>>>>>>> -->
       <draggable
           :group="{ name: 'componentGroup', pull: 'clone', put: false }"
           :list="componentList"
@@ -21,13 +23,26 @@
           </div>
         </div>
       </draggable>
+      <!--<<<<<<<<<<<<< 左侧 可拖动按钮列表 -->
     </v-card>
+    <!-- <<<<<<<<<<<<< 左侧 组件选择列表 -->
 
-    <v-card class="formItemList my-2 pa-2 pt-10" style="position: relative;">
-      <v-btn small color="error" @click.stop="emptyCanva" class="mr-2 mt-2"
-             style="position: absolute; right: 8px; top: 0;">
-        <span>重置</span>
-      </v-btn>
+    <!-- 中间 组件编辑区 >>>>>>>>>>>>> -->
+    <v-card class="formItemList pa-4" style="position: relative;" outlined>
+      <!-- 中间 组件编辑区 顶部工具栏 >>>>>>>>>>>>> -->
+      <div class="d-flex justify-end align-center mb-3">
+        <div class="font-weight-medium text-subtitle-2 text-subtitle-2">
+          <v-icon size="18" class="mr-1">mdi-application-edit-outline</v-icon>
+          表单设计
+        </div>
+        <v-spacer></v-spacer>
+        <span role="button" class="error--text font-weight-medium font-size-2 mr-1 mr-sm-2"
+          @click="emptyCanva">
+          <v-icon size="16" class="error--text">mdi-arrow-u-left-top</v-icon>重置
+        </span>
+      </div>
+      <!-- <<<<<<<<<<<<< 中间 组件编辑区 顶部工具栏 -->
+      <!-- 中间 组件编辑区 表单设计 >>>>>>>>>>>>> -->
       <draggable
           v-if="formItemList.length > 0"
           :list="formItemList"
@@ -35,13 +50,28 @@
           group="componentGroup">
         <v-hover v-for="(formItem, index) in formItemList" :key="index" v-slot:default="{ hover }">
           <v-card
-              @click.native="formItemSelect(formItem.id)"
-              :elevation="hover ? 12 : 2"
-              :class="['my-2', selectedFormItemId === formItem.id && !hover ? 'formItem-selected' : 'formItem-body']"
-              style="cursor: move"
-              dense>
+            @click.native="formItemSelect(formItem.id)"
+            :class="['my-2', selectedFormItemId === formItem.id && !hover ? 'formItem-selected' : 'formItem-body']"
+            style="cursor: move"
+            dense outlined>
             <v-list-item>
+              <div class="d-flex justify-end align-center px-4 pt-4">
+                <div>{{ index + 1 }}. {{ formItem.component.typeDesc }}</div> 
+                <v-spacer></v-spacer>
+                <!-- 复制和删除功能 -->
+                <template>
+                  <span role="button" class="success--text jh-font-size-2 mr-1 mr-sm-2"
+                    @click="formItemCopy(index, formItem)">
+                    <v-icon size="12" class="success--text">mdi-content-copy</v-icon>复制
+                  </span>
+                  <span role="button" class="success--text jh-font-size-2"
+                    @click.stop="formItemDelete(formItem.id)">
+                    <v-icon size="14" class="success--text">mdi-delete-outline</v-icon>删除
+                  </span>
+                </template>
+              </div>
 
+              <!-- 单选 -->
               <v-list-item-content v-if="formItem.type === 'single'">
                 <v-radio-group :disabled="true" :label="(index+1) + '. ' + formItem.statement">
                   <v-radio hide-details v-for="(option, optionIndex) in formItem.optionList"
@@ -50,10 +80,6 @@
               </v-list-item-content>
 
               <v-list-item-content v-if="formItem.type === 'multiple'">
-                <v-list-item-title class="formItem-title">{{ index + 1 }}. {{
-                    formItem.statement
-                  }}
-                </v-list-item-title>
                 <div v-for="(option, optionIndex) in formItem.optionList" :key="optionIndex">
                   <v-checkbox hide-details style="margin-top: 0px;" :disabled="true" :label="option" hide-details
                               color="red"></v-checkbox>
@@ -70,14 +96,6 @@
                               :disabled="true"></v-text-field>
               </v-list-item-content>
 
-              <v-list-item-action v-if="selectedFormItemId === formItem.id" class="justify-start">
-                <v-btn x-small icon @click.stop="formItemCopy(index, formItem)">
-                  <v-icon color="primary">mdi-content-duplicate</v-icon>
-                </v-btn>
-                <v-btn x-small icon @click.stop="formItemDelete(formItem.id)">
-                  <v-icon color="error">mdi-close-box</v-icon>
-                </v-btn>
-              </v-list-item-action>
             </v-list-item>
           </v-card>
         </v-hover>
@@ -91,11 +109,14 @@
           </draggable>
         </v-card>
       </v-row>
+      <!-- <<<<<<<<<<<<< 中间 组件编辑区 表单设计 -->
     </v-card>
+    <!-- <<<<<<<<<<<<< 中间 组件编辑区 -->
 
-    <v-card :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ma-2': !isMobile}">
-      <div class="property-title">
-        <v-icon>mdi-application-edit-outline</v-icon>
+    <!-- 右侧 组件属性编辑区 >>>>>>>>>>>>> -->
+    <v-card :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ml-2': !isMobile}" outlined>
+      <div class="font-weight-medium text-subtitle-2 text-subtitle-2 mb-3">
+        <v-icon size="18" class="mr-1">mdi-application-cog-outline</v-icon>
         <span style="transform: translateY(2px); display: inline-block;">组件属性</span>
       </div>
       <div v-if="selectCanvaIndex >= 0 && formItemList[selectCanvaIndex]">
@@ -148,6 +169,7 @@
         </v-card>
       </div>
     </v-card>
+    <!-- <<<<<<<<<<<<< 右侧 组件属性编辑区 -->
   </v-card>
 </template>
 

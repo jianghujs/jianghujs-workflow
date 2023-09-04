@@ -1,42 +1,43 @@
 <template id="workflow-editor-drawer"> 
   <div>
     <v-navigation-drawer v-model="isDrawerShown" :permanent="isDrawerShown" fixed temporary right width="90%" class="elevation-24">
-     
+      <!-- 抽屉标题 -->
+      <v-row>
+        <span class="title pa-6 pl-8">流程编辑</span>
+      </v-row>
+        
+      <div class="px-6">
         <v-form ref="form">
-          <!-- 抽屉标题 -->
+          <!-- 流程信息 -->
           <v-row>
-            <span class="title pa-6 pl-8">流程编辑</span>
+            <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+              <v-text-field
+                class="jh-v-input mr-2" dense filled single-line color="success" prefix="流程名:"
+                v-model="formObj['workflowName']" :rules="validationRules.requireRules">
+              </v-text-field>
+            </v-col>
+            <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+              <v-text-field
+                class="jh-v-input mr-2" dense filled single-line color="success" prefix="备注:"
+                v-model="formObj['workflowRemark']">
+              </v-text-field>
+            </v-col>
+            <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+              <v-select
+                class="jh-v-input mr-2" dense filled single-line color="success" prefix="审批模式:"
+                v-model="formObj['mode']" :items="constantObj.modeList" />
+            </v-col>
           </v-row>
 
-          <div class="pa-6">
-            <!-- 流程信息 -->
-            <div class="text-subtitle-2">流程信息</div>
-            <v-row>
-              <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-                <v-text-field
-                  class="jh-v-input mr-2" dense filled single-line color="success" prefix="流程名:"
-                  v-model="formObj['workflowName']" :rules="validationRules.requireRules">
-                </v-text-field>
-              </v-col>
-              <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-                <v-text-field
-                  class="jh-v-input mr-2" dense filled single-line color="success" prefix="备注:"
-                  v-model="formObj['workflowRemark']">
-                </v-text-field>
-              </v-col>
-              <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
-                <v-select
-                  class="jh-v-input mr-2" dense filled single-line color="success" prefix="审批模式:"
-                  v-model="formObj['mode']" :items="constantObj.modeList" />
-              </v-col>
-            </v-row>
-            
-            <!-- 模板设置 -->
-            <div class="py-4 text-h7">模板设置</div>
+          <!-- 模板设置 -->
+          <div class="mt-8">
+            <div class="text-subtitle-2 mb-2">模板设置</div>
             <tpl-form-design :form="formObj.workflowForm" v-if="!loading"></tpl-form-design>
-
-            <!-- 流程设置 -->
-            <div class="py-4 text-h7">流程设置</div>
+          </div>
+          
+          <!-- 流程设置 -->
+          <div class="mt-8">
+            <div class="text-subtitle-2 mb-2">流程设置</div>
             <process-flow
               ref="processFlow"
               :data="formObj.workflowConfig"
@@ -46,13 +47,14 @@
               :mode="formObj.mode">
             </process-flow>
           </div>
-
-          <!--抽屉操作按钮-->
-          <v-row class="mx-0 justify-end my-4" :class="{'px-4': isMobile, 'px-6': !isMobile, 'mb-8': isMobile}">
-            <v-btn color="success" @click="doUiAction(submitUiActionId)" small>保存</v-btn>
-            <v-btn class="elevation-0 ml-2" @click="isDrawerShown = false" small>取消</v-btn>
-          </v-row>
         </v-form>
+      </div>
+
+      <!--抽屉操作按钮-->
+      <v-row class="mx-0 justify-end my-4" :class="{'px-4': isMobile, 'px-6': !isMobile, 'mb-8': isMobile}">
+        <v-btn color="success" @click="doUiAction(submitUiActionId)" small>保存</v-btn>
+        <v-btn class="elevation-0 ml-2" @click="isDrawerShown = false" small>取消</v-btn>
+      </v-row>
         
       <!-- 抽屉关闭按钮 -->
       <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn" @click="isDrawerShown = false">
