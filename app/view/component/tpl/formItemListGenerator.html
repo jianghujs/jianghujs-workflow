@@ -51,49 +51,55 @@
         <v-hover v-for="(formItem, index) in formItemList" :key="index" v-slot:default="{ hover }">
           <v-card
             @click.native="formItemSelect(formItem.id)"
-            :class="['my-2', selectedFormItemId === formItem.id && !hover ? 'formItem-selected' : 'formItem-body']"
+            :class="['my-2', selectedFormItemId === formItem.id ? 'formItem-selected' : 'formItem-body']"
             style="cursor: move"
             dense outlined>
-            <v-list-item>
-              <div class="d-flex justify-end align-center px-4 pt-4">
-                <div>{{ index + 1 }}. {{ formItem.component.typeDesc }}</div> 
-                <v-spacer></v-spacer>
-                <!-- 复制和删除功能 -->
-                <template>
-                  <span role="button" class="success--text jh-font-size-2 mr-1 mr-sm-2"
-                    @click="formItemCopy(index, formItem)">
-                    <v-icon size="12" class="success--text">mdi-content-copy</v-icon>复制
-                  </span>
-                  <span role="button" class="success--text jh-font-size-2"
-                    @click.stop="formItemDelete(formItem.id)">
-                    <v-icon size="14" class="success--text">mdi-delete-outline</v-icon>删除
-                  </span>
-                </template>
-              </div>
+            <div class="d-flex justify-end align-center px-4 pt-4">
+              <div>{{ index + 1 }}. {{ formItem.statement }}</div> 
+              <v-spacer></v-spacer>
+              <!-- 复制和删除功能 -->
+              <template>
+                <span role="button" class="success--text jh-font-size-2 mr-1 mr-sm-2"
+                  @click="formItemCopy(index, formItem)">
+                  <v-icon size="12" class="success--text">mdi-content-copy</v-icon>复制
+                </span>
+                <span role="button" class="success--text jh-font-size-2"
+                  @click.stop="formItemDelete(formItem.id)">
+                  <v-icon size="14" class="success--text">mdi-delete-outline</v-icon>删除
+                </span>
+              </template>
+            </div>
 
+            <v-list-item>
               <!-- 单选 -->
               <v-list-item-content v-if="formItem.type === 'single'">
-                <v-radio-group :disabled="true" :label="(index+1) + '. ' + formItem.statement">
-                  <v-radio hide-details v-for="(option, optionIndex) in formItem.optionList"
-                           :key="optionIndex" :label="option" :value="option"></v-radio>
-                </v-radio-group>
+                <template v-if="formItem.optionList.length > 0">
+                  <v-radio-group disabled>
+                    <v-radio hide-details v-for="(option, optionIndex) in formItem.optionList"
+                             :key="optionIndex" :label="option" :value="option"></v-radio>
+                  </v-radio-group>
+                </template>
+                <div v-else class="text-caption">请添加选项~</div>
               </v-list-item-content>
 
+              <!-- 多选 -->
               <v-list-item-content v-if="formItem.type === 'multiple'">
-                <div v-for="(option, optionIndex) in formItem.optionList" :key="optionIndex">
-                  <v-checkbox hide-details style="margin-top: 0px;" :disabled="true" :label="option" hide-details
-                              color="red"></v-checkbox>
-                </div>
+                <template v-if="formItem.optionList.length > 0">
+                  <div v-for="(option, optionIndex) in formItem.optionList" :key="optionIndex">
+                    <v-checkbox hide-details class="mt-0" disabled :label="option" hide-details ></v-checkbox>
+                  </div>
+                </template>
+                <div v-else class="text-caption">请添加选项~</div>
               </v-list-item-content>
 
+              <!-- 多行文本 -->
               <v-list-item-content v-if="formItem.type === 'textarea'">
-                <v-textarea dense outlined placeholder="请输入答案" hide-details :disabled="true" :rows="4"
-                            :label="(index+1) + '. ' + formItem.statement"/>
+                <v-textarea class="jh-v-input" dense outlined hide-details disabled :rows="4" />
               </v-list-item-content>
 
+              <!-- 单行文本 -->
               <v-list-item-content v-if="formItem.type === 'input'">
-                <v-text-field class="cus-v-input" dense outlined :label="(index+1) + '. ' + formItem.statement"
-                              :disabled="true"></v-text-field>
+                <v-text-field class="jh-v-input" dense outlined disabled></v-text-field>
               </v-list-item-content>
 
             </v-list-item>
@@ -101,7 +107,7 @@
         </v-hover>
       </draggable>
       <v-row v-else align="center" justify="center" class="ma-0 pa-0" style="width: 100%;">
-        <v-card height="100" class="ma-12" width="100%" color="#f5f8fa" style="border: 1px dashed #333333">
+        <v-card height="100" width="100%" color="#f5f8fa" style="border: 1px dashed #333333">
           <draggable :list="[]" :animation="300" group="componentGroup" style="position: relative; height: 100%;">
             <v-card-text class="text-center title draggable-placeholder">
               从左侧拖入或点选组件进行表单设计
@@ -120,54 +126,49 @@
         <span style="transform: translateY(2px); display: inline-block;">组件属性</span>
       </div>
       <div v-if="selectCanvaIndex >= 0 && formItemList[selectCanvaIndex]">
-        <v-card class="mt-5" flat
-                v-if="formItemList[selectCanvaIndex].type === 'single' || formItemList[selectCanvaIndex].type === 'multiple'">
-          <v-row no-gutters>
-            <v-col cols="12">
-              <v-text-field class="cus-v-input mr-2" dense filled single-line prefix="标题: " color="success"
-                            v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
-              <div style="display: flex; flex-direction: row;justify-content: space-between; align-items: center;">
-                <v-subheader class="pa-0">选项列表</v-subheader>
-                <v-btn icon
-                       @click.stop="propertyAddOption(formItemList[selectCanvaIndex].optionList.length)">
-                  <v-icon dark color="grey lighten-1">mdi-plus-box</v-icon>
-                </v-btn>
-              </div>
-              <v-list class="propertyList" dense style="max-height: 300px; overflow-y: auto;">
-                <v-list-item
-                    class="pa-0"
-                    v-for="(option, index) in formItemList[selectCanvaIndex].optionList"
-                    :key="index">
-                  <v-list-item-content>
+        <v-card flat>
+          <!--标题 >>>>>>>>>>-->
+          <div class="mb-3">
+            <span class="jh-input-label">标题</span>
+            <v-text-field class="jh-v-input" dense filled single-line color="success"
+            v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
+          </div>
+          <!--<<<<<<<<<< 标题-->
+
+          <!--单选、多选的选项 >>>>>>>>>>-->
+          <template v-if="formItemList[selectCanvaIndex].type === 'single' || formItemList[selectCanvaIndex].type === 'multiple'">
+            <v-row class="ma-0">
+              <span class="jh-input-label">选项列表</span>
+              <v-spacer></v-spacer>
+              <v-btn small icon @click.stop="propertyAddOption(formItemList[selectCanvaIndex].optionList.length)">
+                <v-icon color="grey lighten-1" size="20">mdi-plus-box-outline</v-icon>
+              </v-btn>
+            </v-row>
+            <!--选项列表-->
+            <v-list class="propertyList py-0 mb-3" dense style="max-height: 300px; overflow-y: auto; overflow-x: hidden">
+              <template v-for="(option, index) in formItemList[selectCanvaIndex].optionList">
+                <v-list-item class="pa-0" :key="index">
+                  <v-list-item-content class="pa-0">
                     <v-text-field
-                        v-model="formItemList[selectCanvaIndex].optionList[index]"
-                        prefix="选项:"
-                        color="success"
-                        filled single-line
-                        dense
-                        hide-details
-                        clearable
-                        placeholder="请输入选项"/>
+                      class="jh-v-input" dense filled single-line color="success" auto-grow
+                      prefix="选项:" placeholder="请输入选项"
+                      v-model="formItemList[selectCanvaIndex].optionList[index]">
+                    </v-text-field>
                   </v-list-item-content>
-                  <v-list-item-action class="ml-2">
-                    <v-btn icon @click.stop="propertyDeleteOption(index)">
-                      <v-icon color="grey lighten-1" dark>mdi-delete</v-icon>
+                  <!--删除按钮-->
+                  <v-list-item-action class="ma-0">
+                    <v-btn icon small @click.stop="propertyDeleteOption(index)">
+                      <v-icon color="grey lighten-1" size="20">mdi-delete-outline</v-icon>
                     </v-btn>
                   </v-list-item-action>
                 </v-list-item>
-              </v-list>
-            </v-col>
-          </v-row>
-        </v-card>
-        <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].type === 'textarea'">
-          <v-text-field class="cus-v-input" dense filled single-line label="多行文本"
-                        v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
-        </v-card>
-        <v-card class="mt-5" flat v-if="formItemList[selectCanvaIndex].type === 'input'">
-          <v-text-field class="cus-v-input" dense filled single-line label="单行文本"
-                        v-model="formItemList[selectCanvaIndex].statement"></v-text-field>
+              </template>
+            </v-list>
+          </template>
+          <!--<<<<<<<<<< 单选、多选的选项-->
         </v-card>
       </div>
+      <div v-else class="text-center mt-8">请选择组件~</div>
     </v-card>
     <!-- <<<<<<<<<<<<< 右侧 组件属性编辑区 -->
   </v-card>
