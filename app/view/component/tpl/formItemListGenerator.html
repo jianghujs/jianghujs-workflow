@@ -257,7 +257,7 @@ Vue.component("form-item-list-generator", {
       const {type} = component;
       const formItem = {
         id: `${type}_${this.uuid(8)}`,
-        ...component,
+        ..._.cloneDeep(component),
       };
       if (!this.formItemList) {
         this.formItemList = [];
