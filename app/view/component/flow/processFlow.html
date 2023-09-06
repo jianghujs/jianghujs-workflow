@@ -1,36 +1,36 @@
 <template id="process-flow">
   <v-card class="process-flow-container">
-    <v-card v-if="!readonly" class="flow-menu pa-4 ma-2" width="140px">
-      <div class="menu-item mb-3" v-for="item in menuList" @mousedown.stop.prevent="startDrag(item)">
-        <i :class="item.icon"></i>
-        <div>{{item.name}}</div>
+    <!-- 左侧 节点选择列表 >>>>>>>>>>>>> -->
+    <v-card v-if="!readonly" :style="{'width': isMobile ? '100%' : '150px'}" outlined
+    :class="{'pa-4': !isMobile, 'pa-2': isMobile, 'mr-2': !isMobile}" outlined>
+      <div class="menu-item mb-2" v-for="item in menuList" @mousedown.stop.prevent="startDrag(item)">
+        <v-icon small class="mr-1">{{ item.icon }}</v-icon>
+        {{item.name}}
       </div>
     </v-card>
-    <v-card class="flow-detail pa-0 my-2">
+    <!-- <<<<<<<<<<<<< 左侧 节点选择列表 -->
+
+    <!-- 中间 主内容编辑区 >>>>>>>>>>>>> -->
+    <v-card class="flow-detail pa-4" outlined>
       <div id="flowContent" ref="flowContent"></div>
     </v-card>
-    <v-card v-show="!readonly" class="flow-edit pa-2 ma-2">
-      <template v-if="editType == 'node' || editType == 'line'">
-        <div class="mb-3">
-          <v-icon>mdi-application-edit-outline</v-icon>
-          <span style="transform: translateY(2px); display: inline-block; ">{{editType == 'node' ? '节点' : '连线'}}属性</span>
-        </div>
-        <div class="flow-edit-content">
-          <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="logicFlow" :user="user" :group="group" :mode="mode" :tpl="tpl"></edit-node>
-          <edit-line ref="lineForm" v-if="editType == 'line'" :lf="logicFlow" :mode="mode"></edit-line>
-        </div>
-      </template>
-      <template v-else>
-        <div class="mb-3">
-          <v-icon>mdi-application-edit-outline</v-icon>
-          <span style="transform: translateY(2px); display: inline-block; ">属性面板</span>
-        </div>
-        <div style="text-align: center;line-height: 100px; color: #999999">
-          请选择节点或连接线
-        </div>
-      </template>
-    </v-card>
+    <!-- <<<<<<<<<<<<< 中间 主内容编辑区 -->
 
+    <!-- 右侧 属性编辑区 >>>>>>>>>>>>> -->
+    <v-card v-show="!readonly" :style="{'width': isMobile ? 'auto' : '300px'}" class="pa-4" :class="{'ml-2': !isMobile}" outlined>
+      <div class="font-weight-medium text-subtitle-2 text-subtitle-2 mb-3">
+        <v-icon size="18" class="mr-1">mdi-application-cog-outline</v-icon>
+        <span style="transform: translateY(2px); display: inline-block;">{{editType == 'node' ? '节点属性' : editType == 'line' ? '连线属性' : '属性面板'}}</span>
+      </div>
+      <div v-if="editType == 'node' || editType == 'line'" class="flow-edit-content">
+        <edit-node ref="nodeForm" v-if="editType == 'node'" :lf="logicFlow" :user="user" :group="group" :mode="mode" :tpl="tpl"></edit-node>
+        <edit-line ref="lineForm" v-if="editType == 'line'" :lf="logicFlow" :mode="mode"></edit-line>
+      </div>
+      <div v-else class="text-center mt-8">
+        请选择节点或连接线~
+      </div>
+    </v-card>
+    <!-- <<<<<<<<<<<<< 右侧 属性编辑区 -->
   </v-card>
 </template>
 
@@ -94,10 +94,10 @@ Vue.component("process-flow", {
   data: () => {
     return {
       menuList: [
-        {name: '起点', type: 'start', icon: 'el-icon-help'},
-        {name: '终点', type: 'end', icon: 'el-icon-s-help'},
-        {name: '审批节点', type: 'userTask', icon: 'el-icon-user'},
-        {name: '处理节点', type: 'receiveTask', icon: 'el-icon-s-tools'},
+        {name: '起点', type: 'start', icon: 'mdi-ray-start'},
+        {name: '终点', type: 'end', icon: 'mdi-ray-end'},
+        {name: '审批节点', type: 'userTask', icon: 'mdi-account-details-outline'},
+        {name: '处理节点', type: 'receiveTask', icon: 'mdi-account-check-outline'},
       ],
       logicFlow: null, // logicflow实例
       // 是否加载完毕
@@ -114,6 +114,11 @@ Vue.component("process-flow", {
     mode() {
       this.logicFlow.clearData();
     }
+  },
+  computed: {
+    isMobile() {
+      return window.innerWidth < 600;
+    },
   },
   mounted() {
   },
@@ -509,11 +514,7 @@ Vue.component("process-flow", {
 
 .flow-detail {
   flex: 1;
-  border: 1px solid #EBEEF5;
-  padding: 12px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
   word-break: break-all;
-  border-radius: 4px;
   position: relative;
 }
 
@@ -534,51 +535,28 @@ Vue.component("process-flow", {
   border: 1px solid #007AFF;
 }
 
-.flow-menu {
-  width: 100px;
-  border: 1px solid #EBEEF5;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
-  word-break: break-all;
-  border-radius: 4px;
-}
-
 .menu-item {
-  text-align: center;
-  margin-bottom: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #606266;
+  padding: 8px 10px;
   background: #f5f8fa;
-  padding: 5px 0;
-  border-radius: 5px;
+  font-size: 12px;
+  cursor: move;
+  border: 1px dashed #f5f8fa;
+  border-radius: 3px;
 }
 
 .menu-item:hover {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 1px dashed #4caf50;
+  background: #f5f8fa;
+  color: #4caf50;
 }
 
-.menu-item > i {
-  font-size: 30px;
-}
-
-.flow-edit {
-  width: 300px;
-  padding: 0 10px;
-  max-height: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+.menu-item:hover .v-icon {
+  color: #4caf50;
 }
 
 .flow-edit-content {
-  min-height: 100%;
-  color: #606266;
-  line-height: 1.4;
-  text-align: justify;
-  font-size: 14px;
-  padding: 12px;
-  word-break: break-all;
-  border-radius: 4px;
+  max-height: 95%;
+  overflow-y: auto;
 }
 
 .lf-control-item i {

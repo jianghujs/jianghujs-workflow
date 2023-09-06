@@ -89,23 +89,30 @@
             </v-data-table>
           </v-card>
           <!-- <<<<<<<<<<<<< 页面内容 -->
+          
           <!--编辑抽屉-->
           <v-navigation-drawer v-model="isViewDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%"
             class="elevation-24">
             <v-form v-if="isViewDrawerShown" ref="updateForm" lazy-validation>
               <!--抽屉标题-->
               <v-row class="ma-0">
-                <span class="text-h6 pa-4">历史审核记录</span>
+                <span class="title pa-4">历史审核记录</span>
               </v-row>
               <!--抽屉表单-->
-              <v-row class="mt-0 px-4">
-                <v-col cols="12" sm="12" v-for="(item, index) in viewItem.taskFormInput.formList" :key="index">
+              <v-row class="mt-0 px-4" >
+                <v-col cols="12" sm="12" md="4" class="py-0" v-for="(item, index) in viewItem.taskFormInput.formList" :key="index">
                   <form-item :form-item="item" readonly></form-item>
                 </v-col>
               </v-row>
-              <span class="jh-input-label px-4">审核申请信息</span>
-              <task-history :task-id="viewItem.taskId"></task-history>
             </v-form>
+
+            <!-- 审核申请信息 -->
+            <v-row class="mt-8">
+              <v-col cols="12" sm="12" md="12">
+                <div class="text-subtitle-2 mb-2 mx-4">审核申请信息</div>
+                <task-history :task-id="viewItem.taskId"></task-history>
+              </v-col>
+            </v-row>
 
             <!--抽屉关闭按钮-->
             <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn"

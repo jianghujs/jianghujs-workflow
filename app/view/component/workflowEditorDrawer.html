@@ -4,6 +4,11 @@
       <!-- 抽屉标题 -->
       <v-row>
         <span class="title pa-6 pl-8">流程编辑</span>
+        <!-- 抽屉操作按钮 -->
+        <v-row class="justify-end mx-0 mt-6 px-8">
+          <v-btn color="success" @click="doUiAction(submitUiActionId)" small>保存</v-btn>
+          <v-btn class="elevation-0 ml-2" @click="isDrawerShown = false" small>取消</v-btn>
+        </v-row>
       </v-row>
         
       <div class="px-6">
@@ -49,12 +54,6 @@
           </div>
         </v-form>
       </div>
-
-      <!--抽屉操作按钮-->
-      <v-row class="mx-0 justify-end my-4" :class="{'px-4': isMobile, 'px-6': !isMobile, 'mb-8': isMobile}">
-        <v-btn color="success" @click="doUiAction(submitUiActionId)" small>保存</v-btn>
-        <v-btn class="elevation-0 ml-2" @click="isDrawerShown = false" small>取消</v-btn>
-      </v-row>
         
       <!-- 抽屉关闭按钮 -->
       <v-btn elevation="0" color="success" fab absolute top left small tile class="drawer-close-float-btn" @click="isDrawerShown = false">

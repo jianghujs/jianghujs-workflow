@@ -93,7 +93,7 @@
           </v-row>
           <!--抽屉表单主体-->
           <v-row class="mt-0 px-6">
-            <v-col cols="12" sm="12" md="4" v-for="(item, index) in currentWorkflowForm" :key="index">
+            <v-col cols="12" sm="12" :md="item.type === 'short' ? 12 : 4" v-for="(item, index) in currentWorkflowForm" :key="index">
               <form-item :form-item="item"></form-item>
             </v-col>
             <v-col cols="12" sm="12" md="12">

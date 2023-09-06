@@ -120,9 +120,15 @@
             <!--抽屉标题-->
             <v-row class="ma-0">
               <span class="title pa-4">审核信息</span>
+              <!-- 抽屉操作按钮 -->
+              <v-row class="justify-end mx-0 mt-4 px-4">
+                <v-btn :color="lineTypeItem.type === '拒绝' ? 'error' : 'success'" small class="ml-2" v-for="lineTypeItem in lineTypeList" v-if="lineTypeItem.type" @click="doUiAction('submitNode', lineTypeItem.type)">
+                  {{ lineTypeItem.type }}
+                </v-btn>
+              </v-row>
             </v-row>
             <!--抽屉表单-->
-            <v-row class="mt-0 px-4">
+            <v-row class="mt-0 px-4" >
               <v-col cols="12" sm="12" md="4" v-for="(formItem, index) in updateItem.taskFormInput.formList" :key="index">
                 <form-item :form-item="formItem" :readonly="updateItem.readonlyFormIdList"></form-item>
               </v-col>
@@ -133,16 +139,12 @@
                   v-model="updateItem.taskComment" :readonly="workflowType != 'todo'"></v-textarea>
               </v-col>
             </v-row>
-            <!--抽屉操作按钮-->
-            <v-row class="justify-end mx-0 mt-8 px-6">
-              <v-btn color="success" small class="ml-4" v-for="lineTypeItem in lineTypeList" v-if="lineTypeItem.type" @click="doUiAction('submitNode', lineTypeItem.type)">
-                {{ lineTypeItem.type }}
-              </v-btn>
-            </v-row>
           </v-form>
-          <v-row class="mt-0">
+
+          <!-- 审核历史 -->
+          <v-row class="mt-8">
             <v-col cols="12" sm="12" md="12">
-              <span class="jh-input-label px-4">审核历史</span>
+              <div class="text-subtitle-2 mb-2 mx-4">审核历史</div>
               <task-history :task-id="updateItem.taskId" @line-type-list="setLineTypeList"></task-history>
             </v-col>
           </v-row>
