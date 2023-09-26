@@ -9,11 +9,16 @@
     <v-main class="mt-15">
       <!-- 头部内容 >>>>>>>>>>>>> -->
       <div class="jh-page-second-bar px-8">
-        <div class="pt-3 text-h7 font-weight-bold">我的任务
-          <!-- 帮助页按钮 -->
-          <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline</v-icon>
-        </div>
-        <v-breadcrumbs class="pb-3 pt-0 px-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
+        <v-row class="align-center">
+          <v-col cols="12" xs="12" sm="12" md="4" xl="3">
+            <div class="py-4 text-body-1 font-weight-bold">我的任务
+              <!-- 帮助页按钮 -->
+              <span role="button" class="success--text font-weight-regular jh-font-size-13 ml-2" @click="isHelpPageDrawerShown = true">
+                <v-icon size="13" class="success--text">mdi-help-circle-outline</v-icon>帮助
+              </span>
+            </div>
+          </v-col>
+        </v-row>
       </div>
       <!-- <<<<<<<<<<<<< 头部内容 -->
 
@@ -85,17 +90,6 @@
                 查看
               </span>
             </template>
-            <!--表格底部右侧功能按钮-->
-            <template v-slot:footer.prepend>
-              <v-menu top offset-y :close-on-content-click="false">
-                <template v-slot:activator="{on, attrs}">
-                  <v-btn icon v-bind="attrs" v-on="on">
-                    <v-icon>mdi-menu</v-icon>
-                  </v-btn>
-                </template>
-                <v-switch v-model="isTableZebraLineShown" hide-details class="mx-3 my-2" label="显示斑马纹" dense flat></v-switch>
-              </v-menu>
-            </template>
             <!--没有数据-->
             <template v-slot:loading>
               <div class="jh-no-data">数据加载中</div>
@@ -114,19 +108,23 @@
           </v-data-table>
         </v-card>
         <!-- <<<<<<<<<<<<< 页面内容 -->
+
         <!--编辑抽屉-->
         <v-navigation-drawer v-model="isSubmitDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
           <v-form v-if="isSubmitDrawerShown" ref="updateForm" lazy-validation>
-            <!--抽屉标题-->
-            <v-row class="ma-0">
-              <span class="title pa-4">审核信息</span>
+            <!-- 抽屉标题 -->
+            <v-row no-gutters class="align-center justify-end">
+              <span class="text-h7 font-weight-bold pa-4">审核信息</span>
+              <v-spacer></v-spacer>
               <!-- 抽屉操作按钮 -->
-              <v-row class="justify-end mx-0 mt-4 px-4">
+              <div class="d-flex justify-end pr-4">
                 <v-btn :color="lineTypeItem.type === '拒绝' ? 'error' : 'success'" small class="ml-2" v-for="lineTypeItem in lineTypeList" v-if="lineTypeItem.type" @click="doUiAction('submitNode', lineTypeItem.type)">
                   {{ lineTypeItem.type }}
                 </v-btn>
-              </v-row>
+              </div>
             </v-row>
+            <v-divider class="jh-divider"></v-divider>
+
             <!--抽屉表单-->
             <v-row class="mt-0 px-4" >
               <v-col cols="12" sm="12" md="4" v-for="(formItem, index) in updateItem.taskFormInput.formList" :key="index">
@@ -200,11 +198,6 @@
     vueComponent: 'page',
     vuetify: new Vuetify(),
     data: {
-      // 面包屑
-      breadcrumbs: [
-        { text: '首页', disabled: true, },
-        { text: '待办、已处理的任务', disabled: true, }
-      ],
       isHelpPageDrawerShown: false,
 
       // 表格相关数据
@@ -220,10 +213,10 @@
       tableData: [],
       historyData: [],
       headers: [
-        { text: '操作', value: 'action', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed' },
         { text: "审批项", value: "taskTitle" },
         { text: "操作者", value: "operationByUser", width: 120 },
-        { text: "操作时间", value: "operationAt", width: 250 }
+        { text: "操作时间", value: "operationAt", width: 250 },
+        {text: '操作', value: 'action', align: 'center', sortable: false, width: 80, class: 'fixed', cellClass: 'fixed'},
       ],
 
       isSubmitDrawerShown: false,

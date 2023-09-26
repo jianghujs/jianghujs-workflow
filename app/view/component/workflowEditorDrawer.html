@@ -2,34 +2,39 @@
   <div>
     <v-navigation-drawer v-model="isDrawerShown" :permanent="isDrawerShown" fixed temporary right width="90%" class="elevation-24">
       <!-- 抽屉标题 -->
-      <v-row>
-        <span class="title pa-6 pl-8">流程编辑</span>
+      <v-row no-gutters class="align-center justify-end">
+        <span class="text-h7 font-weight-bold pa-4">流程编辑</span>
+        <v-spacer></v-spacer>
         <!-- 抽屉操作按钮 -->
-        <v-row class="justify-end mx-0 mt-6 px-8">
+        <div class="d-flex justify-end pr-4">
           <v-btn color="success" @click="doUiAction(submitUiActionId)" small>保存</v-btn>
           <v-btn class="elevation-0 ml-2" @click="isDrawerShown = false" small>取消</v-btn>
-        </v-row>
+        </div>
       </v-row>
-        
-      <div class="px-6">
+      <v-divider class="jh-divider"></v-divider>
+
+      <div class="px-4 mt-2">
         <v-form ref="form">
           <!-- 流程信息 -->
           <v-row>
             <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+              <span class="jh-input-label">流程名<span class="red--text text--accent-2 ml-1">*必填</span></span>
               <v-text-field
-                class="jh-v-input mr-2" dense filled single-line color="success" prefix="流程名:"
+                class="jh-v-input mr-2" dense filled single-line color="success"
                 v-model="formObj['workflowName']" :rules="validationRules.requireRules">
               </v-text-field>
             </v-col>
             <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+              <span class="jh-input-label">备注</span>
               <v-text-field
-                class="jh-v-input mr-2" dense filled single-line color="success" prefix="备注:"
+                class="jh-v-input mr-2" dense filled single-line color="success"
                 v-model="formObj['workflowRemark']">
               </v-text-field>
             </v-col>
             <v-col cols="12" sm="12" md="3" xl="3" class=" pb-3">
+              <span class="jh-input-label">审批模式</span>
               <v-select
-                class="jh-v-input mr-2" dense filled single-line color="success" prefix="审批模式:"
+                class="jh-v-input mr-2" dense filled single-line color="success"
                 v-model="formObj['mode']" :items="constantObj.modeList" />
             </v-col>
           </v-row>

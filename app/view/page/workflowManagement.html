@@ -9,11 +9,16 @@
     <v-main class="mt-15">
       <!-- 头部内容 >>>>>>>>>>>>> -->
       <div class="jh-page-second-bar px-8">
-        <div class="pt-3 text-h7 font-weight-bold">流程管理/发起任务
-          <!-- 帮助页按钮 -->
-          <v-icon @click="isHelpPageDrawerShown = true" color="success" small>mdi-help-circle-outline</v-icon>
-        </div>
-        <v-breadcrumbs class="pb-3 pt-0 px-0" :items="breadcrumbs" divider="-"></v-breadcrumbs>
+        <v-row class="align-center">
+          <v-col cols="12" xs="12" sm="12" md="4" xl="3">
+            <div class="py-4 text-body-1 font-weight-bold">发起任务
+              <!-- 帮助页按钮 -->
+              <span role="button" class="success--text font-weight-regular jh-font-size-13 ml-2" @click="isHelpPageDrawerShown = true">
+                <v-icon size="13" class="success--text">mdi-help-circle-outline</v-icon>帮助
+              </span>
+            </div>
+          </v-col>
+        </v-row>
       </div>
       <!-- <<<<<<<<<<<<< 头部内容 -->
 
@@ -43,27 +48,36 @@
             checkbox-color="success"
             fixed-header
             class="jh-fixed-table-height elevation-0 mt-0 mb-xs-4">
-            <!--表格行操作按钮-->
+            <!-- 表格行操作按钮 -->
             <template v-slot:item.action="{ item }">
-              <span role="button" class="success--text jh-font-size-3 pr-2"
-                    @click="doUiAction('startCreateWorkflow', item)">
-                <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>申请
-              </span>
-              <span role="button" class="success--text jh-font-size-3 pr-2"
-                    @click="doUiAction('openWorkflowEditorDrawer', item)">
-                <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>编辑
-              </span>
-            </template>
-            <!--表格底部右侧功能按钮-->
-            <template v-slot:footer.prepend>
-              <v-menu top offset-y :close-on-content-click="false">
-                <template v-slot:activator="{on, attrs}">
-                  <v-btn icon v-bind="attrs" v-on="on">
-                    <v-icon>mdi-menu</v-icon>
-                  </v-btn>
+              <template>
+                <!-- pc端 -->
+                <template v-if="!isMobile">
+                  <span role="button" class="success--text font-weight-medium font-size-2 mr-2 ml-2" @click="doUiAction('startCreateWorkflow', item)">
+                    <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>申请
+                  </span>
+                  <span role="button" class="success--text font-weight-medium font-size-2" @click="doUiAction('openWorkflowEditorDrawer', item)">
+                    <v-icon size="16" class="success--text">mdi-note-edit-outline</v-icon>编辑
+                  </span>
                 </template>
-                <v-switch v-model="isTableZebraLineShown" hide-details class="mx-3 my-2" label="显示斑马纹" dense flat></v-switch>
-              </v-menu>
+                <!-- 手机端 -->
+                <v-menu offset-y v-if="isMobile">
+                  <template v-slot:activator="{ on, attrs }">
+                    <span role="button" class="success--text font-weight-medium font-size-2"
+                      v-bind="attrs" v-on="on">
+                      操作<v-icon size="14" class="success--text">mdi-chevron-down</v-icon>
+                    </span>
+                  </template>
+                  <v-list dense>
+                    <v-list-item @click="doUiAction('startCreateWorkflow', item)">
+                      <v-list-item-title>申请</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="doUiAction('openWorkflowEditorDrawer', item)">
+                      <v-list-item-title>编辑</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
             </template>
             <!--没有数据-->
             <template v-slot:loading>
@@ -87,12 +101,13 @@
       <!-- <<<<<<<<<<<<< 创建审批抽屉 -->
       <v-navigation-drawer v-model="isCreateDrawerShown" v-click-outside="drawerClickOutside" fixed temporary right width="80%" class="elevation-24">
         <v-form v-if="isCreateDrawerShown" ref="createForm" lazy-validation>
-          <!--抽屉标题-->
-          <v-row>
-            <span class="title pa-6 pl-8">创建审批</span>
+          <!-- 抽屉标题 -->
+          <v-row no-gutters>
+            <span class="text-h7 font-weight-bold pa-4">创建审批</span>
           </v-row>
+          <v-divider class="jh-divider"></v-divider>
           <!--抽屉表单主体-->
-          <v-row class="mt-0 px-6">
+          <v-row class="mt-0 px-4">
             <v-col cols="12" sm="12" :md="item.type === 'short' ? 12 : 4" v-for="(item, index) in currentWorkflowForm" :key="index">
               <form-item :form-item="item"></form-item>
             </v-col>
@@ -122,7 +137,7 @@
             </v-col>
           </v-row>
           <!--抽屉操作按钮-->
-          <v-row class="justify-end mx-0 mt-8 px-6">
+          <v-row class="justify-end mx-0 my-8 px-4">
             <v-btn color="success" @click="doUiAction('createWorkflow')" small>保存</v-btn>
             <v-btn class="ml-2" @click="isCreateDrawerShown = false" small>取消</v-btn>
           </v-row>
@@ -178,11 +193,7 @@
     vueComponent: 'page',
     vuetify: new Vuetify(),
     data: {
-      // 面包屑
-      breadcrumbs: [
-        { text: '首页', disabled: true, },
-        { text: '流程管理列表、发起任务', disabled: true, }
-      ],
+      isMobile: window.innerWidth < 500,
       validationRules: {
         requireRules: [
           v => !!v || 'This is required',
@@ -193,9 +204,9 @@
       tableDataFromBackend: [],
       tableData: [],
       headers: [
-        { text: '操作', value: 'action', sortable: false, width: 130, class: 'fixed', cellClass: 'fixed' },
         { text: '流程ID', value: 'workflowId' },
         { text: '流程名称', value: 'workflowName' },
+        {text: '操作', value: 'action', align: 'left', sortable: false, width: window.innerWidth < 500 ? 80 : 120, class: 'fixed', cellClass: 'fixed'},
       ],
       searchInput: '',
       isHelpPageDrawerShown: false,
