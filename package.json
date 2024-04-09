@@ -10,6 +10,7 @@
   "dependencies": {
     "@jianghujs/jianghu": "4.1.0",
     "dayjs": "^1.11.4",
+    "dotenv": "^16.3.1",
     "egg": "^2.15.1",
     "egg-scripts": "^2.11.0"
   },
